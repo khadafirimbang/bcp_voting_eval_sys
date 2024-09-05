@@ -46,7 +46,7 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<void> _signUp() async {
     if (_formKey.currentState!.validate()) {
       final response = await http.post(
-        Uri.parse('http://192.168.1.11/for_testing/signup.php'),
+        Uri.parse('http://192.168.1.29/for_testing/signup.php'),
         body: {
           'studentno': studentNoController.text,
           'password': passwordController.text,
@@ -58,7 +58,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
       if (data['status'] == 'success') {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'])),
+          const SnackBar(content: Text('Registration Complete!'), backgroundColor: Colors.green, duration: Duration(seconds: 1),),
         );
         // Navigate to another page or clear the form
                   Navigator.push(

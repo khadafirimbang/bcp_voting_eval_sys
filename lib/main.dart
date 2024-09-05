@@ -1,24 +1,102 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:for_testing/home.dart';
 import 'package:for_testing/signup.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
-void main() => runApp(MyApp());
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Login Demo',
-      home: LoginPage(),
+    return const MaterialApp(
+      title: 'Login',
+      home: LoadingScreen(),
     );
   }
 }
 
+// Loading Page
+class LoadingScreen extends StatefulWidget {
+  const LoadingScreen({super.key});
+
+  @override
+  _LoadingScreenState createState() => _LoadingScreenState();
+}
+
+class _LoadingScreenState extends State<LoadingScreen> {
+  bool isConnectedToInternet = false;
+  StreamSubscription? _internetConnectionStreamSubcription;
+
+  @override
+  void initState() {
+    super.initState();
+
+        _internetConnectionStreamSubcription = InternetConnection().onStatusChange.listen((event){
+      switch (event) {
+        case InternetStatus.connected:
+          setState(() {
+            isConnectedToInternet = true;
+          });
+          break;
+        case InternetStatus.disconnected:
+            setState(() {
+              isConnectedToInternet = false;
+          });
+          break;
+        default:
+          setState(() {
+            isConnectedToInternet = false;
+          });
+          break;
+      }
+    },);
+
+    // Simulate a loading process and then navigate to the Login page
+    Future.delayed(const Duration(seconds: 3), () {
+      // Checking if there's an Internet Connection
+      if(isConnectedToInternet == false) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please check your internet connection'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3)),
+        );
+    }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()), // Redirect to Login page
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Column(
+            children: [
+              const SizedBox(height: 80),
+              Image.asset('assets/bcp_logo.png', width: 100,),
+              const SizedBox(height: 200),
+              const CircularProgressIndicator(),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Login Page
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -28,6 +106,9 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _studentNoController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscureText = true;
+  bool isConnectedToInternet = false;
+
+  StreamSubscription? _internetConnectionStreamSubcription;
 
     void _togglePasswordVisibility() {
     setState(() {
@@ -39,6 +120,31 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     _checkSession();
+    _internetConnectionStreamSubcription = InternetConnection().onStatusChange.listen((event){
+      switch (event) {
+        case InternetStatus.connected:
+          setState(() {
+            isConnectedToInternet = true;
+          });
+          break;
+        case InternetStatus.disconnected:
+            setState(() {
+              isConnectedToInternet = false;
+          });
+          break;
+        default:
+          setState(() {
+            isConnectedToInternet = false;
+          });
+          break;
+      }
+    },);
+  }
+
+  @override
+  void dispose() {
+    _internetConnectionStreamSubcription?.cancel();
+    super.dispose();
   }
 
   void _checkSession() async {
@@ -54,7 +160,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       final response = await http.post(
-        Uri.parse('http://192.168.1.11/for_testing/signin.php'),
+        Uri.parse('http://192.168.1.29/for_testing/signin.php'),
         body: {
           'studentno': _studentNoController.text,
           'password': _passwordController.text,
@@ -70,10 +176,19 @@ class _LoginPageState extends State<LoginPage> {
             context, MaterialPageRoute(builder: (context) => HomePage()));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid Credentials')),
+          const SnackBar(content: Text('Student Number or Password are incorrect!'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 1)),
         );
       }
     }
+    //     if(isConnectedToInternet == false) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(content: Text('Please check your internet connection'),
+    //       backgroundColor: Colors.red,
+    //       duration: Duration(seconds: 3)),
+    //     );
+    // }
   }
 
   @override
@@ -149,10 +264,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // ElevatedButton(
-                      //   onPressed: _login,
-                      //   child: const Text('Login'),
-                      // ),
                       SizedBox(
                         width: 340,
                         child: TextButton(
@@ -196,31 +307,3 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-// class HomePage extends StatelessWidget {
-//   Future<void> _logout(BuildContext context) async {
-//     SharedPreferences prefs = await SharedPreferences.getInstance();
-//     await prefs.remove('studentno');
-
-//     // Optionally call your server to end the session
-//     await http.post(Uri.parse('http://192.168.1.11/for_testing/logout.php'));
-
-//     Navigator.pushReplacement(
-//         context, MaterialPageRoute(builder: (context) => LoginPage()));
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Home Page'),
-//         actions: <Widget>[
-//           IconButton(
-//             icon: const Icon(Icons.logout),
-//             onPressed: () => _logout(context),
-//           ),
-//         ],
-//       ),
-//       body: const Center(child: const Text('Welcome!')),
-//     );
-//   }
-// }
