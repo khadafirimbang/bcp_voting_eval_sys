@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:for_testing/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,26 +14,105 @@ class HomePage extends StatelessWidget {
     await http.post(Uri.parse('http://192.168.1.29/for_testing/logout.php'));
 
     Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => LoginPage()));
+        context, MaterialPageRoute(builder: (context) => const LoginPage()));
+  }
+
+  // Function to show logout confirmation dialog
+  Future<void> _showLogoutDialog(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout Confirmation'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                _logout(context); // Call the logout function
+              },
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Exit the app when back button is pressed
+        // Exit the app when the back button is pressed
         return exit(0);
       },
       child: Scaffold(
-        body: Center(
+        appBar: AppBar(
+          title: const Text('BCP'),
+        ),
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              const DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(Icons.account_circle, size: 80, color: Colors.white),
+                    SizedBox(height: 16),
+                    Text(
+                      'John Doe',
+                      style: TextStyle(color: Colors.white, fontSize: 24),
+                    ),
+                  ],
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.person),
+                title: const Text('Profile'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.contact_emergency_sharp),
+                title: const Text('Vote'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.question_answer),
+                title: const Text('Evaluation'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('Logout'),
+                onTap: () {
+                  _showLogoutDialog(context); // Show logout confirmation
+                },
+              ),
+            ],
+          ),
+        ),
+        body: const Center(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Home Page!"),
-                         IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () => _logout(context),
-            ),
+              Text("Home Page!"),
             ],
           ),
         ),

@@ -178,7 +178,7 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Student Number or Password are incorrect!'),
           backgroundColor: Colors.red,
-          duration: Duration(seconds: 1)),
+          duration: Duration(seconds: 2)),
         );
       }
     }
