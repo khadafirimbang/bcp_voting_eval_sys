@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:for_testing/home.dart';
+import 'package:for_testing/profile.dart';
 import 'package:for_testing/signup.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'Login',
+      title: 'BCP',
       home: LoadingScreen(),
     );
   }
@@ -157,39 +157,36 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      final response = await http.post(
-        Uri.parse('http://192.168.1.29/for_testing/signin.php'),
-        body: {
-          'studentno': _studentNoController.text,
-          'password': _passwordController.text,
-        },
+Future<void> _login() async {
+  if (_formKey.currentState!.validate()) {
+    final response = await http.post(
+      Uri.parse('http://192.168.1.2/for_testing/signin.php'),
+      body: {
+        'studentno': _studentNoController.text,
+        'password': _passwordController.text, // Sending plain text password to be verified
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (data['status'] == 'success') {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('studentno', _studentNoController.text);
+      Navigator.pushReplacement(
+        context, 
+        MaterialPageRoute(builder: (context) => HomePage())
       );
-
-      final data = jsonDecode(response.body);
-
-      if (data['status'] == 'success') {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('studentno', _studentNoController.text);
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => HomePage()));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Student Number or Password are incorrect!'),
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(data['message']),
           backgroundColor: Colors.red,
-          duration: Duration(seconds: 2)),
-        );
-      }
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
-    //     if(isConnectedToInternet == false) {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       const SnackBar(content: Text('Please check your internet connection'),
-    //       backgroundColor: Colors.red,
-    //       duration: Duration(seconds: 3)),
-    //     );
-    // }
   }
+}
 
   @override
   Widget build(BuildContext context) {

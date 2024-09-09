@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:for_testing/home.dart';
+import 'package:for_testing/profile.dart';
 import 'package:for_testing/main.dart';
 import 'package:for_testing/vote.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class AppDrawer extends StatelessWidget {
+  const AppDrawer({super.key});
+
 
     Future<void> _logout(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('studentno');
 
     // Optionally call your server to end the session
-    await http.post(Uri.parse('http://192.168.1.29/for_testing/logout.php'));
+    await http.post(Uri.parse('http://192.168.1.2/for_testing/logout.php'));
 
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => const LoginPage()));
