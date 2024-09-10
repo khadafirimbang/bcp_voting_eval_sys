@@ -180,7 +180,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               style: TextButton.styleFrom(
                                 shape: const RoundedRectangleBorder(),
                                 padding: const EdgeInsets.all(14.0),
-                                backgroundColor: Colors.blue,
+                                backgroundColor: const Color(0xFF1E3A8A),
                                 
                               ),
                               onPressed: () {_signUp();},
@@ -202,7 +202,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           },
                           child: const Text('Click here to Sign in',
                           style: TextStyle(
-                            color: Colors.blue
+                            color: Color(0xFF1E3A8A)
                           ),),
                         ),
                     ],

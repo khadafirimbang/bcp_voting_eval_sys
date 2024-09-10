@@ -172,6 +172,7 @@ Future<void> _login() async {
     if (data['status'] == 'success') {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('studentno', _studentNoController.text);
+
       Navigator.pushReplacement(
         context, 
         MaterialPageRoute(builder: (context) => HomePage())
@@ -267,7 +268,7 @@ Future<void> _login() async {
                               style: TextButton.styleFrom(
                                 shape: const RoundedRectangleBorder(),
                                 padding: const EdgeInsets.all(14.0),
-                                backgroundColor: Colors.blue,
+                                backgroundColor: const Color(0xFF1E3A8A),
                                 
                               ),
                               onPressed: () {_login();},
@@ -289,7 +290,7 @@ Future<void> _login() async {
                           },
                           child: const Text('Click here to Sign up',
                           style: TextStyle(
-                            color: Colors.blue
+                            color: Color(0xFF1E3A8A)
                           ),),
                         ),
                     ],

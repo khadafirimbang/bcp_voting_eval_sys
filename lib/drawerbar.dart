@@ -1,15 +1,37 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:for_testing/elect_pos/for_pres.dart';
 import 'package:for_testing/profile.dart';
 import 'package:for_testing/main.dart';
 import 'package:for_testing/vote.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});
 
+  @override
+  State<AppDrawer> createState() => _AppDrawerState();
+}
 
-    Future<void> _logout(BuildContext context) async {
+class _AppDrawerState extends State<AppDrawer> {
+  String? studentNo = "Name here"; // Default value
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStudentNo(); // Load the user's name when the drawer is initialized
+  }
+
+
+  Future<void> _loadStudentNo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      studentNo = prefs.getString('studentno') ?? 'Student No'; // Fetch student no
+    });
+  }
+
+  Future<void> _logout(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('studentno');
 
@@ -20,7 +42,7 @@ class AppDrawer extends StatelessWidget {
         context, MaterialPageRoute(builder: (context) => const LoginPage()));
   }
 
-    // Function to show logout confirmation dialog
+  // Function to show logout confirmation dialog
   Future<void> _showLogoutDialog(BuildContext context) async {
     return showDialog<void>(
       context: context,
@@ -52,51 +74,83 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      backgroundColor: const Color(0xFF1E3A8A), // Hex color #1E3A8A,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
-          const DrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.blue,
+          DrawerHeader(
+            decoration: const BoxDecoration(
+              color: Color(0xFF1E3A8A), // Hex color #1E3A8A
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Icon(Icons.account_circle, size: 80, color: Colors.white),
-                SizedBox(height: 16),
-                Text(
-                  'John Doe',
-                  style: TextStyle(color: Colors.white, fontSize: 24),
-                ),
+                const Icon(Icons.account_circle, size: 90, color: Colors.white),
+                const SizedBox(height: 10),
+                Text(studentNo ?? 'Student No', style: const TextStyle(color: Colors.white, fontSize: 18)),
               ],
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Profile'),
+            leading: const Icon(Icons.person, color: Colors.white,),
+            title: const Text('Profile', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileInfo()));
             },
           ),
+          ExpansionTile(
+            leading: const Icon(Icons.contact_emergency_sharp, color: Colors.white,),
+            title: const Text('Vote', style: TextStyle(color: Colors.white)),
+            childrenPadding: const EdgeInsets.only(left: 37),
+            children: [
+              ListTile(
+                title: const Text('President', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForPres()));
+                },
+              ),
+              ListTile(
+                title: const Text('Vice President', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForPres()));
+                },
+              ),
+              ListTile(
+                title: const Text('Secretary', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForPres()));
+                },
+              ),
+              ListTile(
+                title: const Text('Treasurer', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForPres()));
+                },
+              ),
+              ListTile(
+                title: const Text('Auditor', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForPres()));
+                },
+              ),
+            ],
+          ),
           ListTile(
-            leading: const Icon(Icons.contact_emergency_sharp),
-            title: const Text('Vote'),
+            leading: const Icon(Icons.question_answer, color: Colors.white,),
+            title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => VotePage()));
             },
           ),
           ListTile(
-            leading: const Icon(Icons.question_answer),
-            title: const Text('Evaluation'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
+            leading: const Icon(Icons.logout, color: Colors.white,),
+            title: const Text('Logout', style: TextStyle(color: Colors.white)),
             onTap: () {
               _showLogoutDialog(context);
             },

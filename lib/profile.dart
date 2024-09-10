@@ -94,8 +94,6 @@ class _ProfileInfoState extends State<ProfileInfo> {
   String? errorMessage;
   String? accountStatus;
 
-  bool _obscureText = true;
-  bool _obscureText2 = true;
 
     @override
   void initState() {
@@ -103,16 +101,6 @@ class _ProfileInfoState extends State<ProfileInfo> {
     _fetchUserData();
   }
 
-  void _togglePasswordVisibility() {
-    setState(() {
-      _obscureText = !_obscureText;
-    });
-  }
-  void _togglePasswordVisibility2() {
-    setState(() {
-      _obscureText2 = !_obscureText2;
-    });
-  }
 
   // Fetch Profile Info
   Future<void> _fetchUserData() async {
@@ -243,7 +231,7 @@ void _submitForm() {
     return Scaffold(
       // appBar: AppBar(title: const Text('Sign Up')),
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color(0xFF1E3A8A),
         title: const Text('Profile Information',  style: TextStyle(color: Colors.white)),
           iconTheme: const IconThemeData(
             color: Colors.white, // Change the color of the Drawer icon here
