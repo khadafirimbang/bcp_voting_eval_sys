@@ -1,6 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:for_testing/elect_pos/for_audi.dart';
 import 'package:for_testing/elect_pos/for_pres.dart';
+import 'package:for_testing/elect_pos/for_sec.dart';
+import 'package:for_testing/elect_pos/for_treasurer.dart';
+import 'package:for_testing/elect_pos/for_vicepres.dart';
 import 'package:for_testing/profile.dart';
 import 'package:for_testing/main.dart';
 import 'package:for_testing/vote.dart';
@@ -115,28 +119,28 @@ class _AppDrawerState extends State<AppDrawer> {
                 title: const Text('Vice President', style: TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForPres()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForVicePres()));
                 },
               ),
               ListTile(
                 title: const Text('Secretary', style: TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForPres()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForSecretary()));
                 },
               ),
               ListTile(
                 title: const Text('Treasurer', style: TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForPres()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForTreasurer()));
                 },
               ),
               ListTile(
                 title: const Text('Auditor', style: TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForPres()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForAuditor()));
                 },
               ),
             ],

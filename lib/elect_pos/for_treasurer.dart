@@ -5,14 +5,14 @@ import 'package:for_testing/drawerbar.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; // For getting logged-in student's number
 
-class ForPres extends StatefulWidget {
-  const ForPres({super.key});
+class ForTreasurer extends StatefulWidget {
+  const ForTreasurer({super.key});
 
   @override
-  State<ForPres> createState() => _ForPresState();
+  State<ForTreasurer> createState() => _ForTreasurerState();
 }
 
-class _ForPresState extends State<ForPres> {
+class _ForTreasurerState extends State<ForTreasurer> {
   List candidates = [];
   String? studentnoLoggedIn;
 
@@ -31,7 +31,7 @@ class _ForPresState extends State<ForPres> {
   }
 
   Future<void> _fetchCandidates() async {
-    var url = Uri.parse('http://192.168.1.2/for_testing/fetch_candidates_pres.php');
+    var url = Uri.parse('http://192.168.1.2/for_testing/fetch_candidates_trea.php');
     var response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -128,7 +128,7 @@ class _ForPresState extends State<ForPres> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E3A8A),
-        title: const Text('For President', style: TextStyle(color: Colors.white)),
+        title: const Text('For Treasurer', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       drawer: const AppDrawer(),
@@ -233,7 +233,7 @@ class _ForPresState extends State<ForPres> {
                                       padding: const EdgeInsets.all(12.0),
                                       backgroundColor: const Color(0xFF1E3A8A),
                                     ),
-                                    onPressed: () => _showConfirmationDialog(candidate['studentno'], 'president'),
+                                    onPressed: () => _showConfirmationDialog(candidate['studentno'], 'treasurer'),
                                     child: const Text(
                                       'Vote',
                                       style: TextStyle(
