@@ -9,6 +9,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +78,8 @@ class _WarningBoxState extends State<WarningBox> {
 
 // Profile 
 class ProfileInfo extends StatefulWidget {
+  const ProfileInfo({super.key});
+
   @override
   _ProfileInfoState createState() => _ProfileInfoState();
 }

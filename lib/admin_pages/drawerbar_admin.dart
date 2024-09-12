@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:for_testing/admin_pages/candidates.dart';
+import 'package:for_testing/admin_pages/dashboard.dart';
 import 'package:for_testing/elect_pos/for_audi.dart';
 import 'package:for_testing/elect_pos/for_pres.dart';
 import 'package:for_testing/elect_pos/for_sec.dart';
@@ -10,14 +12,14 @@ import 'package:for_testing/signin.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-class AppDrawer extends StatefulWidget {
-  const AppDrawer({super.key});
+class AppDrawerAdmin extends StatefulWidget {
+  const AppDrawerAdmin({super.key});
 
   @override
-  State<AppDrawer> createState() => _AppDrawerState();
+  State<AppDrawerAdmin> createState() => _AppDrawerState();
 }
 
-class _AppDrawerState extends State<AppDrawer> {
+class _AppDrawerState extends State<AppDrawerAdmin> {
   String? studentNo = "Name here"; // Default value
 
   @override
@@ -96,59 +98,18 @@ class _AppDrawerState extends State<AppDrawer> {
           ),
           ListTile(
             leading: const Icon(Icons.person, color: Colors.white,),
-            title: const Text('Profile', style: TextStyle(color: Colors.white)),
+            title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileInfo()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => DashboardPage()));
             },
-          ),
-          ExpansionTile(
-            leading: const Icon(Icons.contact_emergency_sharp, color: Colors.white,),
-            title: const Text('Vote', style: TextStyle(color: Colors.white)),
-            childrenPadding: const EdgeInsets.only(left: 37),
-            children: [
-              ListTile(
-                title: const Text('President', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForPres()));
-                },
-              ),
-              ListTile(
-                title: const Text('Vice President', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForVicePres()));
-                },
-              ),
-              ListTile(
-                title: const Text('Secretary', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForSecretary()));
-                },
-              ),
-              ListTile(
-                title: const Text('Treasurer', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForTreasurer()));
-                },
-              ),
-              ListTile(
-                title: const Text('Auditor', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForAuditor()));
-                },
-              ),
-            ],
           ),
           ListTile(
             leading: const Icon(Icons.question_answer, color: Colors.white,),
-            title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
+            title: const Text('Candidates', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => CandidatesPage()));
             },
           ),
           ListTile(

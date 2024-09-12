@@ -123,7 +123,7 @@ class _ForPresState extends State<ForPres> {
         ? 350 // Desktop, larger screens
         : MediaQuery.of(context).size.width > 800
             ? 380 // Tablet size
-            : 340; // Mobile screens
+            : 360; // Mobile screens
 
     return Scaffold(
       appBar: AppBar(
@@ -222,7 +222,7 @@ class _ForPresState extends State<ForPres> {
                               ),
                               // Vote button
                               Padding(
-                                padding: const EdgeInsets.all(10.0),
+                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
                                 child: SizedBox(
                                   width: 100,
                                   child: TextButton(
@@ -230,7 +230,7 @@ class _ForPresState extends State<ForPres> {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(5),
                                       ),
-                                      padding: const EdgeInsets.all(12.0),
+                                      padding: const EdgeInsets.all(10.0),
                                       backgroundColor: const Color(0xFF1E3A8A),
                                     ),
                                     onPressed: () => _showConfirmationDialog(candidate['studentno'], 'president'),

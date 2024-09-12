@@ -8,6 +8,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -17,6 +19,8 @@ class MyApp extends StatelessWidget {
 }
 
 class VotePage extends StatelessWidget {
+  const VotePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -27,13 +31,13 @@ class VotePage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.blue,
-          title: Text('Vote Page', style: TextStyle(color: Colors.white),),
-          iconTheme: IconThemeData(
+          title: const Text('Vote Page', style: TextStyle(color: Colors.white),),
+          iconTheme: const IconThemeData(
             color: Colors.white, // Change the color of the Drawer icon here
           ),
         ),
-        drawer: AppDrawer(),
-        body: Center(
+        drawer: const AppDrawer(),
+        body: const Center(
           child: Text('Vote Page.'),
         ),
       ),

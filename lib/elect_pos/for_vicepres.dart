@@ -120,7 +120,7 @@ class _ForVicePresState extends State<ForVicePres> {
         ? 350 // Desktop, larger screens
         : MediaQuery.of(context).size.width > 800
             ? 380 // Tablet size
-            : 340; // Mobile screens
+            : 360; // Mobile screens
 
     return Scaffold(
       appBar: AppBar(
@@ -219,7 +219,7 @@ class _ForVicePresState extends State<ForVicePres> {
                               ),
                               // Vote button
                               Padding(
-                                padding: const EdgeInsets.all(10.0),
+                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
                                 child: SizedBox(
                                   width: 100,
                                   child: TextButton(
