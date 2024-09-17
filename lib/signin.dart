@@ -19,7 +19,7 @@ class LoginPage extends StatelessWidget {
         // Exit the app when the back button is pressed
         return exit(0);
       },
-      child: Scaffold(
+      child: const Scaffold(
         body: LoginWidget()
       ),
     );

@@ -1,11 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
 import 'package:for_testing/profile.dart';
 import 'package:for_testing/signin.dart';
-import 'package:for_testing/signup.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
@@ -19,6 +16,7 @@ class LoadingScreen extends StatelessWidget {
     return const MaterialApp(
       title: 'BCP',
       home: LoadingScreenWidget(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

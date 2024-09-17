@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/candidates.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
+import 'package:for_testing/admin_pages/evaluation.dart';
 import 'package:for_testing/elect_pos/for_audi.dart';
 import 'package:for_testing/elect_pos/for_pres.dart';
 import 'package:for_testing/elect_pos/for_sec.dart';
@@ -101,7 +102,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => DashboardPage()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const DashboardPage()));
             },
           ),
           ListTile(
@@ -109,7 +110,15 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             title: const Text('Candidates', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => CandidatesPage()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const CandidatesPage()));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.question_answer, color: Colors.white,),
+            title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const EvaluationPage()));
             },
           ),
           ListTile(
