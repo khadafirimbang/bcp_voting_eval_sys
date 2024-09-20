@@ -31,7 +31,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
   }
 
   Future<void> fetchEvaluations() async {
-    final response = await http.get(Uri.parse('http://192.168.1.2/for_testing/get_evaluations.php'));
+    final response = await http.get(Uri.parse('http://192.168.1.6/for_testing/get_evaluations.php'));
     if (response.statusCode == 200) {
       setState(() {
         evaluations = List<Map<String, dynamic>>.from(
@@ -61,7 +61,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
   Future<void> addEvaluations() async {
     for (var eval in newEvaluations) {
       final response = await http.post(
-        Uri.parse('http://192.168.1.2/for_testing/add_evaluation.php'),
+        Uri.parse('http://192.168.1.6/for_testing/add_evaluation.php'),
         body: {
           'question': eval['question'],
           'type': eval['type'],
@@ -79,7 +79,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
 
   Future<void> updateEvaluation(int id, String question, String type) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.2/for_testing/update_evaluation.php'),
+      Uri.parse('http://192.168.1.6/for_testing/update_evaluation.php'),
       body: {
         'id': id.toString(),
         'question': question,
@@ -119,7 +119,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
 
   Future<void> deleteEvaluation(int id) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.2/for_testing/delete_evaluation.php'),
+      Uri.parse('http://192.168.1.6/for_testing/delete_evaluation.php'),
       body: {
         'id': id.toString(),
       },

@@ -4,8 +4,8 @@ import 'package:for_testing/elect_pos/for_pres.dart';
 import 'package:for_testing/elect_pos/for_sec.dart';
 import 'package:for_testing/elect_pos/for_treasurer.dart';
 import 'package:for_testing/elect_pos/for_vicepres.dart';
-import 'package:for_testing/profile.dart';
-import 'package:for_testing/main.dart';
+import 'package:for_testing/voter_pages/evaluation.dart';
+import 'package:for_testing/voter_pages/profile.dart';
 import 'package:for_testing/signin.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -39,7 +39,7 @@ class _AppDrawerState extends State<AppDrawer> {
     await prefs.remove('studentno');
 
     // Optionally call your server to end the session
-    await http.post(Uri.parse('http://192.168.1.2/for_testing/logout.php'));
+    await http.post(Uri.parse('http://192.168.1.6/for_testing/logout.php'));
 
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => const LoginPage()));
@@ -149,6 +149,7 @@ class _AppDrawerState extends State<AppDrawer> {
             title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const EvaluationPage()));
             },
           ),
           ListTile(

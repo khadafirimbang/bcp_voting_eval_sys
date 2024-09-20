@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:for_testing/drawerbar.dart';
+import 'package:for_testing/voter_pages/drawerbar.dart';
 import 'package:for_testing/main.dart';
-import 'package:for_testing/vote.dart';
+import 'package:for_testing/voter_pages/vote.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -112,7 +112,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
     String? studentno = prefs.getString('studentno');
 
     if (studentno != null) {
-      var url = Uri.parse('http://192.168.1.2/for_testing/fetch_user_info.php');
+      var url = Uri.parse('http://192.168.1.6/for_testing/fetch_user_info.php');
       var response = await http.post(url, body: {'studentno': studentno});
 
       var data = json.decode(response.body);
@@ -153,7 +153,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
   }
 
   // The URL of your PHP script
-  var url = Uri.parse('http://192.168.1.2/for_testing/update_profile.php');
+  var url = Uri.parse('http://192.168.1.6/for_testing/update_profile.php');
 
   // Make the POST request to the server with the updated data
   var response = await http.post(
@@ -359,7 +359,9 @@ void _submitForm() {
                         width: 340,
                         child: TextButton(
                               style: TextButton.styleFrom(
-                                shape: const RoundedRectangleBorder(),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)
+                                ),
                                 padding: const EdgeInsets.all(14.0),
                                 backgroundColor: Colors.green,
                                 

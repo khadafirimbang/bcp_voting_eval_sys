@@ -183,7 +183,9 @@ class _SignUpPageState extends State<SignUpPage> {
                         width: 340,
                         child: TextButton(
                               style: TextButton.styleFrom(
-                                shape: const RoundedRectangleBorder(),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)
+                                ),
                                 padding: const EdgeInsets.all(14.0),
                                 backgroundColor: const Color(0xFF1E3A8A),
                                 

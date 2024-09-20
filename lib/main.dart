@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
-import 'package:for_testing/profile.dart';
+import 'package:for_testing/voter_pages/profile.dart';
 import 'package:for_testing/signin.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';

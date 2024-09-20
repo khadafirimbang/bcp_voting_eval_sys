@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
-import 'package:for_testing/profile.dart';
+import 'package:for_testing/voter_pages/profile.dart';
 import 'package:for_testing/signup.dart';
 import 'package:http/http.dart' as http;
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
@@ -114,7 +114,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
 Future<void> _login() async {
   if (_formKey.currentState!.validate()) {
     final response = await http.post(
-      Uri.parse('http://192.168.1.2/for_testing/signin.php'),
+      Uri.parse('http://192.168.1.6/for_testing/signin.php'),
       body: {
         'studentno': _studentNoController.text,
         'password': _passwordController.text, // Sending plain text password to be verified
@@ -229,7 +229,9 @@ Future<void> _login() async {
                         width: 340,
                         child: TextButton(
                               style: TextButton.styleFrom(
-                                shape: const RoundedRectangleBorder(),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)
+                                ),
                                 padding: const EdgeInsets.all(14.0),
                                 backgroundColor: const Color(0xFF1E3A8A),
                                 

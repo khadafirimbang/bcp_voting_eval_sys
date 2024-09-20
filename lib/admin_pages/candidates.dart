@@ -40,7 +40,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
   }
 
   Future<void> _fetchCandidates() async {
-    final url = Uri.parse('http://192.168.1.2/for_testing/fetch_all_candidates.php');
+    final url = Uri.parse('http://192.168.1.6/for_testing/fetch_all_candidates.php');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -77,7 +77,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
 
 
   Future<void> _deleteCandidate(String studentNo) async {
-    final url = Uri.parse('http://192.168.1.2/for_testing/delete_candidate.php');
+    final url = Uri.parse('http://192.168.1.6/for_testing/delete_candidate.php');
     final response = await http.post(url, body: {'studentno': studentNo});
 
     if (response.statusCode == 200) {
@@ -120,7 +120,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
   }
 
   Future<void> _addCandidate(Map<String, String> candidateData) async {
-    final url = Uri.parse('http://192.168.1.2/for_testing/add_candidate.php');
+    final url = Uri.parse('http://192.168.1.6/for_testing/add_candidate.php');
     final response = await http.post(url, body: candidateData);
 
     final responseData = json.decode(response.body);
@@ -449,7 +449,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
   }
 
   Future<void> _updateCandidate(Map<String, String> candidateData) async {
-    final url = Uri.parse('http://192.168.1.2/for_testing/update_candidate.php');
+    final url = Uri.parse('http://192.168.1.6/for_testing/update_candidate.php');
     final response = await http.post(url, body: candidateData);
 
     final responseData = json.decode(response.body);

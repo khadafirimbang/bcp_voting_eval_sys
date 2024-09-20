@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:for_testing/drawerbar.dart';
+import 'package:for_testing/voter_pages/drawerbar.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; // For getting logged-in student's number
 
@@ -31,12 +31,15 @@ class _ForSecretaryState extends State<ForSecretary> {
   }
 
   Future<void> _fetchCandidates() async {
-    var url = Uri.parse('http://192.168.1.2/for_testing/fetch_candidates_sec.php');
+    var url = Uri.parse('http://192.168.1.6/for_testing/fetch_all_candidates.php');
     var response = await http.get(url);
 
     if (response.statusCode == 200) {
       setState(() {
-        candidates = json.decode(response.body);
+        // Filter candidates where position is "President"
+        candidates = (json.decode(response.body) as List)
+            .where((candidate) => candidate['position'] == 'Secretary')
+            .toList();
       });
     } else {
       print('Failed to fetch candidates');
@@ -47,7 +50,7 @@ class _ForSecretaryState extends State<ForSecretary> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? loggedInStudentno = prefs.getString('studentno');
 
-    var url = Uri.parse('http://192.168.1.2/for_testing/vote_candidate.php');
+    var url = Uri.parse('http://192.168.1.6/for_testing/vote_candidate.php');
     var response = await http.post(url, body: {
       'studentno': studentno,
       'loggedInStudentno': loggedInStudentno ?? '',
@@ -141,9 +144,9 @@ class _ForSecretaryState extends State<ForSecretary> {
                       ? 5
                       : constraints.maxWidth > 800
                           ? 3
-                      : constraints.maxWidth > 700
-                          ? 2
-                          : 1;
+                          : constraints.maxWidth > 700
+                              ? 2
+                              : 1;
 
                   return Align(
                     alignment: Alignment.topCenter,
@@ -159,9 +162,12 @@ class _ForSecretaryState extends State<ForSecretary> {
                       itemBuilder: (context, index) {
                         var candidate = candidates[index];
 
-                        // Decode base64 image data
+                        // Decode base64 image data if available, else display icon
                         String base64Image = candidate['pic'] ?? '';
-                        Uint8List imageBytes = base64Decode(base64Image);
+                        Uint8List? imageBytes;
+                        if (base64Image.isNotEmpty) {
+                          imageBytes = base64Decode(base64Image);
+                        }
 
                         String firstName = candidate['firstname'] ?? '';
                         String middleName = candidate['middlename'] ?? '';
@@ -178,17 +184,28 @@ class _ForSecretaryState extends State<ForSecretary> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    // Candidate's picture
+                                    // Candidate's picture or default icon
                                     Container(
                                       width: 155,
                                       height: 155,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        image: DecorationImage(
-                                          image: MemoryImage(imageBytes),
-                                          fit: BoxFit.cover,
-                                        ),
+                                        color: Colors.grey.shade200,
                                       ),
+                                      child: imageBytes != null
+                                          ? ClipOval(
+                                              child: Image.memory(
+                                                imageBytes,
+                                                fit: BoxFit.cover,
+                                                width: 155,
+                                                height: 155,
+                                              ),
+                                            )
+                                          : const Icon(
+                                              Icons.person,
+                                              size: 100,
+                                              color: Colors.grey,
+                                            ),
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
@@ -230,10 +247,10 @@ class _ForSecretaryState extends State<ForSecretary> {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(5),
                                       ),
-                                      padding: const EdgeInsets.all(12.0),
+                                      padding: const EdgeInsets.all(10.0),
                                       backgroundColor: const Color(0xFF1E3A8A),
                                     ),
-                                    onPressed: () => _showConfirmationDialog(candidate['studentno'], 'secretary'),
+                                    onPressed: () => _showConfirmationDialog(candidate['studentno'], 'president'),
                                     child: const Text(
                                       'Vote',
                                       style: TextStyle(
