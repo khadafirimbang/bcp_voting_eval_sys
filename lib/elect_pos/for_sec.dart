@@ -250,7 +250,7 @@ class _ForSecretaryState extends State<ForSecretary> {
                                       padding: const EdgeInsets.all(10.0),
                                       backgroundColor: const Color(0xFF1E3A8A),
                                     ),
-                                    onPressed: () => _showConfirmationDialog(candidate['studentno'], 'president'),
+                                    onPressed: () => _showConfirmationDialog(candidate['studentno'], 'secretary'),
                                     child: const Text(
                                       'Vote',
                                       style: TextStyle(

@@ -131,7 +131,7 @@ class _ForVicePresState extends State<ForVicePres> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E3A8A),
-        title: const Text('For Vice Price', style: TextStyle(color: Colors.white)),
+        title: const Text('For Vice President', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       drawer: const AppDrawer(),
@@ -250,7 +250,7 @@ class _ForVicePresState extends State<ForVicePres> {
                                       padding: const EdgeInsets.all(10.0),
                                       backgroundColor: const Color(0xFF1E3A8A),
                                     ),
-                                    onPressed: () => _showConfirmationDialog(candidate['studentno'], 'president'),
+                                    onPressed: () => _showConfirmationDialog(candidate['studentno'], 'vice president'),
                                     child: const Text(
                                       'Vote',
                                       style: TextStyle(

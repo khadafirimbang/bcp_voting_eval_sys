@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/candidates.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
-import 'package:for_testing/admin_pages/evaluation.dart';
+import 'package:for_testing/admin_pages/election_sched.dart';
+import 'package:for_testing/admin_pages/evaluation_admin.dart';
 import 'package:for_testing/elect_pos/for_audi.dart';
 import 'package:for_testing/elect_pos/for_pres.dart';
 import 'package:for_testing/elect_pos/for_sec.dart';
@@ -119,6 +120,14 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => const EvaluationPage()));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.date_range, color: Colors.white,),
+            title: const Text('Election Schedules', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionScheduler()));
             },
           ),
           ListTile(

@@ -92,8 +92,8 @@ class _EvaluationPageState extends State<EvaluationPage> {
       if (responseData['success']) {
         fetchEvaluations();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Updated Successfully!'),
+          const SnackBar(
+            content: Text('Updated Successfully!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -109,8 +109,8 @@ class _EvaluationPageState extends State<EvaluationPage> {
     } else {
       print('Failed to update evaluation: ${response.statusCode}');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Failed to update evaluation.'),
+        const SnackBar(
+          content: Text('Failed to update evaluation.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -128,16 +128,16 @@ class _EvaluationPageState extends State<EvaluationPage> {
     if (response.statusCode == 200) {
       fetchEvaluations();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Deleted successfully!'),
+        const SnackBar(
+          content: Text('Deleted successfully!'),
           backgroundColor: Colors.green,
         ),
       );
     } else {
       print('Failed to delete evaluation: ${response.statusCode}');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Failed to delete evaluation.'),
+        const SnackBar(
+          content: Text('Failed to delete evaluation.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -250,6 +250,9 @@ class _EvaluationPageState extends State<EvaluationPage> {
               ),
               actions: [
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E3A8A), // Background color
+                  ),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       showDialog(
@@ -272,16 +275,16 @@ class _EvaluationPageState extends State<EvaluationPage> {
                                     Navigator.of(context).pop();
                                     Navigator.of(context).pop();
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text('Added Successfully!'),
+                                      const SnackBar(
+                                        content: Text('Added Successfully!'),
                                         backgroundColor: Colors.green,
                                       ),
                                     );
                                   } catch (e) {
                                     Navigator.of(context).pop();
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text('Failed to add.'),
+                                      const SnackBar(
+                                        content: Text('Failed to add.'),
                                         backgroundColor: Colors.red,
                                       ),
                                     );
@@ -296,7 +299,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                       );
                     }
                   },
-                  child: const Text('Add All'),
+                  child: const Text('Add All', style: TextStyle(color: Colors.white)),
                 ),
                 TextButton(
                   onPressed: () {
@@ -390,6 +393,9 @@ class _EvaluationPageState extends State<EvaluationPage> {
               ),
               actions: [
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E3A8A), // Background color
+                  ),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       showDialog(
@@ -419,7 +425,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                       );
                     }
                   },
-                  child: const Text('Update'),
+                  child: const Text('Update', style: TextStyle(color: Colors.white)),
                 ),
                 TextButton(
                   onPressed: () {
@@ -556,7 +562,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Color(0xFF1E3A8A),
+        backgroundColor: const Color(0xFF1E3A8A),
         onPressed: showAddEvaluationForm,
         child: const Icon(Icons.add, color: Colors.white,),
       ),

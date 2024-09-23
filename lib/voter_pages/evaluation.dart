@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EvaluationPage extends StatefulWidget {
-  const EvaluationPage({Key? key}) : super(key: key);
+  const EvaluationPage({super.key});
 
   @override
   _EvaluationPageState createState() => _EvaluationPageState();
@@ -17,6 +17,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
   Map<int, String> feedbackResponses = {};
   Map<int, String> surveyResponses = {};
   String? studentno;
+  bool _isSubmitted = false; // Track submission status
 
   @override
   void initState() {
@@ -60,6 +61,27 @@ class _EvaluationPageState extends State<EvaluationPage> {
     setState(() {
       studentno = prefs.getString('studentno');
     });
+    _checkSubmissionStatus(); // Check if already submitted
+  }
+
+  // Check submission status from backend
+  Future<void> _checkSubmissionStatus() async {
+    if (studentno == null) return;
+
+    var url = Uri.parse('http://192.168.1.6/for_testing/check_submission_status.php?studentno=$studentno');
+    var response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      var result = json.decode(response.body);
+      setState(() {
+        _isSubmitted = result['submitted'] == 1;
+      });
+    } else {
+      print('Failed to check submission status');
+      setState(() {
+        _isSubmitted = false; // Default to not submitted if query fails
+      });
+    }
   }
 
   @override
@@ -97,8 +119,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Card 1: Survey Questions
-                      Container(
+                      SizedBox(
                         width: cardWidth, // Set the width dynamically
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -106,11 +127,31 @@ class _EvaluationPageState extends State<EvaluationPage> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               const SizedBox(height: 20),
+                              if (_isSubmitted)
+                              Container(
+                                decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.green, width: 1),
+                                    ),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'You already answered the evaluation.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
                               // Rating scale with responsive design
                               Wrap(
                                 alignment: WrapAlignment.center,
                                 children: [
                                   Container(
+                                    width: 200,
                                     decoration: BoxDecoration(
                                       border: Border.all(color: Colors.black, width: 1),
                                     ),
@@ -120,6 +161,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                                     ),
                                   ),
                                   Container(
+                                    width: 200,
                                     decoration: BoxDecoration(
                                       border: Border.all(color: Colors.black, width: 1),
                                     ),
@@ -129,6 +171,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                                     ),
                                   ),
                                   Container(
+                                    width: 200,
                                     decoration: BoxDecoration(
                                       border: Border.all(color: Colors.black, width: 1),
                                     ),
@@ -138,6 +181,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                                     ),
                                   ),
                                   Container(
+                                    width: 200,
                                     decoration: BoxDecoration(
                                       border: Border.all(color: Colors.black, width: 1),
                                     ),
@@ -147,6 +191,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                                     ),
                                   ),
                                   Container(
+                                    width: 200,
                                     decoration: BoxDecoration(
                                       border: Border.all(color: Colors.black, width: 1),
                                     ),
@@ -179,14 +224,14 @@ class _EvaluationPageState extends State<EvaluationPage> {
                                         ListTile(
                                           title: Text(question['question']),
                                           trailing: DropdownButton<String>(
-                                            value: surveyResponses[question['id']],
+                                            value: _isSubmitted ? null : surveyResponses[question['id']],
                                             items: ['1', '2', '3', '4', '5'].map((String value) {
                                               return DropdownMenuItem<String>(
                                                 value: value,
                                                 child: Text(value),
                                               );
                                             }).toList(),
-                                            onChanged: (value) {
+                                            onChanged: _isSubmitted ? null : (value) {
                                               setState(() {
                                                 surveyResponses[question['id']] = value ?? '';
                                               });
@@ -207,8 +252,8 @@ class _EvaluationPageState extends State<EvaluationPage> {
                         
                       const SizedBox(height: 20),
                         
-                      // Card 2: Feedback Questions
-                      Container(
+                      // Feedback Questions
+                      SizedBox(
                         width: cardWidth, // Set the width dynamically
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -235,13 +280,14 @@ class _EvaluationPageState extends State<EvaluationPage> {
                                       title: Text(question['question']),
                                       subtitle: TextField(
                                         maxLines: 3,
-                                        onChanged: (value) {
+                                        onChanged: _isSubmitted ? null : (value) {
                                           feedbackResponses[question['id']] = value;
                                         },
                                         decoration: const InputDecoration(
                                           hintText: 'Enter your feedback (up to 3 sentences)',
                                           border: OutlineInputBorder(),
                                         ),
+                                        enabled: !_isSubmitted, // Disable field if submitted
                                       ),
                                     );
                                   },
@@ -265,7 +311,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                                 padding: const EdgeInsets.all(14.0),
                                 backgroundColor: const Color(0xFF1E3A8A),
                               ),
-                              onPressed: () {_submitEvaluation();},
+                              onPressed: _isSubmitted ? null : _submitEvaluation,
                               child: const Text('Submit', 
                               style: TextStyle(
                                 fontSize: 16,
@@ -310,18 +356,25 @@ class _EvaluationPageState extends State<EvaluationPage> {
       }),
     );
 
-    // Show Snackbar based on response status
-    final snackBar = SnackBar(
-      content: Text(
-        response.statusCode == 200
-            ? 'Successfully submitted!'
-            : 'Failed to submit!',
-      ),
-      backgroundColor: response.statusCode == 200
-          ? Colors.green
-          : Colors.red,
-    );
+    if (response.statusCode == 200) {
+      // Set the submission status to true
+      setState(() {
+        _isSubmitted = true;
+      });
 
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      // Show success Snackbar
+      final snackBar = const SnackBar(
+        content: Text('Successfully submitted!'),
+        backgroundColor: Colors.green,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      // Show failure Snackbar
+      final snackBar = const SnackBar(
+        content: Text('Failed to submit!'),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
 }

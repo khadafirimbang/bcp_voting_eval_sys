@@ -250,7 +250,7 @@ class _ForAuditorState extends State<ForAuditor> {
                                       padding: const EdgeInsets.all(10.0),
                                       backgroundColor: const Color(0xFF1E3A8A),
                                     ),
-                                    onPressed: () => _showConfirmationDialog(candidate['studentno'], 'president'),
+                                    onPressed: () => _showConfirmationDialog(candidate['studentno'], 'auditor'),
                                     child: const Text(
                                       'Vote',
                                       style: TextStyle(

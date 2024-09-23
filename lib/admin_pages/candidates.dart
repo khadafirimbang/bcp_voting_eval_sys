@@ -265,13 +265,10 @@ class _CandidatesPageState extends State<CandidatesPage> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E3A8A), // Background color
+              ),
               onPressed: () {
                 if (formKey.currentState?.validate() ?? false) {
                   final candidateData = {
@@ -288,7 +285,13 @@ class _CandidatesPageState extends State<CandidatesPage> {
                   _addCandidate(candidateData);
                 }
               },
-              child: const Text('Add'),
+              child: const Text('Add', style: TextStyle(color: Colors.white)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
             ),
           ],
         );
@@ -417,13 +420,10 @@ class _CandidatesPageState extends State<CandidatesPage> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E3A8A), // Background color
+              ),
               onPressed: () {
                 if (formKey.currentState?.validate() ?? false) {
                   final candidateData = {
@@ -440,7 +440,13 @@ class _CandidatesPageState extends State<CandidatesPage> {
                   _updateCandidate(candidateData);
                 }
               },
-              child: const Text('Update'),
+              child: const Text('Update', style: TextStyle(color: Colors.white)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
             ),
           ],
         );
@@ -542,7 +548,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
                 return Container(
                   color: isEvenRow ? Colors.grey[300] : Colors.grey[200],
                   child: ListTile(
-                    title: Text('${candidate['lastname']}, ${candidate['firstname']}'),
+                    title: Text('${candidate['lastname']}, ${candidate['firstname']} ${candidate['middlename']}'),
                     subtitle: Text('Student No: ${candidate['studentno']} - Position: ${candidate['position']}'),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -565,8 +571,9 @@ class _CandidatesPageState extends State<CandidatesPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF1E3A8A),
         onPressed: _showAddCandidateForm,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white,),
       ),
     );
   }
