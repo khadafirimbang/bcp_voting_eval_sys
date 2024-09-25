@@ -15,6 +15,7 @@ class ForTreasurer extends StatefulWidget {
 class _ForTreasurerState extends State<ForTreasurer> {
   List candidates = [];
   String? studentnoLoggedIn;
+  String statusMessage = 'Loading...';
 
   @override
   void initState() {
@@ -31,18 +32,49 @@ class _ForTreasurerState extends State<ForTreasurer> {
   }
 
   Future<void> _fetchCandidates() async {
-    var url = Uri.parse('http://192.168.1.6/for_testing/fetch_all_candidates.php');
+    var url = Uri.parse('http://192.168.1.6/for_testing/fetch_all_candidates_user.php');
     var response = await http.get(url);
 
-    if (response.statusCode == 200) {
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}'); // Debugging line
+
+    try {
+      var data = json.decode(response.body);
+      print('Decoded data: $data'); // Debugging line
+
+      if (response.statusCode == 200) {
+        setState(() {
+          if (data['status'] == 'ongoing') {
+            if ((data['candidates'] as List).isNotEmpty) {
+              candidates = (data['candidates'] as List)
+                  .where((candidate) => candidate['position'] == 'Treasurer')
+                  .toList();
+              statusMessage = ''; // Clear status message if candidates are available
+            } else {
+              candidates = [];
+              statusMessage = 'No Candidates!';
+            }
+          } else if (data['status'] == 'ended') {
+            candidates = [];
+            statusMessage = 'Election Ended!';
+          } else {
+            candidates = [];
+            statusMessage = 'Error fetching candidates.';
+          }
+        });
+      } else {
+        print('Failed to fetch candidates: ${response.statusCode}');
+        setState(() {
+          candidates = [];
+          statusMessage = 'Error fetching candidates.';
+        });
+      }
+    } catch (e) {
+      print('Error decoding response: $e');
       setState(() {
-        // Filter candidates where position is "President"
-        candidates = (json.decode(response.body) as List)
-            .where((candidate) => candidate['position'] == 'Treasurer')
-            .toList();
+        candidates = [];
+        statusMessage = 'Error decoding response.';
       });
-    } else {
-      print('Failed to fetch candidates');
     }
   }
 
@@ -137,8 +169,14 @@ class _ForTreasurerState extends State<ForTreasurer> {
       drawer: const AppDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
-        child: candidates.isNotEmpty
-            ? LayoutBuilder(
+        child: candidates.isEmpty
+            ? Center(
+                child: Text(
+                  statusMessage,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              )
+            : LayoutBuilder(
                 builder: (context, constraints) {
                   int columns = constraints.maxWidth > 1200
                       ? 5
@@ -269,9 +307,13 @@ class _ForTreasurerState extends State<ForTreasurer> {
                     ),
                   );
                 },
-              )
-            : const Center(child: CircularProgressIndicator()),
+              ),
       ),
     );
+  }
+
+  // Helper method to get the status message
+  String _getStatusMessage() {
+    return statusMessage.isEmpty ? 'No Candidates!' : statusMessage;
   }
 }

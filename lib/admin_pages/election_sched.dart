@@ -95,7 +95,7 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Confirm'),
-        content: Text('Are you sure you want to proceed?'),
+        content: Text('Are you sure you want to end the Election?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -200,7 +200,7 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
                     onPressed: () => _editSchedule(schedule),
                   ),
                   IconButton(
-                    icon: Icon(Icons.delete),
+                    icon: Icon(Icons.stop_sharp),
                     onPressed: () => _deleteSchedule(schedule.id),
                   ),
                 ],

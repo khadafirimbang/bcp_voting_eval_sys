@@ -545,25 +545,27 @@ class _CandidatesPageState extends State<CandidatesPage> {
               itemBuilder: (context, index) {
                 final candidate = filteredCandidates[index];
                 final isEvenRow = index % 2 == 0;
-                return Container(
-                  color: isEvenRow ? Colors.grey[300] : Colors.grey[200],
-                  child: ListTile(
-                    title: Text('${candidate['lastname']}, ${candidate['firstname']} ${candidate['middlename']}'),
-                    subtitle: Text('Student No: ${candidate['studentno']} - Position: ${candidate['position']}'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () => _showUpdateForm(candidate),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => _showDeleteConfirmation(candidate['studentno']),
-                        ),
-                      ],
+                return Column(
+                  children: [
+                    Divider(),
+                    ListTile(
+                      title: Text('${candidate['lastname']}, ${candidate['firstname']} ${candidate['middlename']}'),
+                      subtitle: Text('Student No: ${candidate['studentno']} - Position: ${candidate['position']}'),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () => _showUpdateForm(candidate),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => _showDeleteConfirmation(candidate['studentno']),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 );
               },
             ),
