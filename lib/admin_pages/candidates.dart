@@ -1,7 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'dart:html' as html;
 
 class CandidatesPage extends StatefulWidget {
   const CandidatesPage({super.key});
@@ -31,6 +35,9 @@ class _CandidatesPageState extends State<CandidatesPage> {
   ];
   String? selectedPosition;
   bool _isSearchVisible = false;
+  XFile? _image; // Use XFile to pick images
+  String? _uploadedImageUrl;
+  Uint8List? _imageBytes; // To hold image bytes for display
 
   @override
   void initState() {
@@ -38,6 +45,92 @@ class _CandidatesPageState extends State<CandidatesPage> {
     _fetchCandidates();
     _searchController.addListener(_filterCandidates);
   }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = pickedFile;
+        _readImageBytes(); // Read image bytes after picking the image
+      });
+    }
+  }
+
+  Future<void> _readImageBytes() async {
+    if (_image == null) return;
+
+    final reader = html.FileReader();
+    final completer = Completer<Uint8List>();
+
+    reader.onLoadEnd.listen((_) {
+      completer.complete(reader.result as Uint8List);
+    });
+
+    reader.readAsArrayBuffer(html.File([await _image!.readAsBytes()], _image!.name));
+    final fileBytes = await completer.future;
+
+    setState(() {
+      _imageBytes = fileBytes;
+    });
+  }
+
+  // Future<void> _uploadImage() async {
+  //   if (_imageBytes == null) return;
+
+  //   final url = Uri.parse('https://api.cloudinary.com/v1_1/dcmdta4rb/image/upload');
+  //   final request = http.MultipartRequest('POST', url)
+  //     ..fields['upload_preset'] = 'sjon389q'
+  //     ..files.add(http.MultipartFile.fromBytes('file', _imageBytes!, filename: _image!.name));
+
+  //   final response = await request.send();
+  //   if (response.statusCode == 200) {
+  //     final responseData = await http.Response.fromStream(response);
+  //     final data = json.decode(responseData.body);
+  //     setState(() {
+  //       _uploadedImageUrl = data['secure_url'];
+  //     });
+  //   } else {
+  //     print('Failed to upload image');
+  //   }
+  // }
+  Future<void> _uploadImage() async {
+  if (_image == null) return;
+
+  final url = Uri.parse('https://api.cloudinary.com/v1_1/dcmdta4rb/image/upload');
+  final request = http.MultipartRequest('POST', url);
+
+  // Add the upload preset (if you have one)
+  request.fields['upload_preset'] = 'sjon389q';
+
+  // Add image file to the request
+  // request.files.add(await http.MultipartFile.fromPath('file', _image!.path));
+  request.files.add(http.MultipartFile.fromBytes('file', _imageBytes!, filename: _image!.name));
+
+  // Send request
+  final response = await request.send();
+
+  if (response.statusCode == 200) {
+    final responseData = await response.stream.bytesToString();
+    final responseJson = json.decode(responseData);
+
+    if (responseJson['url'] != null) {
+      setState(() {
+        _uploadedImageUrl = responseJson['url'];
+      });
+    } else {
+      // Handle error from Cloudinary
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Image upload failed'), backgroundColor: Colors.red),
+      );
+    }
+  } else {
+    // Handle the HTTP error
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to upload image'), backgroundColor: Colors.red),
+    );
+  }
+}
+
 
   Future<void> _fetchCandidates() async {
     final url = Uri.parse('http://192.168.1.6/for_testing/fetch_all_candidates.php');
@@ -122,11 +215,14 @@ class _CandidatesPageState extends State<CandidatesPage> {
   Future<void> _addCandidate(Map<String, String> candidateData) async {
     final url = Uri.parse('http://192.168.1.6/for_testing/add_candidate.php');
     final response = await http.post(url, body: candidateData);
+    // Make sure the image is uploaded first
+    await _uploadImage();
 
     final responseData = json.decode(response.body);
 
     if (response.statusCode == 200) {
       if (responseData['status'] == 'success') {
+        print('url: $_uploadedImageUrl');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(responseData['message']), backgroundColor: Colors.green),
         );
@@ -144,7 +240,8 @@ class _CandidatesPageState extends State<CandidatesPage> {
     }
   }
 
-  void _showAddCandidateForm() {
+  void _showAddCandidateForm() async {
+    await _uploadImage();
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
     final TextEditingController studentnoController = TextEditingController();
     final TextEditingController lastnameController = TextEditingController();
@@ -259,6 +356,10 @@ class _CandidatesPageState extends State<CandidatesPage> {
                         return null;
                       },
                     ),
+                    ElevatedButton(
+                      onPressed: _pickImage,
+                      child: Text('Pick Image'),
+                    ),
                   ],
                 ),
               ),
@@ -269,8 +370,10 @@ class _CandidatesPageState extends State<CandidatesPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1E3A8A), // Background color
               ),
-              onPressed: () {
+              onPressed: () async {
+                await _uploadImage();
                 if (formKey.currentState?.validate() ?? false) {
+                  
                   final candidateData = {
                     'studentno': studentnoController.text,
                     'lastname': lastnameController.text,
@@ -280,9 +383,11 @@ class _CandidatesPageState extends State<CandidatesPage> {
                     'section': sectionController.text,
                     'slogan': sloganController.text,
                     'position': selectedPosition ?? '',
+                    'image_url': _uploadedImageUrl ?? '',
                   };
 
                   _addCandidate(candidateData);
+                  _uploadImage();
                 }
               },
               child: const Text('Add', style: TextStyle(color: Colors.white)),

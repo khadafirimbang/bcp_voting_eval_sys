@@ -41,9 +41,11 @@ class _AppDrawerState extends State<AppDrawer> {
     // Optionally call your server to end the session
     await http.post(Uri.parse('http://192.168.1.6/for_testing/logout.php'));
 
+    // Use pushReplacement to replace the current route
     Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => const LoginPage()));
+        context, MaterialPageRoute(builder: (context) => const LoginWidget()));
   }
+
 
   // Function to show logout confirmation dialog
   Future<void> _showLogoutDialog(BuildContext context) async {

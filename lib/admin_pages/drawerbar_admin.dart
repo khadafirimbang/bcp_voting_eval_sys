@@ -107,7 +107,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.question_answer, color: Colors.white,),
+            leading: const Icon(Icons.people, color: Colors.white,),
             title: const Text('Candidates', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);

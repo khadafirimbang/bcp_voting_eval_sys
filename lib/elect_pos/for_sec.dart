@@ -16,6 +16,7 @@ class _ForSecretaryState extends State<ForSecretary> {
   List candidates = [];
   String? studentnoLoggedIn;
   String statusMessage = 'Loading...';
+  String? imageURL;
 
   @override
   void initState() {
@@ -211,6 +212,7 @@ class _ForSecretaryState extends State<ForSecretary> {
                         String middleName = candidate['middlename'] ?? '';
                         String lastName = candidate['lastname'] ?? '';
                         String slogan = candidate['slogan'] ?? 'No slogan available';
+                        imageURL = candidate['image_url'] ?? '';
 
                         return Card(
                           elevation: 3,
@@ -230,13 +232,33 @@ class _ForSecretaryState extends State<ForSecretary> {
                                         shape: BoxShape.circle,
                                         color: Colors.grey.shade200,
                                       ),
-                                      child: imageBytes != null
+                                      child: imageURL != null && imageURL!.isNotEmpty
                                           ? ClipOval(
-                                              child: Image.memory(
-                                                imageBytes,
+                                              child: Image.network(
+                                                imageURL!,
                                                 fit: BoxFit.cover,
                                                 width: 155,
                                                 height: 155,
+                                                loadingBuilder: (context, child, loadingProgress) {
+                                                  if (loadingProgress == null) {
+                                                    return child;
+                                                  } else {
+                                                    return Center(
+                                                      child: CircularProgressIndicator(
+                                                        value: loadingProgress.expectedTotalBytes != null
+                                                            ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
+                                                            : null,
+                                                      ),
+                                                    );
+                                                  }
+                                                },
+                                                errorBuilder: (context, error, stackTrace) {
+                                                  return const Icon(
+                                                    Icons.error,
+                                                    size: 100,
+                                                    color: Colors.red,
+                                                  );
+                                                },
                                               ),
                                             )
                                           : const Icon(
