@@ -32,6 +32,7 @@ class LoadingScreenWidget extends StatefulWidget {
 class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
   bool isConnectedToInternet = false;
   StreamSubscription? _internetConnectionStreamSubscription;
+  static const Duration delayDuration = Duration(seconds: 1);
 
   @override
   void initState() {
@@ -39,23 +40,7 @@ class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
     _checkSession();
 
     _internetConnectionStreamSubscription = InternetConnection().onStatusChange.listen((event) {
-      switch (event) {
-        case InternetStatus.connected:
-          setState(() {
-            isConnectedToInternet = true;
-          });
-          break;
-        case InternetStatus.disconnected:
-          setState(() {
-            isConnectedToInternet = false;
-          });
-          break;
-        default:
-          setState(() {
-            isConnectedToInternet = false;
-          });
-          break;
-      }
+      _handleInternetStatus(event);
     });
 
     _checkInternetConnectionAndNavigate();
@@ -67,25 +52,12 @@ class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
     super.dispose();
   }
 
-  void _checkSession() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? studentNo = prefs.getString('studentno');
-    String? role = prefs.getString('role');
+  void _handleInternetStatus(InternetStatus status) {
+    setState(() {
+      isConnectedToInternet = status == InternetStatus.connected;
+    });
 
-    if (studentNo != null) {
-      if (role == 'student') {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage()));
-      } else if (role == 'admin') {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const DashboardPage()));
-      }
-    }
-  }
-
-  Future<void> _checkInternetConnectionAndNavigate() async {
-    // Wait for the initial status of internet connection
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (!isConnectedToInternet) {
+    if (!isConnectedToInternet && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please check your internet connection'),
@@ -94,31 +66,64 @@ class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
         ),
       );
     }
+  }
 
-    // Navigate to the LoginPage after a short delay to allow the snackbar to show
-    await Future.delayed(const Duration(seconds: 1));
+  void _checkSession() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? studentNo = prefs.getString('studentno');
+    String? role = prefs.getString('role');
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()), // Redirect to Login page
-    );
+    if (studentNo != null && mounted) {
+      _navigateToRoleBasedPage(role);
+    }
+  }
+
+  void _navigateToRoleBasedPage(String? role) {
+    if (role == 'student') {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage()));
+    } else if (role == 'admin') {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const DashboardPage()));
+    } else {
+      // Redirect to LoginPage if role is not recognized
+      _navigateToLoginPage();
+    }
+  }
+
+  Future<void> _checkInternetConnectionAndNavigate() async {
+    await Future.delayed(delayDuration);
+
+    if (mounted) {
+      if (!isConnectedToInternet) {
+        // SnackBar will be shown in _handleInternetStatus
+      }
+    }
+
+    await Future.delayed(delayDuration); // Delay before navigating to LoginPage
+    _navigateToLoginPage();
+  }
+
+  void _navigateToLoginPage() {
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()), // Redirect to Login page
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Column(
-            children: [
-              const SizedBox(height: 80),
-              Image.asset('assets/bcp_logo.png', width: 100),
-              const SizedBox(height: 200),
-              const CircularProgressIndicator(),
-            ],
-          ),
-        ],
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // const SizedBox(height: 80),
+            Image.asset('assets/bcp_logo.png', width: 100),
+            const SizedBox(height: 50),
+            const CircularProgressIndicator(),
+          ],
+        ),
       ),
     );
   }

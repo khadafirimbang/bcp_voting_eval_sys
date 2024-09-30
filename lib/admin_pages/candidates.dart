@@ -74,25 +74,6 @@ class _CandidatesPageState extends State<CandidatesPage> {
     });
   }
 
-  // Future<void> _uploadImage() async {
-  //   if (_imageBytes == null) return;
-
-  //   final url = Uri.parse('https://api.cloudinary.com/v1_1/dcmdta4rb/image/upload');
-  //   final request = http.MultipartRequest('POST', url)
-  //     ..fields['upload_preset'] = 'sjon389q'
-  //     ..files.add(http.MultipartFile.fromBytes('file', _imageBytes!, filename: _image!.name));
-
-  //   final response = await request.send();
-  //   if (response.statusCode == 200) {
-  //     final responseData = await http.Response.fromStream(response);
-  //     final data = json.decode(responseData.body);
-  //     setState(() {
-  //       _uploadedImageUrl = data['secure_url'];
-  //     });
-  //   } else {
-  //     print('Failed to upload image');
-  //   }
-  // }
   Future<void> _uploadImage() async {
   if (_image == null) return;
 
@@ -215,8 +196,11 @@ class _CandidatesPageState extends State<CandidatesPage> {
   Future<void> _addCandidate(Map<String, String> candidateData) async {
     final url = Uri.parse('http://192.168.1.6/for_testing/add_candidate.php');
     final response = await http.post(url, body: candidateData);
-    // Make sure the image is uploaded first
-    await _uploadImage();
+
+    // Upload the image only if not already uploaded
+    if (_uploadedImageUrl == null) {
+      await _uploadImage();
+    }
 
     final responseData = json.decode(response.body);
 
@@ -241,7 +225,6 @@ class _CandidatesPageState extends State<CandidatesPage> {
   }
 
   void _showAddCandidateForm() async {
-    await _uploadImage();
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
     final TextEditingController studentnoController = TextEditingController();
     final TextEditingController lastnameController = TextEditingController();
@@ -251,7 +234,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
     final TextEditingController sectionController = TextEditingController();
     final TextEditingController sloganController = TextEditingController();
     String? selectedPosition;
-
+    
     showDialog(
       context: context,
       builder: (context) {
@@ -371,9 +354,9 @@ class _CandidatesPageState extends State<CandidatesPage> {
                 backgroundColor: const Color(0xFF1E3A8A), // Background color
               ),
               onPressed: () async {
-                await _uploadImage();
                 if (formKey.currentState?.validate() ?? false) {
-                  
+                  await _uploadImage();
+
                   final candidateData = {
                     'studentno': studentnoController.text,
                     'lastname': lastnameController.text,
@@ -387,7 +370,6 @@ class _CandidatesPageState extends State<CandidatesPage> {
                   };
 
                   _addCandidate(candidateData);
-                  _uploadImage();
                 }
               },
               child: const Text('Add', style: TextStyle(color: Colors.white)),

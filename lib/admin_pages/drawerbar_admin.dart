@@ -3,11 +3,16 @@ import 'package:for_testing/admin_pages/candidates.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
 import 'package:for_testing/admin_pages/election_sched.dart';
 import 'package:for_testing/admin_pages/evaluation_admin.dart';
+import 'package:for_testing/results_pages/result_auditor.dart';
+import 'package:for_testing/results_pages/result_pres.dart';
 import 'package:for_testing/elect_pos/for_audi.dart';
 import 'package:for_testing/elect_pos/for_pres.dart';
 import 'package:for_testing/elect_pos/for_sec.dart';
 import 'package:for_testing/elect_pos/for_treasurer.dart';
 import 'package:for_testing/elect_pos/for_vicepres.dart';
+import 'package:for_testing/results_pages/result_sec.dart';
+import 'package:for_testing/results_pages/result_treasurer.dart';
+import 'package:for_testing/results_pages/result_vicepres.dart';
 import 'package:for_testing/voter_pages/profile.dart';
 import 'package:for_testing/main.dart';
 import 'package:for_testing/signin.dart';
@@ -99,7 +104,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.person, color: Colors.white,),
+            leading: const Icon(Icons.dashboard, color: Colors.white,),
             title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
@@ -129,6 +134,49 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionScheduler()));
             },
+          ),
+          ExpansionTile(
+            collapsedIconColor: Colors.white,
+            leading: const Icon(Icons.file_copy, color: Colors.white,),
+            title: const Text('Results', style: TextStyle(color: Colors.white)),
+            childrenPadding: const EdgeInsets.only(left: 37),
+            children: [
+              ListTile(
+                title: const Text('President', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultPres()));
+                },
+              ),
+              ListTile(
+                title: const Text('Vice President', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultVicePres()));
+                },
+              ),
+              ListTile(
+                title: const Text('Secretary', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultSecretary()));
+                },
+              ),
+              ListTile(
+                title: const Text('Treasurer', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultTreasurer()));
+                },
+              ),
+              ListTile(
+                title: const Text('Auditor', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAuditor()));
+                },
+              ),
+            ],
           ),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.white,),

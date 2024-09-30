@@ -36,12 +36,8 @@ class _ForVicePresState extends State<ForVicePres> {
     var url = Uri.parse('http://192.168.1.6/for_testing/fetch_all_candidates_user.php');
     var response = await http.get(url);
 
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}'); // Debugging line
-
     try {
       var data = json.decode(response.body);
-      print('Decoded data: $data'); // Debugging line
 
       if (response.statusCode == 200) {
         setState(() {

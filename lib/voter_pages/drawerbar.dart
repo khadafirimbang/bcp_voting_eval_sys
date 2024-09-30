@@ -4,6 +4,11 @@ import 'package:for_testing/elect_pos/for_pres.dart';
 import 'package:for_testing/elect_pos/for_sec.dart';
 import 'package:for_testing/elect_pos/for_treasurer.dart';
 import 'package:for_testing/elect_pos/for_vicepres.dart';
+import 'package:for_testing/results_pages/result_auditor.dart';
+import 'package:for_testing/results_pages/result_pres.dart';
+import 'package:for_testing/results_pages/result_sec.dart';
+import 'package:for_testing/results_pages/result_treasurer.dart';
+import 'package:for_testing/results_pages/result_vicepres.dart';
 import 'package:for_testing/voter_pages/evaluation.dart';
 import 'package:for_testing/voter_pages/profile.dart';
 import 'package:for_testing/signin.dart';
@@ -26,7 +31,6 @@ class _AppDrawerState extends State<AppDrawer> {
     _loadStudentNo(); // Load the user's name when the drawer is initialized
   }
 
-
   Future<void> _loadStudentNo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -41,11 +45,12 @@ class _AppDrawerState extends State<AppDrawer> {
     // Optionally call your server to end the session
     await http.post(Uri.parse('http://192.168.1.6/for_testing/logout.php'));
 
-    // Use pushReplacement to replace the current route
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => const LoginWidget()));
+    // Use pushAndRemoveUntil to clear the navigation stack
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const LoginWidget()),
+      (route) => false, // Remove all other routes
+    );
   }
-
 
   // Function to show logout confirmation dialog
   Future<void> _showLogoutDialog(BuildContext context) async {
@@ -105,6 +110,7 @@ class _AppDrawerState extends State<AppDrawer> {
             },
           ),
           ExpansionTile(
+            collapsedIconColor: Colors.white,
             leading: const Icon(Icons.contact_emergency_sharp, color: Colors.white,),
             title: const Text('Vote', style: TextStyle(color: Colors.white)),
             childrenPadding: const EdgeInsets.only(left: 37),
@@ -142,6 +148,49 @@ class _AppDrawerState extends State<AppDrawer> {
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const ForAuditor()));
+                },
+              ),
+            ],
+          ),
+          ExpansionTile(
+            collapsedIconColor: Colors.white,
+            leading: const Icon(Icons.file_copy, color: Colors.white,),
+            title: const Text('Results', style: TextStyle(color: Colors.white)),
+            childrenPadding: const EdgeInsets.only(left: 37),
+            children: [
+              ListTile(
+                title: const Text('President', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultPres()));
+                },
+              ),
+              ListTile(
+                title: const Text('Vice President', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultVicePres()));
+                },
+              ),
+              ListTile(
+                title: const Text('Secretary', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultSecretary()));
+                },
+              ),
+              ListTile(
+                title: const Text('Treasurer', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultTreasurer()));
+                },
+              ),
+              ListTile(
+                title: const Text('Auditor', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAuditor()));
                 },
               ),
             ],
