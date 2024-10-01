@@ -108,7 +108,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const DashboardPage()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => DashboardPage()));
             },
           ),
           ListTile(

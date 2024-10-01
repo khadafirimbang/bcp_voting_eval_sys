@@ -82,7 +82,7 @@ class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
     if (role == 'student') {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage()));
     } else if (role == 'admin') {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const DashboardPage()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DashboardPage()));
     } else {
       // Redirect to LoginPage if role is not recognized
       _navigateToLoginPage();

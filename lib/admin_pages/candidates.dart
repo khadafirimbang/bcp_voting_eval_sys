@@ -210,8 +210,8 @@ class _CandidatesPageState extends State<CandidatesPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(responseData['message']), backgroundColor: Colors.green),
         );
-        Navigator.pop(context);
         _fetchCandidates();
+        Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(responseData['message']), backgroundColor: Colors.red),

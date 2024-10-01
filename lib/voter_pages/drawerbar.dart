@@ -4,6 +4,7 @@ import 'package:for_testing/elect_pos/for_pres.dart';
 import 'package:for_testing/elect_pos/for_sec.dart';
 import 'package:for_testing/elect_pos/for_treasurer.dart';
 import 'package:for_testing/elect_pos/for_vicepres.dart';
+import 'package:for_testing/main.dart';
 import 'package:for_testing/results_pages/result_auditor.dart';
 import 'package:for_testing/results_pages/result_pres.dart';
 import 'package:for_testing/results_pages/result_sec.dart';
@@ -44,10 +45,11 @@ class _AppDrawerState extends State<AppDrawer> {
 
     // Optionally call your server to end the session
     await http.post(Uri.parse('http://192.168.1.6/for_testing/logout.php'));
+    // await http.post(Uri.parse('https://studentcouncil.bcp-sms1.com/php/logout.php'));
 
     // Use pushAndRemoveUntil to clear the navigation stack
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const LoginWidget()),
+      MaterialPageRoute(builder: (context) => const LoadingScreen()),
       (route) => false, // Remove all other routes
     );
   }

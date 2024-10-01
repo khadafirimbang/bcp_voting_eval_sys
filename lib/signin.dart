@@ -115,6 +115,7 @@ Future<void> _login() async {
   if (_formKey.currentState!.validate()) {
     final response = await http.post(
       Uri.parse('http://192.168.1.6/for_testing/signin.php'),
+      // Uri.parse('https://studentcouncil.bcp-sms1.com/php/signin.php'),
       body: {
         'studentno': _studentNoController.text,
         'password': _passwordController.text, // Sending plain text password to be verified
@@ -136,7 +137,7 @@ Future<void> _login() async {
       } else if (data['role'] == 'admin') {
         Navigator.pushReplacement(
           context, 
-          MaterialPageRoute(builder: (context) => const DashboardPage())
+          MaterialPageRoute(builder: (context) => DashboardPage())
         );
       }
     } else {
