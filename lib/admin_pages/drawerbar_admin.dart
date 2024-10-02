@@ -1,20 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:for_testing/admin_pages/announcement_admin.dart';
 import 'package:for_testing/admin_pages/candidates.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
 import 'package:for_testing/admin_pages/election_sched.dart';
 import 'package:for_testing/admin_pages/evaluation_admin.dart';
-import 'package:for_testing/results_pages/result_auditor.dart';
-import 'package:for_testing/results_pages/result_pres.dart';
-import 'package:for_testing/elect_pos/for_audi.dart';
-import 'package:for_testing/elect_pos/for_pres.dart';
-import 'package:for_testing/elect_pos/for_sec.dart';
-import 'package:for_testing/elect_pos/for_treasurer.dart';
-import 'package:for_testing/elect_pos/for_vicepres.dart';
-import 'package:for_testing/results_pages/result_sec.dart';
-import 'package:for_testing/results_pages/result_treasurer.dart';
-import 'package:for_testing/results_pages/result_vicepres.dart';
-import 'package:for_testing/voter_pages/profile.dart';
-import 'package:for_testing/main.dart';
+import 'package:for_testing/admin_pages/resultAdmin.dart';
+import 'package:for_testing/admin_pages/voters.dart';
 import 'package:for_testing/signin.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -120,6 +111,14 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.people, color: Colors.white,),
+            title: const Text('Voters', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => VotersPage()));
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.question_answer, color: Colors.white,),
             title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
             onTap: () {
@@ -135,48 +134,21 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionScheduler()));
             },
           ),
-          ExpansionTile(
-            collapsedIconColor: Colors.white,
+          ListTile(
             leading: const Icon(Icons.file_copy, color: Colors.white,),
-            title: const Text('Results', style: TextStyle(color: Colors.white)),
-            childrenPadding: const EdgeInsets.only(left: 37),
-            children: [
-              ListTile(
-                title: const Text('President', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultPres()));
-                },
-              ),
-              ListTile(
-                title: const Text('Vice President', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultVicePres()));
-                },
-              ),
-              ListTile(
-                title: const Text('Secretary', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultSecretary()));
-                },
-              ),
-              ListTile(
-                title: const Text('Treasurer', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultTreasurer()));
-                },
-              ),
-              ListTile(
-                title: const Text('Auditor', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAuditor()));
-                },
-              ),
-            ],
+            title: const Text('Result', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.announcement, color: Colors.white,),
+            title: const Text('Announcement', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AnnouncementPage()));
+            },
           ),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.white,),

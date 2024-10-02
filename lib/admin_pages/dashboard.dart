@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/drawerbar_admin.dart';
+import 'package:for_testing/admin_pages/resultAdmin.dart';
 import 'package:http/http.dart' as http;
 import 'package:pie_chart/pie_chart.dart';
 
@@ -29,7 +30,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> fetchVoteCounts() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.6/for_testing/fetch_voters.php'));
+      final response = await http.get(Uri.parse('http://192.168.1.6/for_testing/fetch_vote_count.php'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -291,6 +292,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           ],
                         ),
                       ),
+
                     ],
                   ),
                 ),
@@ -299,3 +301,4 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 }
+

@@ -20,6 +20,8 @@ class _EvaluationPageState extends State<EvaluationPage> {
   final TextEditingController searchController = TextEditingController();
   bool isSearching = false;
   String selectedType = 'All'; // Default to 'All' for search
+  int _currentPage = 1;
+  final int _rowsPerPage = 10;
 
   @override
   void initState() {
@@ -468,6 +470,31 @@ class _EvaluationPageState extends State<EvaluationPage> {
     );
   }
 
+  List get _paginatedEvaluations {
+    int startIndex = (_currentPage - 1) * _rowsPerPage;
+    int endIndex = startIndex + _rowsPerPage;
+    return filteredEvaluations.sublist(
+      startIndex,
+      endIndex.clamp(0, filteredEvaluations.length), // Ensure it doesn't go out of bounds
+    );
+  }
+
+  void _nextPage() {
+    setState(() {
+      if (_currentPage < (filteredEvaluations.length / _rowsPerPage).ceil()) {
+        _currentPage++;
+      }
+    });
+  }
+
+  void _previousPage() {
+    setState(() {
+      if (_currentPage > 1) {
+        _currentPage--;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -501,6 +528,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                         hintText: 'Search evaluations',
                         border: OutlineInputBorder(),
                       ),
+                      onChanged: (value) => filterEvaluations(value),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -510,8 +538,8 @@ class _EvaluationPageState extends State<EvaluationPage> {
                     onChanged: (value) {
                       setState(() {
                         selectedType = value!;
+                        filterEvaluations(searchController.text); // Filter based on both search query and selected type
                       });
-                      filterEvaluations(searchController.text); // Filter based on both search query and selected type
                     },
                     items: ['All', ...types].map((String type) {
                       return DropdownMenuItem<String>(
@@ -525,46 +553,66 @@ class _EvaluationPageState extends State<EvaluationPage> {
             ),
           Expanded(
             child: ListView.builder(
-              itemCount: filteredEvaluations.length,
+              itemCount: _paginatedEvaluations.length,
               itemBuilder: (context, index) {
-                final eval = filteredEvaluations[index];
+                final eval = _paginatedEvaluations[index];
                 // Determine the background color based on the row index
-                final backgroundColor = index.isEven ? Colors.grey[300] : Colors.grey[100];
+                // final backgroundColor = index.isEven ? Colors.grey[300] : Colors.grey[100];
 
                 return Container(
-                  color: backgroundColor,
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(8.0),
-                    title: Text(eval['question']),
-                    subtitle: Text(eval['type']),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {
-                            showUpdateEvaluationForm(eval['id'], eval['question'], eval['type']);
-                          },
+                  // color: backgroundColor,
+                  child: Column(
+                    children: [
+                      Divider(),
+                      ListTile(
+                        contentPadding: const EdgeInsets.all(8.0),
+                        title: Text(eval['question']),
+                        subtitle: Text(eval['type']),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                showUpdateEvaluationForm(eval['id'], eval['question'], eval['type']);
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                showDeleteConfirmation(eval['id']);
+                              },
+                            ),
+                          ],
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            showDeleteConfirmation(eval['id']);
-                          },
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 );
               },
             ),
+          ),
+          // Pagination Controls
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: _previousPage,
+                ),
+              Text('Page $_currentPage of ${(filteredEvaluations.length / _rowsPerPage).ceil()}', style: TextStyle(fontWeight: FontWeight.bold)),
+              IconButton(
+                  icon: Icon(Icons.arrow_forward, color: Colors.black),
+                  onPressed: _nextPage,
+                ),
+            ],
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1E3A8A),
         onPressed: showAddEvaluationForm,
-        child: const Icon(Icons.add, color: Colors.white,),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

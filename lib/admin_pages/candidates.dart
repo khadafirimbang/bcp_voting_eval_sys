@@ -38,6 +38,8 @@ class _CandidatesPageState extends State<CandidatesPage> {
   XFile? _image; // Use XFile to pick images
   String? _uploadedImageUrl;
   Uint8List? _imageBytes; // To hold image bytes for display
+  int _currentPage = 1;
+  final int _rowsPerPage = 10;
 
   @override
   void initState() {
@@ -566,6 +568,31 @@ class _CandidatesPageState extends State<CandidatesPage> {
     }
   }
 
+  List get _paginatedCandidates {
+    int startIndex = (_currentPage - 1) * _rowsPerPage;
+    int endIndex = startIndex + _rowsPerPage;
+    return filteredCandidates.sublist(
+      startIndex,
+      endIndex.clamp(0, filteredCandidates.length), // Ensure it doesn't go out of bounds
+    );
+  }
+
+  void _nextPage() {
+    setState(() {
+      if (_currentPage < (filteredCandidates.length / _rowsPerPage).ceil()) {
+        _currentPage++;
+      }
+    });
+  }
+
+  void _previousPage() {
+    setState(() {
+      if (_currentPage > 1) {
+        _currentPage--;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -628,10 +655,9 @@ class _CandidatesPageState extends State<CandidatesPage> {
           ],
           Expanded(
             child: ListView.builder(
-              itemCount: filteredCandidates.length,
+              itemCount: _paginatedCandidates.length,
               itemBuilder: (context, index) {
-                final candidate = filteredCandidates[index];
-                final isEvenRow = index % 2 == 0;
+                final candidate = _paginatedCandidates[index];
                 return Column(
                   children: [
                     Divider(),
@@ -657,12 +683,27 @@ class _CandidatesPageState extends State<CandidatesPage> {
               },
             ),
           ),
+          // Pagination Controls
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: _previousPage,
+                ),
+              Text('Page $_currentPage of ${(filteredCandidates.length / _rowsPerPage).ceil()}', style: TextStyle(fontWeight: FontWeight.bold),),
+              IconButton(
+                  icon: Icon(Icons.arrow_forward, color: Colors.black,),
+                  onPressed: _nextPage,
+                ),
+            ],
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1E3A8A),
         onPressed: _showAddCandidateForm,
-        child: const Icon(Icons.add, color: Colors.white,),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
