@@ -94,6 +94,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               ],
             ),
           ),
+          SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.dashboard, color: Colors.white,),
             title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
@@ -102,6 +103,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => DashboardPage()));
             },
           ),
+          SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.people, color: Colors.white,),
             title: const Text('Candidates', style: TextStyle(color: Colors.white)),
@@ -110,6 +112,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const CandidatesPage()));
             },
           ),
+          SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.people, color: Colors.white,),
             title: const Text('Voters', style: TextStyle(color: Colors.white)),
@@ -118,6 +121,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => VotersPage()));
             },
           ),
+          SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.question_answer, color: Colors.white,),
             title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
@@ -126,6 +130,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const EvaluationPage()));
             },
           ),
+          SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.date_range, color: Colors.white,),
             title: const Text('Election Schedules', style: TextStyle(color: Colors.white)),
@@ -134,6 +139,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionScheduler()));
             },
           ),
+          SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.file_copy, color: Colors.white,),
             title: const Text('Result', style: TextStyle(color: Colors.white)),
@@ -142,14 +148,16 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()));
             },
           ),
+          SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.announcement, color: Colors.white,),
             title: const Text('Announcement', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => AnnouncementPage()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AnnouncementAdminPage()));
             },
           ),
+          SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.white,),
             title: const Text('Logout', style: TextStyle(color: Colors.white)),

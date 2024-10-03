@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
+import 'package:for_testing/voter_pages/announcement.dart';
 import 'package:for_testing/voter_pages/profile.dart';
 import 'package:for_testing/signup.dart';
 import 'package:http/http.dart' as http;
@@ -132,7 +133,7 @@ Future<void> _login() async {
       if (data['role'] == 'student') {
         Navigator.pushReplacement(
           context, 
-          MaterialPageRoute(builder: (context) => const HomePage())
+          MaterialPageRoute(builder: (context) => AnnouncementPage())
         );
       } else if (data['role'] == 'admin') {
         Navigator.pushReplacement(
