@@ -4,6 +4,7 @@ import 'package:for_testing/admin_pages/candidates.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
 import 'package:for_testing/admin_pages/election_sched.dart';
 import 'package:for_testing/admin_pages/evaluation_admin.dart';
+import 'package:for_testing/admin_pages/responses.dart';
 import 'package:for_testing/admin_pages/resultAdmin.dart';
 import 'package:for_testing/admin_pages/voters.dart';
 import 'package:for_testing/signin.dart';
@@ -46,33 +47,33 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
   }
 
   // Function to show logout confirmation dialog
-  Future<void> _showLogoutDialog(BuildContext context) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // Prevent dismissing by tapping outside
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Logout Confirmation'),
-          content: const Text('Are you sure you want to logout?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                _logout(context); // Call the logout function
-              },
-              child: const Text('Yes'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // Future<void> _showLogoutDialog(BuildContext context) async {
+  //   return showDialog<void>(
+  //     context: context,
+  //     barrierDismissible: false, // Prevent dismissing by tapping outside
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('Logout Confirmation'),
+  //         content: const Text('Are you sure you want to logout?'),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop(); // Close the dialog
+  //             },
+  //             child: const Text('No'),
+  //           ),
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop(); // Close the dialog
+  //               _logout(context); // Call the logout function
+  //             },
+  //             child: const Text('Yes'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +95,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               ],
             ),
           ),
-          SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.dashboard, color: Colors.white,),
             title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
@@ -103,7 +104,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => DashboardPage()));
             },
           ),
-          SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.people, color: Colors.white,),
             title: const Text('Candidates', style: TextStyle(color: Colors.white)),
@@ -112,7 +113,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const CandidatesPage()));
             },
           ),
-          SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.people, color: Colors.white,),
             title: const Text('Voters', style: TextStyle(color: Colors.white)),
@@ -121,16 +122,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => VotersPage()));
             },
           ),
-          SizedBox(height: 10,),
-          ListTile(
-            leading: const Icon(Icons.question_answer, color: Colors.white,),
-            title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const EvaluationPage()));
-            },
-          ),
-          SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.date_range, color: Colors.white,),
             title: const Text('Election Schedules', style: TextStyle(color: Colors.white)),
@@ -139,7 +131,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionScheduler()));
             },
           ),
-          SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.file_copy, color: Colors.white,),
             title: const Text('Result', style: TextStyle(color: Colors.white)),
@@ -148,7 +140,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()));
             },
           ),
-          SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.announcement, color: Colors.white,),
             title: const Text('Announcement', style: TextStyle(color: Colors.white)),
@@ -157,12 +149,30 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => AnnouncementAdminPage()));
             },
           ),
-          SizedBox(height: 10,),
+          const SizedBox(height: 10,),
+          ListTile(
+            leading: const Icon(Icons.question_answer_outlined, color: Colors.white,),
+            title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const EvaluationPage()));
+            },
+          ),
+          const SizedBox(height: 10,),
+          ListTile(
+            leading: const Icon(Icons.question_answer, color: Colors.white,),
+            title: const Text('Evaluation Responses', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ResponsesPage()));
+            },
+          ),
+          const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.white,),
             title: const Text('Logout', style: TextStyle(color: Colors.white)),
             onTap: () {
-              _showLogoutDialog(context);
+              _logout(context);
             },
           ),
         ],

@@ -47,6 +47,16 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
         backgroundColor: const Color(0xFF1E3A8A),
         title: const Text('Announcement', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer(); // Use this context
+            },
+                  );
+          }
+        ),
       ),
       drawer: const AppDrawer(),
       body: _isLoading

@@ -15,6 +15,7 @@ class _ResultAdminPageState extends State<ResultAdminPage> {
   List<VotingData> _secretaryVotes = [];
   List<VotingData> _treasurerVotes = [];
   List<VotingData> _auditorVotes = [];
+  String _electionName = ''; // Variable to store the election name
 
   @override
   void initState() {
@@ -27,8 +28,10 @@ class _ResultAdminPageState extends State<ResultAdminPage> {
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
+      final Map<String, dynamic> responseData = json.decode(response.body);
       setState(() {
+        _electionName = responseData['election_name'] ?? 'Election Results'; // Set the election name
+        final List<dynamic> data = responseData['data'];
         _presidentVotes = filterVotes(data, 'President');
         _vpVotes = filterVotes(data, 'Vice President');
         _secretaryVotes = filterVotes(data, 'Secretary');
@@ -58,12 +61,31 @@ class _ResultAdminPageState extends State<ResultAdminPage> {
         backgroundColor: const Color(0xFF1E3A8A),
         title: const Text('Result', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer(); // Use this context
+            },
+                  );
+          }
+        ),
       ),
       drawer: const AppDrawerAdmin(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Text(
+              _electionName, // Display the election name
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16.0), // Add some spacing
             buildChart('Voting Results for President', _presidentVotes),
             buildChart('Voting Results for Vice President', _vpVotes),
             buildChart('Voting Results for Secretary', _secretaryVotes),
@@ -94,8 +116,8 @@ class _ResultAdminPageState extends State<ResultAdminPage> {
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: SfCartesianChart(
         title: ChartTitle(text: title),
-        primaryXAxis: CategoryAxis(), // CategoryAxis for candidate names
-        primaryYAxis: NumericAxis(
+        primaryXAxis: const CategoryAxis(), // CategoryAxis for candidate names
+        primaryYAxis: const NumericAxis(
           labelFormat: '{value}', // Ensure Y-axis labels are displayed as integers
           minimum: 0, // Set minimum value for Y-axis
         ),
@@ -110,7 +132,7 @@ class _ResultAdminPageState extends State<ResultAdminPage> {
             },
             // Display total_votes inside the bars
             dataLabelMapper: (VotingData data, _) => data.votes.toString(),
-            dataLabelSettings: DataLabelSettings(isVisible: true),
+            dataLabelSettings: const DataLabelSettings(isVisible: true),
           ),
         ],
       ),

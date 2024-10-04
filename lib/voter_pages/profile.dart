@@ -185,11 +185,11 @@ class _ProfileInfoState extends State<ProfileInfo> {
 void _submitForm() {
   if (_formKey.currentState!.validate()) {
     // If the form is valid, proceed with submitting the data
-    String firstname = firstnameController.text;
-    String middlename = middlenameController.text;
-    String lastname = lastnameController.text;
-    String course = courseController.text;
-    String section = sectionController.text;
+    String firstname = _sanitizeInput(firstnameController.text);
+    String middlename = _sanitizeInput(middlenameController.text);
+    String lastname = _sanitizeInput(lastnameController.text);
+    String course = _sanitizeInput(courseController.text);
+    String section = _sanitizeInput(sectionController.text);
 
     // Call the update function
     updateInfo(firstname, middlename, lastname, course, section);
@@ -230,6 +230,12 @@ void _submitForm() {
     );
   }
 
+  // Function to sanitize input
+  String _sanitizeInput(String input) {
+    // Trim leading and trailing spaces and remove any unwanted characters
+    return input.trim().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -240,6 +246,16 @@ void _submitForm() {
           iconTheme: const IconThemeData(
             color: Colors.white, // Change the color of the Drawer icon here
           ),
+          leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer(); // Use this context
+            },
+                  );
+          }
+        ),
         ),
       drawer: const AppDrawer(),
       body: SingleChildScrollView(

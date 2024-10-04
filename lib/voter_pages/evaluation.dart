@@ -84,6 +84,12 @@ class _EvaluationPageState extends State<EvaluationPage> {
     }
   }
 
+  // Function to sanitize input
+  String _sanitizeInput(String input) {
+    // Trim leading and trailing spaces and remove any unwanted characters
+    return input.trim().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -93,6 +99,16 @@ class _EvaluationPageState extends State<EvaluationPage> {
         title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(
           color: Colors.white, // Change the color of the Drawer icon here
+        ),
+      leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer(); // Use this context
+            },
+                  );
+          }
         ),
       ),
       drawer: const AppDrawer(),
@@ -341,8 +357,8 @@ class _EvaluationPageState extends State<EvaluationPage> {
     }
 
     // Convert responses to JSON
-    String feedbackResponsesJson = json.encode(feedbackResponses.map((key, value) => MapEntry(key.toString(), value)));
-    String surveyResponsesJson = json.encode(surveyResponses.map((key, value) => MapEntry(key.toString(), value)));
+    String feedbackResponsesJson = _sanitizeInput(json.encode(feedbackResponses.map((key, value) => MapEntry(key.toString(), value))));
+    String surveyResponsesJson = _sanitizeInput(json.encode(surveyResponses.map((key, value) => MapEntry(key.toString(), value))));
 
     // Send data to the backend
     var url = Uri.parse('http://192.168.1.6/for_testing/submit_evaluation.php');

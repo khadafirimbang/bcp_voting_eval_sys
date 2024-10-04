@@ -199,6 +199,16 @@ class _VotersPageState extends State<VotersPage> {
         backgroundColor: const Color(0xFF1E3A8A),
         title: const Text('Voters', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer(); // Use this context
+            },
+                  );
+          }
+        ),
         actions: [
           IconButton(
             icon: Icon(_isSearchVisible ? Icons.close : Icons.search),

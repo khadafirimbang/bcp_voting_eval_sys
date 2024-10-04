@@ -1,24 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:for_testing/main.dart';
 import 'package:for_testing/signin.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Sign Up Example',
-      home: SignUpPage(),
-    );
-  }
-}
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -42,82 +25,125 @@ class _SignUpPageState extends State<SignUpPage> {
       _obscureText = !_obscureText;
     });
   }
+
   void _togglePasswordVisibility2() {
     setState(() {
       _obscureText2 = !_obscureText2;
     });
   }
 
+  // Function to sanitize input
+  String sanitizeInput(String input) {
+    return input.trim().replaceAll(RegExp(r'[^a-zA-Z0-9@._-]'), '');
+  }
+
+  // Validate student number
+  String? validateStudentNo(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your student number';
+    } else if (value.length < 7 || value.length > 9) {
+      return 'Student number must be 8 characters';
+    }
+    return null;
+  }
+
+  // Validate password
+  String? validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your password';
+    } else if (value.length < 8) {
+      return 'Password must be at least 8 characters long';
+    }
+    return null;
+  }
+
   Future<void> _signUp() async {
-    if (_formKey.currentState!.validate()) {
+  if (_formKey.currentState!.validate()) {
+    // Sanitize inputs
+    String sanitizedStudentNo = sanitizeInput(studentNoController.text);
+    String sanitizedPassword = sanitizeInput(passwordController.text);
+    String sanitizedConfirmPassword = sanitizeInput(confirmPasswordController.text);
+
+    // Use the sanitized inputs in the request
+    try {
       final response = await http.post(
         Uri.parse('http://192.168.1.6/for_testing/signup.php'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: {
-          'studentno': studentNoController.text,
-          'password': passwordController.text,
-          'cpassword': confirmPasswordController.text,
+          'studentno': sanitizedStudentNo,
+          'password': sanitizedPassword,
+          'cpassword': sanitizedConfirmPassword,
         },
       );
 
-      final data = json.decode(response.body);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
 
-      if (data['status'] == 'success') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration Complete!'), backgroundColor: Colors.green, duration: Duration(seconds: 1),),
-        );
-        // Navigate to another page or clear the form
-                  Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SignUpPage()),
-              );
+        if (data['status'] == 'success') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Registration Complete!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 1),
+            ),
+          );
+          // Navigate to another page or clear the form
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SignUpPage()),
+          );
+        } else {
+          setState(() {
+            errorMessage = data['message'];
+          });
+        }
       } else {
         setState(() {
-          errorMessage = data['message'];
+          errorMessage = 'Failed to connect to server. Status code: ${response.statusCode}';
         });
       }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'An error occurred: $e';
+      });
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(title: const Text('Sign Up')),
       body: SingleChildScrollView(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Column(
               children: [
-                //Logo
                 const SizedBox(height: 80),
                 Image.asset(
                   'assets/bcp_logo.png',
                   width: 100,
-                  ),
-                  const SizedBox(height: 80),
+                ),
+                const SizedBox(height: 80),
                 Form(
                   key: _formKey,
                   child: Column(
                     children: [
-                      const Text('Create an Account',
-                      style: TextStyle(
-                        fontSize: 23,
-                        fontWeight: FontWeight.w600,
+                      const Text(
+                        'Create an Account',
+                        style: TextStyle(
+                          fontSize: 23,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                      ),
-                      const SizedBox(height: 20,),
+                      const SizedBox(height: 20),
                       SizedBox(
                         width: 340,
                         child: TextFormField(
                           keyboardType: TextInputType.number,
                           controller: studentNoController,
                           decoration: const InputDecoration(labelText: 'Student Number'),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your student number';
-                            }
-                            return null;
-                          },
+                          validator: validateStudentNo,
                         ),
                       ),
                       const SizedBox(height: 5),
@@ -134,14 +160,9 @@ class _SignUpPageState extends State<SignUpPage> {
                               ),
                               onPressed: _togglePasswordVisibility,
                             ),
-                            ),
+                          ),
                           obscureText: _obscureText,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
-                            }
-                            return null;
-                          },
+                          validator: validatePassword,
                         ),
                       ),
                       const SizedBox(height: 5),
@@ -158,7 +179,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               ),
                               onPressed: _togglePasswordVisibility2,
                             ),
-                            ),
+                          ),
                           obscureText: _obscureText2,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -182,36 +203,38 @@ class _SignUpPageState extends State<SignUpPage> {
                       SizedBox(
                         width: 340,
                         child: TextButton(
-                              style: TextButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)
-                                ),
-                                padding: const EdgeInsets.all(14.0),
-                                backgroundColor: const Color(0xFF1E3A8A),
-                                
-                              ),
-                              onPressed: () {_signUp();},
-                              child: const Text('Sign Up', 
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                ),),
+                          style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                            padding: const EdgeInsets.all(14.0),
+                            backgroundColor: const Color(0xFF1E3A8A),
+                          ),
+                          onPressed: () {
+                            _signUp();
+                          },
+                          child: const Text(
+                            'Sign Up',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
                             ),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 20),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const LoginPage()),
-                            );
-                          },
-                          child: const Text('Click here to Sign in',
-                          style: TextStyle(
-                            color: Color(0xFF1E3A8A)
-                          ),),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LoginPage()),
+                          );
+                        },
+                        child: const Text(
+                          'Click here to Sign in',
+                          style: TextStyle(color: Color(0xFF1E3A8A)),
                         ),
+                      ),
                     ],
                   ),
                 ),

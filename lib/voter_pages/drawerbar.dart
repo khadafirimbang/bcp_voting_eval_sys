@@ -45,8 +45,8 @@ class _AppDrawerState extends State<AppDrawer> {
     await prefs.remove('studentno');
 
     // Optionally call your server to end the session
-    await http.post(Uri.parse('http://192.168.1.6/for_testing/logout.php'));
-    // await http.post(Uri.parse('https://studentcouncil.bcp-sms1.com/php/logout.php'));
+    // await http.post(Uri.parse('http://192.168.1.6/for_testing/logout.php'));
+    await http.post(Uri.parse('https://studentcouncil.bcp-sms1.com/php/logout.php'));
 
     // Use pushAndRemoveUntil to clear the navigation stack
     Navigator.of(context).pushAndRemoveUntil(
@@ -56,33 +56,33 @@ class _AppDrawerState extends State<AppDrawer> {
   }
 
   // Function to show logout confirmation dialog
-  Future<void> _showLogoutDialog(BuildContext context) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // Prevent dismissing by tapping outside
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Logout Confirmation'),
-          content: const Text('Are you sure you want to logout?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                _logout(context); // Call the logout function
-              },
-              child: const Text('Yes'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // Future<void> _showLogoutDialog(BuildContext context) async {
+  //   return showDialog<void>(
+  //     context: context,
+  //     barrierDismissible: false, // Prevent dismissing by tapping outside
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('Logout Confirmation'),
+  //         content: const Text('Are you sure you want to logout?'),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop(); // Close the dialog
+  //             },
+  //             child: const Text('No'),
+  //           ),
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop(); // Close the dialog
+  //               _logout(context); // Call the logout function
+  //             },
+  //             child: const Text('Yes'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -224,7 +224,7 @@ class _AppDrawerState extends State<AppDrawer> {
             leading: const Icon(Icons.logout, color: Colors.white,),
             title: const Text('Logout', style: TextStyle(color: Colors.white)),
             onTap: () {
-              _showLogoutDialog(context);
+              _logout(context);
             },
           ),
         ],

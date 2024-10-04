@@ -601,6 +601,16 @@ class _CandidatesPageState extends State<CandidatesPage> {
         backgroundColor: const Color(0xFF1E3A8A),
         title: const Text('Candidates', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer(); // Use this context
+            },
+                  );
+          }
+        ),
         actions: [
           IconButton(
             icon: Icon(_isSearchVisible ? Icons.close : Icons.search),
@@ -614,28 +624,11 @@ class _CandidatesPageState extends State<CandidatesPage> {
               });
             },
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          if (_isSearchVisible) ...[
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: const InputDecoration(
-                        hintText: 'Search...',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  DropdownButton<String>(
-                    hint: const Text('All'),
+          DropdownButton<String>(
+                    hint: const Text('All', style: TextStyle(color: Colors.white)),
                     value: selectedPosition,
+                    dropdownColor: const Color(0xFF1E3A8A),
+                    icon: const Icon(Icons.filter_list, color: Colors.white),
                     onChanged: (String? newValue) {
                       setState(() {
                         selectedPosition = newValue;
@@ -645,13 +638,28 @@ class _CandidatesPageState extends State<CandidatesPage> {
                     items: positionsFilter.map((String position) {
                       return DropdownMenuItem<String>(
                         value: position,
-                        child: Text(position),
+                        child: Text(position, style: TextStyle(color: Colors.white)),
                       );
                     }).toList(),
                   ),
-                ],
+        ],
+      ),
+      body: Column(
+        children: [
+          if (_isSearchVisible) ...[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  decoration: const InputDecoration(
+                    hintText: 'Search...',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
               ),
             ),
+            
           ],
           Expanded(
             child: ListView.builder(

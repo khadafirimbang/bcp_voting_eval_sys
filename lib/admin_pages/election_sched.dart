@@ -174,6 +174,16 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
         backgroundColor: const Color(0xFF1E3A8A),
         title: const Text('Election Schedules', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer(); // Use this context
+            },
+                  );
+          }
+        ),
       ),
       drawer: const AppDrawerAdmin(),
       body: ListView.builder(
@@ -184,28 +194,27 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
           final startDateFormatted = formatter.format(schedule.startDate);
           final endDateFormatted = formatter.format(schedule.endDate);
 
-          // Alternating row color (gray and dark gray)
-          final rowColor = index.isEven ? Colors.grey[300] : Colors.grey[200];
-
-          return Container(
-            color: rowColor,
-            child: ListTile(
-              title: Text(schedule.electionName),
-              subtitle: Text('From $startDateFormatted to $endDateFormatted'),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () => _editSchedule(schedule),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.stop_sharp),
-                    onPressed: () => _deleteSchedule(schedule.id),
-                  ),
-                ],
+          return Column(
+            children: [
+              Divider(),
+              ListTile(
+                title: Text(schedule.electionName),
+                subtitle: Text('From $startDateFormatted to $endDateFormatted'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () => _editSchedule(schedule),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.stop_sharp),
+                      onPressed: () => _deleteSchedule(schedule.id),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
           );
         },
       ),
