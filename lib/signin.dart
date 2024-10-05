@@ -102,7 +102,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
       String password = _sanitizeInput(_passwordController.text);
 
       final response = await http.post(
-        Uri.parse('https://studentcouncil.bcp-sms1.com/php/signin.php'),
+        Uri.parse('http://192.168.1.6/for_testing/signin.php'),
         body: {
           'studentno': studentNo,
           'password': password, // Sending sanitized input

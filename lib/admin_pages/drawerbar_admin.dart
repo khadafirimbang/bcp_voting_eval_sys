@@ -4,6 +4,7 @@ import 'package:for_testing/admin_pages/candidates.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
 import 'package:for_testing/admin_pages/election_sched.dart';
 import 'package:for_testing/admin_pages/evaluation_admin.dart';
+import 'package:for_testing/admin_pages/pending_voters.dart';
 import 'package:for_testing/admin_pages/responses.dart';
 import 'package:for_testing/admin_pages/resultAdmin.dart';
 import 'package:for_testing/admin_pages/voters.dart';
@@ -114,14 +115,31 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             },
           ),
           const SizedBox(height: 10,),
-          ListTile(
-            leading: const Icon(Icons.people, color: Colors.white,),
+          ExpansionTile(
+            collapsedIconColor: Colors.white,
+            leading: const Icon(Icons.contact_emergency_sharp, color: Colors.white,),
             title: const Text('Voters', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => VotersPage()));
-            },
+            childrenPadding: const EdgeInsets.only(left: 37),
+            children: [
+              ListTile(
+              leading: const Icon(Icons.people, color: Colors.white,),
+              title: const Text('Voters', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => VotersPage()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.people, color: Colors.white,),
+              title: const Text('Pending Voters', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => PendingVotersPage()));
+              },
+            ),
+            ],
           ),
+          
           const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.date_range, color: Colors.white,),
@@ -150,22 +168,29 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             },
           ),
           const SizedBox(height: 10,),
-          ListTile(
+          ExpansionTile(
+            collapsedIconColor: Colors.white,
             leading: const Icon(Icons.question_answer_outlined, color: Colors.white,),
             title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const EvaluationPage()));
-            },
-          ),
-          const SizedBox(height: 10,),
-          ListTile(
-            leading: const Icon(Icons.question_answer, color: Colors.white,),
-            title: const Text('Evaluation Responses', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ResponsesPage()));
-            },
+            childrenPadding: const EdgeInsets.only(left: 37),
+            children: [
+              ListTile(
+              leading: const Icon(Icons.question_answer_outlined, color: Colors.white,),
+              title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const EvaluationPage()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.question_answer, color: Colors.white,),
+              title: const Text('Evaluation Responses', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => ResponsesPage()));
+              },
+            ),
+            ],
           ),
           const SizedBox(height: 10,),
           ListTile(

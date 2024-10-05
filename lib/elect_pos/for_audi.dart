@@ -17,6 +17,7 @@ class _ForAuditorState extends State<ForAuditor> {
   String? studentnoLoggedIn;
   String statusMessage = 'Loading...';
   String? imageURL;
+  String? accountStatus; // Store account status
 
   @override
   void initState() {
@@ -30,6 +31,23 @@ class _ForAuditorState extends State<ForAuditor> {
     setState(() {
       studentnoLoggedIn = prefs.getString('studentno');
     });
+    await _fetchAccountStatus(); // Fetch account status
+  }
+
+  Future<void> _fetchAccountStatus() async {
+    if (studentnoLoggedIn != null) {
+      var url = Uri.parse('http://192.168.1.6/for_testing/fetch_account_status.php'); // Update with your PHP endpoint
+      var response = await http.post(url, body: {
+        'studentno': studentnoLoggedIn,
+      });
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        setState(() {
+          accountStatus = data['account_status']; // Assuming your PHP returns this field
+        });
+      }
+    }
   }
 
   Future<void> _fetchCandidates() async {
@@ -38,7 +56,6 @@ class _ForAuditorState extends State<ForAuditor> {
 
     try {
       var data = json.decode(response.body);
-      // print('Decoded data: $data'); // Debugging line
 
       if (response.statusCode == 200) {
         setState(() {
@@ -61,14 +78,12 @@ class _ForAuditorState extends State<ForAuditor> {
           }
         });
       } else {
-        print('Failed to fetch candidates: ${response.statusCode}');
         setState(() {
           candidates = [];
           statusMessage = 'Error fetching candidates.';
         });
       }
     } catch (e) {
-      print('Error decoding response: $e');
       setState(() {
         candidates = [];
         statusMessage = 'Error decoding response.';
@@ -77,6 +92,17 @@ class _ForAuditorState extends State<ForAuditor> {
   }
 
   Future<void> _voteForCandidate(String studentno, String position) async {
+    if (accountStatus != 'Verified') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Only verified accounts can vote.'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return; // Stop voting if account is not verified
+    }
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? loggedInStudentno = prefs.getString('studentno');
 
@@ -86,9 +112,6 @@ class _ForAuditorState extends State<ForAuditor> {
       'loggedInStudentno': loggedInStudentno ?? '',
       'position': position,
     });
-
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
 
     if (response.statusCode == 200) {
       var result = json.decode(response.body);
@@ -112,7 +135,6 @@ class _ForAuditorState extends State<ForAuditor> {
         ),
       );
     } else {
-      print('Failed to vote');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Failed to vote'),
@@ -166,11 +188,11 @@ class _ForAuditorState extends State<ForAuditor> {
         leading: Builder(
           builder: (BuildContext context) {
             return IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              Scaffold.of(context).openDrawer(); // Use this context
-            },
-                  );
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer(); // Use this context
+              },
+            );
           }
         ),
       ),
@@ -268,66 +290,42 @@ class _ForAuditorState extends State<ForAuditor> {
                                                 },
                                               ),
                                             )
-                                          : const Icon(
-                                              Icons.person,
-                                              size: 100,
-                                              color: Colors.grey,
-                                            ),
+                                          : imageBytes != null
+                                              ? ClipOval(
+                                                  child: Image.memory(
+                                                    imageBytes,
+                                                    fit: BoxFit.cover,
+                                                    width: 155,
+                                                    height: 155,
+                                                  ),
+                                                )
+                                              : const Icon(
+                                                  Icons.person,
+                                                  size: 100,
+                                                  color: Colors.grey,
+                                                ),
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
-                                      '$firstName $middleName $lastName',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                      '$lastName, $firstName $middleName',
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
                                     ),
-                                    const SizedBox(height: 8),
-                                    // Slogan text
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-                                      child: SizedBox(
-                                        height: 60, // Adjusted for fixed height
-                                        child: Text(
-                                          slogan,
-                                          textAlign: TextAlign.justify,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                          overflow: TextOverflow.visible,
-                                          maxLines: 4,
-                                        ),
-                                      ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      slogan,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(fontStyle: FontStyle.italic),
                                     ),
                                   ],
                                 ),
                               ),
-                              // Vote button
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
-                                child: SizedBox(
-                                  width: 100,
-                                  child: TextButton(
-                                    style: TextButton.styleFrom(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      padding: const EdgeInsets.all(10.0),
-                                      backgroundColor: const Color(0xFF1E3A8A),
-                                    ),
-                                    onPressed: () => _showConfirmationDialog(candidate['studentno'], 'auditor'),
-                                    child: const Text(
-                                      'Vote',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF1E3A8A), // Change color to match your theme
+                                  foregroundColor: Colors.white,
                                 ),
+                                onPressed: () => _showConfirmationDialog(candidate['studentno'], 'Auditor'),
+                                child: const Text('Vote'),
                               ),
                             ],
                           ),
@@ -339,10 +337,5 @@ class _ForAuditorState extends State<ForAuditor> {
               ),
       ),
     );
-  }
-
-  // Helper method to get the status message
-  String _getStatusMessage() {
-    return statusMessage.isEmpty ? 'No Candidates!' : statusMessage;
   }
 }
