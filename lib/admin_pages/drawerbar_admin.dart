@@ -41,7 +41,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
     await prefs.remove('studentno');
 
     // Optionally call your server to end the session
-    await http.post(Uri.parse('http://192.168.1.6/for_testing/logout.php'));
+    await http.post(Uri.parse('https://studentcouncil.bcp-sms1.com/php/logout.php'));
 
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => const LoginPage()));

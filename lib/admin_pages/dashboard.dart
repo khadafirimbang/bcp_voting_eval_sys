@@ -30,7 +30,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> fetchVoteCounts() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.6/for_testing/fetch_vote_count.php'));
+      final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_vote_count.php'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -52,7 +52,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> fetchTotalCandidates() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.6/for_testing/fetch_total_candidates.php'));
+      final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_total_candidates.php'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -67,7 +67,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> fetchTotalEvalAns() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.6/for_testing/fetch_total_eval_answered.php'));
+      final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_total_eval_answered.php'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -85,7 +85,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
   Future<void> fetchTotalEval() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.6/for_testing/fetch_total_eval.php'));
+      final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_total_eval.php'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

@@ -23,7 +23,7 @@ class ElectionScheduler extends StatefulWidget {
 }
 
 class _ElectionSchedulerState extends State<ElectionScheduler> {
-  final ApiService _apiService = ApiService('http://192.168.1.6/for_testing');
+  final ApiService _apiService = ApiService('https://studentcouncil.bcp-sms1.com/php');
   List<ElectionSchedule> _schedules = [];
 
   @override
@@ -186,37 +186,44 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
         ),
       ),
       drawer: const AppDrawerAdmin(),
-      body: ListView.builder(
-        itemCount: _schedules.length,
-        itemBuilder: (context, index) {
-          final schedule = _schedules[index];
-          final formatter = DateFormat('MMM dd, yyyy h:mm a');
-          final startDateFormatted = formatter.format(schedule.startDate);
-          final endDateFormatted = formatter.format(schedule.endDate);
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView.builder(
+          itemCount: _schedules.length,
+          itemBuilder: (context, index) {
+            final schedule = _schedules[index];
+            final formatter = DateFormat('MMM dd, yyyy h:mm a');
+            final startDateFormatted = formatter.format(schedule.startDate);
+            final endDateFormatted = formatter.format(schedule.endDate);
 
-          return Column(
-            children: [
-              Divider(),
-              ListTile(
-                title: Text(schedule.electionName),
-                subtitle: Text('From $startDateFormatted to $endDateFormatted'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit),
-                      onPressed: () => _editSchedule(schedule),
+            return Column(
+              children: [
+                const SizedBox(height: 16.0),
+                Card(
+                  color: Colors.white,
+                  elevation: 2,
+                  child: ListTile(
+                    title: Text(schedule.electionName),
+                    subtitle: Text('From $startDateFormatted to $endDateFormatted'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () => _editSchedule(schedule),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.stop_sharp),
+                          onPressed: () => _deleteSchedule(schedule.id),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: Icon(Icons.stop_sharp),
-                      onPressed: () => _deleteSchedule(schedule.id),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addSchedule,

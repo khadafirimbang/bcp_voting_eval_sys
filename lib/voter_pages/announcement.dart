@@ -21,7 +21,7 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
   Future<void> _fetchAnnouncements() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.1.6/for_testing/get_announcements.php'),
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/get_announcements.php'),
       );
 
       if (response.statusCode == 200) {

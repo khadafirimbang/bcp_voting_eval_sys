@@ -24,7 +24,7 @@ class _ResultAdminPageState extends State<ResultAdminPage> {
   }
 
   Future<void> fetchVotingData() async {
-    final url = Uri.parse('http://192.168.1.6/for_testing/fetch_results_admin.php'); // Update with your actual PHP endpoint
+    final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_results_admin.php'); // Update with your actual PHP endpoint
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -86,11 +86,16 @@ class _ResultAdminPageState extends State<ResultAdminPage> {
               ),
             ),
             const SizedBox(height: 16.0), // Add some spacing
-            buildChart('Voting Results for President', _presidentVotes),
-            buildChart('Voting Results for Vice President', _vpVotes),
-            buildChart('Voting Results for Secretary', _secretaryVotes),
-            buildChart('Voting Results for Treasurer', _treasurerVotes),
-            buildChart('Voting Results for Auditor', _auditorVotes),
+            Card(color: Colors.white,
+                  elevation: 2,child: buildChart('Voting Results for President', _presidentVotes)),
+            Card(color: Colors.white,
+                  elevation: 2,child: buildChart('Voting Results for Vice President', _vpVotes)),
+            Card(color: Colors.white,
+                  elevation: 2,child: buildChart('Voting Results for Secretary', _secretaryVotes)),
+            Card(color: Colors.white,
+                  elevation: 2,child: buildChart('Voting Results for Treasurer', _treasurerVotes)),
+            Card(color: Colors.white,
+                  elevation: 2,child: buildChart('Voting Results for Auditor', _auditorVotes)),
           ],
         ),
       ),

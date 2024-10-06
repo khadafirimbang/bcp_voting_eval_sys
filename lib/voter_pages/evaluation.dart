@@ -29,7 +29,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
 
   // Fetch Survey questions
   Future<void> _fetchSurveyQuestions() async {
-    var url = Uri.parse('http://192.168.1.6/for_testing/fetch_evaluation.php?type=Survey');
+    var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_evaluation.php?type=Survey');
     var response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -43,7 +43,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
 
   // Fetch Feedback questions
   Future<void> _fetchFeedbackQuestions() async {
-    var url = Uri.parse('http://192.168.1.6/for_testing/fetch_evaluation.php?type=Feedback');
+    var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_evaluation.php?type=Feedback');
     var response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -68,7 +68,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
   Future<void> _checkSubmissionStatus() async {
     if (studentno == null) return;
 
-    var url = Uri.parse('http://192.168.1.6/for_testing/check_submission_status.php?studentno=$studentno');
+    var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/check_submission_status.php?studentno=$studentno');
     var response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -361,7 +361,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
     String surveyResponsesJson = _sanitizeInput(json.encode(surveyResponses.map((key, value) => MapEntry(key.toString(), value))));
 
     // Send data to the backend
-    var url = Uri.parse('http://192.168.1.6/for_testing/submit_evaluation.php');
+    var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/submit_evaluation.php');
     var response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},

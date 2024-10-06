@@ -33,7 +33,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
   }
 
   Future<void> fetchEvaluations() async {
-    final response = await http.get(Uri.parse('http://192.168.1.6/for_testing/get_evaluations.php'));
+    final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/get_evaluations.php'));
     if (response.statusCode == 200) {
       setState(() {
         evaluations = List<Map<String, dynamic>>.from(
@@ -63,7 +63,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
   Future<void> addEvaluations() async {
     for (var eval in newEvaluations) {
       final response = await http.post(
-        Uri.parse('http://192.168.1.6/for_testing/add_evaluation.php'),
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/add_evaluation.php'),
         body: {
           'question': eval['question'],
           'type': eval['type'],
@@ -81,7 +81,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
 
   Future<void> updateEvaluation(int id, String question, String type) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.6/for_testing/update_evaluation.php'),
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/update_evaluation.php'),
       body: {
         'id': id.toString(),
         'question': question,
@@ -121,7 +121,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
 
   Future<void> deleteEvaluation(int id) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.6/for_testing/delete_evaluation.php'),
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/delete_evaluation.php'),
       body: {
         'id': id.toString(),
       },
@@ -524,100 +524,101 @@ class _EvaluationPageState extends State<EvaluationPage> {
         ],
       ),
       drawer: const AppDrawerAdmin(),
-      body: Column(
-        children: [
-          if (isSearching)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: searchController,
-                      decoration: const InputDecoration(
-                        hintText: 'Search evaluations',
-                        border: OutlineInputBorder(),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            if (isSearching)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: searchController,
+                        decoration: const InputDecoration(
+                          hintText: 'Search evaluations',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) => filterEvaluations(value),
                       ),
-                      onChanged: (value) => filterEvaluations(value),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  DropdownButton<String>(
-                    hint: const Text('Select Type'),
-                    value: selectedType,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedType = value!;
-                        filterEvaluations(searchController.text); // Filter based on both search query and selected type
-                      });
-                    },
-                    items: ['All', ...types].map((String type) {
-                      return DropdownMenuItem<String>(
-                        value: type,
-                        child: Text(type),
-                      );
-                    }).toList(),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    DropdownButton<String>(
+                      hint: const Text('Select Type'),
+                      value: selectedType,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedType = value!;
+                          filterEvaluations(searchController.text); // Filter based on both search query and selected type
+                        });
+                      },
+                      items: ['All', ...types].map((String type) {
+                        return DropdownMenuItem<String>(
+                          value: type,
+                          child: Text(type),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _paginatedEvaluations.length,
-              itemBuilder: (context, index) {
-                final eval = _paginatedEvaluations[index];
-                // Determine the background color based on the row index
-                // final backgroundColor = index.isEven ? Colors.grey[300] : Colors.grey[100];
-
-                return Container(
-                  // color: backgroundColor,
-                  child: Column(
+              const SizedBox(height: 16.0),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _paginatedEvaluations.length,
+                itemBuilder: (context, index) {
+                  final eval = _paginatedEvaluations[index];
+                  return Column(
                     children: [
-                      Divider(),
-                      ListTile(
-                        contentPadding: const EdgeInsets.all(8.0),
-                        title: Text(eval['question']),
-                        subtitle: Text(eval['type']),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () {
-                                showUpdateEvaluationForm(eval['id'], eval['question'], eval['type']);
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () {
-                                showDeleteConfirmation(eval['id']);
-                              },
-                            ),
-                          ],
+                      Card(
+                        color: Colors.white,
+                        elevation: 2,
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(8.0),
+                          title: Text(eval['question']),
+                          subtitle: Text(eval['type']),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () {
+                                  showUpdateEvaluationForm(eval['id'], eval['question'], eval['type']);
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () {
+                                  showDeleteConfirmation(eval['id']);
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-          // Pagination Controls
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: _previousPage,
-                ),
-              Text('Page $_currentPage of ${(filteredEvaluations.length / _rowsPerPage).ceil()}', style: TextStyle(fontWeight: FontWeight.bold)),
-              IconButton(
-                  icon: Icon(Icons.arrow_forward, color: Colors.black),
-                  onPressed: _nextPage,
-                ),
-            ],
-          ),
-        ],
+            // Pagination Controls
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                    icon: Icon(Icons.arrow_back, color: Colors.black),
+                    onPressed: _previousPage,
+                  ),
+                Text('Page $_currentPage of ${(filteredEvaluations.length / _rowsPerPage).ceil()}', style: TextStyle(fontWeight: FontWeight.bold)),
+                IconButton(
+                    icon: Icon(Icons.arrow_forward, color: Colors.black),
+                    onPressed: _nextPage,
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF1E3A8A),

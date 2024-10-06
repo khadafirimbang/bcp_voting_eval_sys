@@ -24,7 +24,7 @@ class _PendingVotersPageState extends State<PendingVotersPage> {
 
   Future<void> fetchPendingVoters() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.6/for_testing/fetch_pending_voters.php'));
+      final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_pending_voters.php'));
 
       if (response.statusCode == 200) {
         setState(() {
@@ -63,7 +63,7 @@ class _PendingVotersPageState extends State<PendingVotersPage> {
   Future<void> acceptVoter(String studentNo) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.6/for_testing/accept_voter.php'),
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/accept_voter.php'),
         body: json.encode({'studentno': studentNo}),
         headers: {'Content-Type': 'application/json'},
       );
@@ -80,7 +80,7 @@ class _PendingVotersPageState extends State<PendingVotersPage> {
 
   Future<void> rejectVoter(String studentNo) async {
     final response = await http.delete(
-      Uri.parse('http://192.168.1.6/for_testing/reject_voter.php?studentno=$studentNo'),
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/reject_voter.php?studentno=$studentNo'),
     );
 
     if (response.statusCode == 200) {
@@ -177,80 +177,96 @@ class _PendingVotersPageState extends State<PendingVotersPage> {
         ],
       ),
       drawer: const AppDrawerAdmin(),
-      body: pendingVoters.isEmpty
-          ? const Center(child: Text("No pending"))
-          : Column(
-              children: [
-                if (isSearchVisible) // Show search field only if visible
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      onChanged: filterVoters,
-                      decoration: const InputDecoration(
-                        labelText: 'Search',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.search),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: pendingVoters.isEmpty
+            ? const Center(child: Text("No pending"))
+            : Column(
+                children: [
+                  if (isSearchVisible) // Show search field only if visible
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        onChanged: filterVoters,
+                        decoration: const InputDecoration(
+                          labelText: 'Search',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.search),
+                        ),
                       ),
                     ),
-                  ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: paginatedVoters.length,
-                    itemBuilder: (context, index) {
-                      var voter = paginatedVoters[index];
-                      return Column(
-                        children: [
-                          const Divider(),
-                          ListTile(
-                            title: Text('${voter['lastname']}, ${voter['firstname']} ${voter['middlename']}'),
-                            subtitle: Text('${voter['studentno']} - ${voter['course']} - ${voter['section']}'),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.check),
-                                  onPressed: () => showAcceptDialog(context, voter['studentno'].toString()), // Convert to String
+                    const SizedBox(height: 16.0),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: paginatedVoters.length,
+                      itemBuilder: (context, index) {
+                        var voter = paginatedVoters[index];
+                        return Column(
+                          children: [
+                            Card(
+                              color: Colors.white,
+                              elevation: 2,
+                              child: ListTile(
+                                title: Text('${voter['lastname']}, ${voter['firstname']} ${voter['middlename']}'),
+                                subtitle: Text('${voter['studentno']} - ${voter['course']} - ${voter['section']}'),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () => showAcceptDialog(context, voter['studentno'].toString()),
+                                      style: TextButton.styleFrom(
+                                        backgroundColor: Colors.green, // Set the background color to green
+                                        foregroundColor: Colors.white, // Set the text color to white for better contrast
+                                      ), // Convert to String
+                                      child: const Text('Accept'),
+                                    ),
+                                    const SizedBox(width: 5,),
+                                    TextButton(
+                                      onPressed: () => showRejectDialog(context, voter['studentno'].toString()),
+                                      style: TextButton.styleFrom(
+                                        backgroundColor: Colors.red, // Set the background color to green
+                                        foregroundColor: Colors.white, // Set the text color to white for better contrast
+                                      ), // Convert to String
+                                      child: const Text('Reject'),
+                                    ),
+                                  ],
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.close),
-                                  onPressed: () => showRejectDialog(context, voter['studentno'].toString()), // Convert to String
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.black),
-                      onPressed: currentPage > 1
-                          ? () {
-                              setState(() {
-                                currentPage--;
-                              });
-                            }
-                          : null,
-                    ),
-                    Text('Page $currentPage'),
-                    IconButton(
-                      icon: const Icon(Icons.arrow_forward, color: Colors.black,),
-                      onPressed: currentPage < (filteredVoters.length / itemsPerPage).ceil()
-                          ? () {
-                              setState(() {
-                                currentPage++;
-                              });
-                            }
-                          : null,
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.black),
+                        onPressed: currentPage > 1
+                            ? () {
+                                setState(() {
+                                  currentPage--;
+                                });
+                              }
+                            : null,
+                      ),
+                      Text('Page $currentPage'),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_forward, color: Colors.black,),
+                        onPressed: currentPage < (filteredVoters.length / itemsPerPage).ceil()
+                            ? () {
+                                setState(() {
+                                  currentPage++;
+                                });
+                              }
+                            : null,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }

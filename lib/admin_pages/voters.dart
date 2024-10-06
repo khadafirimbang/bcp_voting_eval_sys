@@ -23,7 +23,7 @@ class _VotersPageState extends State<VotersPage> {
   }
 
   Future<void> fetchUsers() async {
-    final url = Uri.parse('http://192.168.1.6/for_testing/fetch_voters.php');
+    final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_voters.php');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -87,7 +87,7 @@ class _VotersPageState extends State<VotersPage> {
   }
 
   Future<void> _deleteUser(String studentNo) async {
-    final url = Uri.parse('http://192.168.1.6/for_testing/delete_user.php'); // Update with your delete API endpoint
+    final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/delete_user.php'); // Update with your delete API endpoint
     final response = await http.post(url, body: {'studentno': studentNo});
 
     if (response.statusCode == 200) {
@@ -99,7 +99,7 @@ class _VotersPageState extends State<VotersPage> {
   }
 
   Future<void> _updateUser(String studentNo, String firstname, String lastname, String middlename, String course, String section) async {
-  final url = Uri.parse('http://192.168.1.6/for_testing/update_user.php'); // Update with your update API endpoint
+  final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/update_user.php'); // Update with your update API endpoint
   final response = await http.post(url, body: {
     'studentno': studentNo,
     'firstname': firstname,
@@ -225,90 +225,97 @@ class _VotersPageState extends State<VotersPage> {
         ],
       ),
       drawer: const AppDrawerAdmin(),
-      body: Column(
-        children: [
-          if (_isSearchVisible) ...[
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: const InputDecoration(
-                  hintText: 'Search by Student No or Name...',
-                  border: OutlineInputBorder(),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            if (_isSearchVisible) ...[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: const InputDecoration(
+                    hintText: 'Search by Student No or Name...',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) => _filterUsers(),
                 ),
-                onChanged: (value) => _filterUsers(),
-              ),
-            ),
-          ],
-          Expanded(
-            child: filteredUsers.isEmpty
-                ? Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    itemCount: currentPageUsers.length,
-                    itemBuilder: (context, index) {
-                      final user = currentPageUsers[index];
-                      return Column(
-                        children: [
-                          Divider(),
-                          ListTile(
-                            title: Text('${user['lastname']}, ${user['firstname']} ${user['middlename']}'),
-                            subtitle: Text('Student No: ${user['studentno']} - Course: ${user['course']} - Section: ${user['section']}'),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () {
-                                    _showUpdateUserForm(user); // Show the update form
-                                  },
-                                ),
-                                const SizedBox(width: 8),
-                                IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () {
-                                    _showDeleteConfirmation(user['studentno']); // Show delete confirmation
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-          ),
-          // Pagination Controls
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back, color: Colors.black),
-                    onPressed: currentPage > 0
-                        ? () {
-                            setState(() {
-                              currentPage--;
-                            });
-                          }
-                        : null,
-                  ),
-                  Text('Page ${currentPage + 1} of $totalPages', style: TextStyle(fontWeight: FontWeight.bold)),
-                  IconButton(
-                    icon: Icon(Icons.arrow_forward, color: Colors.black),
-                    onPressed: currentPage < totalPages - 1
-                        ? () {
-                            setState(() {
-                              currentPage++;
-                            });
-                          }
-                        : null,
-                  ),
-                ],
               ),
             ],
-          ),
-        ],
+            const SizedBox(height: 16.0),
+            Expanded(
+              child: filteredUsers.isEmpty
+                  ? Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      itemCount: currentPageUsers.length,
+                      itemBuilder: (context, index) {
+                        final user = currentPageUsers[index];
+                        return Column(
+                          children: [
+                            Card(
+                              color: Colors.white,
+                              elevation: 2,
+                              child: ListTile(
+                                title: Text('${user['lastname']}, ${user['firstname']} ${user['middlename']}'),
+                                subtitle: Text('Student No: ${user['studentno']} - Course: ${user['course']} - Section: ${user['section']}'),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () {
+                                        _showUpdateUserForm(user); // Show the update form
+                                      },
+                                    ),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () {
+                                        _showDeleteConfirmation(user['studentno']); // Show delete confirmation
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+            ),
+            // Pagination Controls
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.arrow_back, color: Colors.black),
+                      onPressed: currentPage > 0
+                          ? () {
+                              setState(() {
+                                currentPage--;
+                              });
+                            }
+                          : null,
+                    ),
+                    Text('Page ${currentPage + 1} of $totalPages', style: TextStyle(fontWeight: FontWeight.bold)),
+                    IconButton(
+                      icon: Icon(Icons.arrow_forward, color: Colors.black),
+                      onPressed: currentPage < totalPages - 1
+                          ? () {
+                              setState(() {
+                                currentPage++;
+                              });
+                            }
+                          : null,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

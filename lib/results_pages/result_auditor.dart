@@ -34,7 +34,7 @@ class _ResultAuditorState extends State<ResultAuditor> {
   }
 
   Future<void> _fetchCandidates() async {
-    var url = Uri.parse('http://192.168.1.6/for_testing/fetch_results.php');
+    var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_results.php');
     var response = await http.get(url);
 
     try {

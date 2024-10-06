@@ -120,7 +120,7 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
 
   Future<void> saveAnnouncement(String title, String description, String? imageUrl) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.6/for_testing/announcement.php'),
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/announcement.php'),
       body: {
         'title': title,
         'description': description,
@@ -130,7 +130,7 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Announcement added successfully!')),
+        const SnackBar(backgroundColor: Colors.green, content: Text('Announcement added successfully!')),
       );
     } else {
       throw Exception('Failed to save announcement');
@@ -139,7 +139,7 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
 
   Future<void> updateAnnouncement(int id, String title, String description, String? imageUrl) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.6/for_testing/update_announcement.php'),
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/update_announcement.php'),
       body: {
         'id': id.toString(),
         'title': title,
@@ -150,7 +150,7 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Announcement updated successfully!')),
+        const SnackBar(backgroundColor: Colors.green, content: Text('Announcement updated successfully!')),
       );
     } else {
       throw Exception('Failed to update announcement');
@@ -159,7 +159,7 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
 
   Future<void> _fetchAnnouncements() async {
     final response = await http.get(
-      Uri.parse('http://192.168.1.6/for_testing/get_announcements.php'),
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/get_announcements.php'),
     );
 
     if (response.statusCode == 200) {
@@ -173,14 +173,14 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
 
   Future<void> _deleteAnnouncement(int id) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.6/for_testing/delete_announcement.php'),
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/delete_announcement.php'),
       body: {'id': id.toString()},
     );
 
     if (response.statusCode == 200) {
       _fetchAnnouncements();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Announcement deleted successfully!')),
+        const SnackBar(backgroundColor: Colors.green, content: Text('Announcement deleted successfully!')),
       );
     } else {
       throw Exception('Failed to delete announcement');
@@ -229,74 +229,79 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              const Text('Create Announcement', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: _titleController,
-                      decoration: const InputDecoration(labelText: 'Title'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a title';
-                        }
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      controller: _descriptionController,
-                      decoration: const InputDecoration(labelText: 'Description'),
-                      maxLines: 4,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a description';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Text(_imageData != null
-                            ? 'Image selected'
-                            : _existingImageUrl != null
-                                ? 'Image exists'
-                                : 'No image selected'),
-                        const SizedBox(width: 16),
-                        ElevatedButton(
-                          onPressed: _pickImage,
-                          child: const Text('Upload Image'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _isLoading
-                        ? const CircularProgressIndicator()
-                        : TextButton(
-                              style: TextButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)
-                                ),
-                                padding: const EdgeInsets.all(14.0),
-                                backgroundColor: const Color(0xFF1E3A8A),
-                                
-                              ),
-                              onPressed: _uploadAnnouncement,
-                              child: Text(_editingId != null
-                                ? 'Update Announcement'
-                                : 'Add Announcement', 
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  ),),
+              Card(
+                color: Colors.white,
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      const Text('Create Announcement', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              controller: _titleController,
+                              decoration: const InputDecoration(labelText: 'Title'),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a title';
+                                }
+                                return null;
+                              },
                             ),
-                        // ElevatedButton(
-                        //     onPressed: _uploadAnnouncement,
-                        //     child: Text(_editingId != null
-                        //         ? 'Update Announcement'
-                        //         : 'Submit Announcement'),
-                        //   ),
-                  ],
+                            TextFormField(
+                              controller: _descriptionController,
+                              decoration: const InputDecoration(labelText: 'Description'),
+                              maxLines: 4,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a description';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Text(_imageData != null
+                                    ? 'Image selected'
+                                    : _existingImageUrl != null
+                                        ? 'Image exists'
+                                        : 'No image selected'),
+                                const SizedBox(width: 16),
+                                ElevatedButton(
+                                  onPressed: _pickImage,
+                                  child: const Text('Upload Image'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _isLoading
+                                ? const CircularProgressIndicator()
+                                : TextButton(
+                                      style: TextButton.styleFrom(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(20)
+                                        ),
+                                        padding: const EdgeInsets.all(14.0),
+                                        backgroundColor: const Color(0xFF1E3A8A),
+                                        
+                                      ),
+                                      onPressed: _uploadAnnouncement,
+                                      child: Text(_editingId != null
+                                        ? 'Update Announcement'
+                                        : 'Add Announcement', 
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          ),),
+                                    ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -308,36 +313,41 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
                   itemBuilder: (context, index) {
                     final announcement = _announcements[index];
                     return Card(
-                      child: ListTile(
-                        title: Text('Title: ${announcement['title']}'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Description: ${announcement['description']}'),
-                            const SizedBox(height: 8),
-                            // Check if the image URL exists and display the image or "No image"
-                            if (announcement['image_url'] != null && announcement['image_url'].isNotEmpty)
-                              Image.network(
-                                announcement['image_url'],
-                                height: 100,
-                                width: 100,
-                                fit: BoxFit.cover,
-                              )
-                            else
-                              const Text('No image'),
-                          ],
-                        ),
-                        trailing: Wrap(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () => _editAnnouncement(announcement),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () => _deleteAnnouncement(announcement['id']),
-                            ),
-                          ],
+                      color: Colors.white,
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: ListTile(
+                          title: Text('Title: ${announcement['title']}'),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Description: ${announcement['description']}'),
+                              const SizedBox(height: 8),
+                              // Check if the image URL exists and display the image or "No image"
+                              if (announcement['image_url'] != null && announcement['image_url'].isNotEmpty)
+                                Image.network(
+                                  announcement['image_url'],
+                                  height: 100,
+                                  width: 100,
+                                  fit: BoxFit.cover,
+                                )
+                              else
+                                const Text('No image'),
+                            ],
+                          ),
+                          trailing: Wrap(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () => _editAnnouncement(announcement),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => _deleteAnnouncement(announcement['id']),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );

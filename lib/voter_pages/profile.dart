@@ -106,7 +106,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
     String? studentno = prefs.getString('studentno');
 
     if (studentno != null) {
-      var url = Uri.parse('http://192.168.1.6/for_testing/fetch_user_info.php');
+      var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_user_info.php');
       var response = await http.post(url, body: {'studentno': studentno});
 
       var data = json.decode(response.body);
@@ -144,7 +144,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
     }
 
     // The URL of your PHP script
-    var url = Uri.parse('http://192.168.1.6/for_testing/update_profile.php');
+    var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/update_profile.php');
 
     // Make the POST request to the server with the updated data
     var response = await http.post(

@@ -15,6 +15,8 @@ class _ResponsesPageState extends State<ResponsesPage> {
   String _selectedFilter = 'All';
   bool _isSearchVisible = false;
   TextEditingController _searchController = TextEditingController();
+  int _currentPage = 1; // Current page number
+  final int _rowsPerPage = 10; // Number of rows per page
 
   @override
   void initState() {
@@ -23,47 +25,51 @@ class _ResponsesPageState extends State<ResponsesPage> {
   }
 
   Future<void> fetchResponses() async {
-  final url = 'http://192.168.1.6/for_testing/fetch_responses.php'; // Replace with your server URL
-  try {
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      setState(() {
-        responses = json.decode(response.body);
-        // print(responses); // Debugging: print the data
-        _filterResponses(); // Initial filter for when responses are fetched
-      });
-    } else {
-      print('Failed to load responses');
+    final url = 'https://studentcouncil.bcp-sms1.com/php/fetch_responses.php'; // Replace with your server URL
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        setState(() {
+          responses = json.decode(response.body);
+          _filterResponses(); // Initial filter for when responses are fetched
+        });
+      } else {
+        print('Failed to load responses');
+      }
+    } catch (e) {
+      print('Error: $e');
     }
-  } catch (e) {
-    print('Error: $e');
   }
-}
 
+  void _filterResponses() {
+    setState(() {
+      filteredResponses = responses.where((response) {
+        final searchLower = _searchQuery.toLowerCase();
+        final questionLower = (response['question'] ?? '').toString().toLowerCase();
+        final studentNoLower = (response['studentno'] ?? '').toString().toLowerCase();
 
-void _filterResponses() {
-  setState(() {
-    filteredResponses = responses.where((response) {
-      // Convert values to lowercase safely, handle nulls by using an empty string if null
-      final searchLower = _searchQuery.toLowerCase();
+        final matchesSearch = searchLower.isEmpty ||
+            questionLower.contains(searchLower) ||
+            studentNoLower.contains(searchLower);
 
-      final questionLower = (response['question'] ?? '').toString().toLowerCase();
-      final studentNoLower = (response['studentno'] ?? '').toString().toLowerCase();
+        final typeLower = (response['type'] ?? '').toString().toLowerCase();
+        final matchesFilter = _selectedFilter == 'All' ||
+            typeLower == _selectedFilter.toLowerCase();
 
-      // Check if search query matches either question or student number
-      final matchesSearch = searchLower.isEmpty ||
-          questionLower.contains(searchLower) ||
-          studentNoLower.contains(searchLower);
+        return matchesSearch && matchesFilter;
+      }).toList();
+      _currentPage = 1; // Reset to the first page after filtering
+    });
+  }
 
-      // Filter based on selected type (Survey, Feedback, or All)
-      final typeLower = (response['type'] ?? '').toString().toLowerCase();
-      final matchesFilter = _selectedFilter == 'All' ||
-          typeLower == _selectedFilter.toLowerCase();
-
-      return matchesSearch && matchesFilter;
-    }).toList();
-  });
-}
+  List<dynamic> getPaginatedResponses() {
+    final startIndex = (_currentPage - 1) * _rowsPerPage;
+    final endIndex = startIndex + _rowsPerPage;
+    return filteredResponses.sublist(
+      startIndex,
+      endIndex > filteredResponses.length ? filteredResponses.length : endIndex,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,11 +81,11 @@ void _filterResponses() {
         leading: Builder(
           builder: (BuildContext context) {
             return IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              Scaffold.of(context).openDrawer(); // Use this context
-            },
-                  );
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer(); // Use this context
+              },
+            );
           }
         ),
         actions: [
@@ -117,49 +123,79 @@ void _filterResponses() {
         ],
       ),
       drawer: const AppDrawerAdmin(),
-      body: Column(
-        children: [
-          // Search field visibility controlled by the search icon
-          if (_isSearchVisible)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: const InputDecoration(
-                  hintText: 'Search by question or student number',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.search),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value; // Update the search query
-                    _filterResponses(); // Filter the responses as the search query changes
-                  });
-                },
-              ),
-            ),
-          // Display responses in a ListView
-          Expanded(
-            child: filteredResponses.isEmpty
-                ? const Center(child: Text('No responses found.'))
-                : ListView.builder(
-                    itemCount: filteredResponses.length,
-                    itemBuilder: (context, index) {
-                      final response = filteredResponses[index];
-                      return Column(
-                        children: [
-                          Divider(),
-                          ListTile(
-                            title: Text('Question: ${response['question']}'),
-                            subtitle: Text('Response: ${response['response']}'),
-                            trailing: Text('Student No: ${response['studentno']}'),
-                          ),
-                        ],
-                      );
-                    },
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Search field visibility controlled by the search icon
+            if (_isSearchVisible)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: const InputDecoration(
+                    hintText: 'Search by question or student number',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.search),
                   ),
-          ),
-        ],
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value; // Update the search query
+                      _filterResponses(); // Filter the responses as the search query changes
+                    });
+                  },
+                ),
+              ),
+            const SizedBox(height: 16.0),
+            // Display responses in a ListView
+            Expanded(
+              child: filteredResponses.isEmpty
+                  ? const Center(child: Text('No responses found.'))
+                  : ListView.builder(
+                      itemCount: getPaginatedResponses().length,
+                      itemBuilder: (context, index) {
+                        final response = getPaginatedResponses()[index];
+                        return Column(
+                          children: [
+                            Card(
+                              color: Colors.white,
+                              elevation: 2,
+                              child: ListTile(
+                                title: Text('Question: ${response['question']}'),
+                                subtitle: Text('Response: ${response['response']}'),
+                                trailing: Text('Student No: ${response['studentno']}'),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+            ),
+            // Pagination controls
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
+                    onPressed: _currentPage > 1 ? () {
+                    setState(() {
+                      _currentPage--;
+                    });
+                  } : null,
+                  ),
+                Text('Page $_currentPage of ${((filteredResponses.length + _rowsPerPage - 1) / _rowsPerPage).ceil()}'),
+                IconButton(
+                    icon: const Icon(Icons.arrow_forward, color: Colors.black),
+                    onPressed: (_currentPage * _rowsPerPage < filteredResponses.length) ? () {
+                    setState(() {
+                      _currentPage++;
+                    });
+                  } : null,
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

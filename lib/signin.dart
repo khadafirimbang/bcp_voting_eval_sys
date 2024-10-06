@@ -102,7 +102,8 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
       String password = _sanitizeInput(_passwordController.text);
 
       final response = await http.post(
-        Uri.parse('http://192.168.1.6/for_testing/signin.php'),
+        // Uri.parse('http://192.168.1.6/for_testing/signin.php'),
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/signin.php'),
         body: {
           'studentno': studentNo,
           'password': password, // Sending sanitized input
@@ -165,7 +166,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
                   key: _formKey,
                   child: Column(
                     children: <Widget>[
-                      const Text('Login your Account PO',
+                      const Text('Login your Account',
                         style: TextStyle(
                           fontSize: 23,
                           fontWeight: FontWeight.w600,
@@ -178,7 +179,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
                           keyboardType: TextInputType.number,
                           controller: _studentNoController,
                           decoration: const InputDecoration(
-                            labelText: 'Student Number',
+                            labelText: 'Student Number...',
                             prefixIcon: Icon(Icons.person),
                             contentPadding: EdgeInsets.symmetric(vertical: 12),
                           ),
@@ -200,7 +201,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
                           keyboardType: TextInputType.text,
                           controller: _passwordController,
                           decoration: InputDecoration(
-                            labelText: 'Password',
+                            labelText: 'Password...',
                             prefixIcon: const Icon(Icons.lock),
                             suffixIcon: IconButton(
                               icon: Icon(

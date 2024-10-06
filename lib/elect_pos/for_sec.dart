@@ -36,7 +36,7 @@ class _ForSecretaryState extends State<ForSecretary> {
 
   Future<void> _fetchAccountStatus() async {
     if (studentnoLoggedIn != null) {
-      var url = Uri.parse('http://192.168.1.6/for_testing/fetch_account_status.php'); // Update with your PHP endpoint
+      var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_account_status.php'); // Update with your PHP endpoint
       var response = await http.post(url, body: {
         'studentno': studentnoLoggedIn,
       });
@@ -51,7 +51,7 @@ class _ForSecretaryState extends State<ForSecretary> {
   }
 
   Future<void> _fetchCandidates() async {
-    var url = Uri.parse('http://192.168.1.6/for_testing/fetch_all_candidates_user.php');
+    var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_all_candidates_user.php');
     var response = await http.get(url);
 
     try {
@@ -106,7 +106,7 @@ class _ForSecretaryState extends State<ForSecretary> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? loggedInStudentno = prefs.getString('studentno');
 
-    var url = Uri.parse('http://192.168.1.6/for_testing/vote_candidate.php');
+    var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/vote_candidate.php');
     var response = await http.post(url, body: {
       'studentno': studentno,
       'loggedInStudentno': loggedInStudentno ?? '',
