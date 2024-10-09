@@ -179,7 +179,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
                           keyboardType: TextInputType.number,
                           controller: _studentNoController,
                           decoration: const InputDecoration(
-                            labelText: 'Student Number...',
+                            labelText: 'Student Number',
                             prefixIcon: Icon(Icons.person),
                             contentPadding: EdgeInsets.symmetric(vertical: 12),
                           ),
@@ -201,7 +201,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
                           keyboardType: TextInputType.text,
                           controller: _passwordController,
                           decoration: InputDecoration(
-                            labelText: 'Password...',
+                            labelText: 'Password',
                             prefixIcon: const Icon(Icons.lock),
                             suffixIcon: IconButton(
                               icon: Icon(

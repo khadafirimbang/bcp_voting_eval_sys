@@ -70,6 +70,9 @@ class _PendingVotersPageState extends State<PendingVotersPage> {
 
       if (response.statusCode == 200) {
         fetchPendingVoters(); // Refresh the list
+        ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Voter accepted successfully'), backgroundColor: Colors.green),
+      );
       } else {
         throw Exception('Failed to update account status');
       }
@@ -85,6 +88,9 @@ class _PendingVotersPageState extends State<PendingVotersPage> {
 
     if (response.statusCode == 200) {
       fetchPendingVoters(); // Refresh the list
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Voter rejected successfully'), backgroundColor: Colors.green),
+      );
     } else {
       throw Exception('Failed to delete voter');
     }

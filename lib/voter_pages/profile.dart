@@ -114,13 +114,13 @@ class _ProfileInfoState extends State<ProfileInfo> {
       if (data['status'] == 'success') {
         // Populate the form fields with the fetched data
         setState(() {
-          firstnameController.text = data['data']['firstname'];
-          middlenameController.text = data['data']['middlename'];
-          lastnameController.text = data['data']['lastname'];
-          courseController.text = data['data']['course'];
-          sectionController.text = data['data']['section'];
-          statusController.text = data['data']['account_status'];
-          accountStatus = data['data']['account_status']; // Store the account status
+          firstnameController.text = data['data']['firstname'] ?? '';
+          middlenameController.text = data['data']['middlename'] ?? '';
+          lastnameController.text = data['data']['lastname'] ?? '';
+          courseController.text = data['data']['course'] ?? '';
+          sectionController.text = data['data']['section'] ?? '';
+          statusController.text = data['data']['account_status'] ?? '';
+          accountStatus = data['data']['account_status'];
         });
       } else {
         print('Error fetching user data: ${data['message']}');

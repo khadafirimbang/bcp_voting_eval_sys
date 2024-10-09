@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/drawerbar_admin.dart';
-import 'package:for_testing/admin_pages/resultAdmin.dart';
 import 'package:http/http.dart' as http;
 import 'package:pie_chart/pie_chart.dart';
 
@@ -22,10 +21,7 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    fetchVoteCounts();
-    fetchTotalCandidates();
-    fetchTotalEvalAns();
-    fetchTotalEval();
+    fetchVoteCounts(); // Fetch vote counts first
   }
 
   Future<void> fetchVoteCounts() async {
@@ -37,8 +33,10 @@ class _DashboardPageState extends State<DashboardPage> {
         setState(() {
           votedCount = data['voted_count'];
           notVotedCount = data['not_voted_count'];
-          isLoading = false;
         });
+        await fetchTotalEvalAns(); // Call this after voted counts are set
+        await fetchTotalCandidates(); // Fetch total candidates
+        await fetchTotalEval(); // Fetch total evaluations
       } else {
         throw Exception('Failed to load vote counts');
       }
@@ -56,7 +54,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        totalCandidates = data['total_candidates'];
+        setState(() {
+          totalCandidates = data['total_candidates'];
+        });
       } else {
         throw Exception('Failed to load total candidates');
       }
@@ -71,10 +71,11 @@ class _DashboardPageState extends State<DashboardPage> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        totalEvalAns = data['total_eval_answered'];
         setState(() {
+          totalEvalAns = data['total_eval_answered'];
           // Calculate totalEvalNotAns after fetching totalEvalAns
           totalEvalNotAns = (votedCount + notVotedCount) - totalEvalAns;
+          totalEvalNotAns = totalEvalNotAns < 0 ? 0 : totalEvalNotAns; // Ensure it's not negative
         });
       } else {
         throw Exception('Failed to load total eval answered');
@@ -83,35 +84,30 @@ class _DashboardPageState extends State<DashboardPage> {
       print(e);
     }
   }
+
   Future<void> fetchTotalEval() async {
     try {
       final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_total_eval.php'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        totalEval = data['total_eval'];
+        setState(() {
+          totalEval = data['total_eval'];
+        });
       } else {
         throw Exception('Failed to load total eval');
       }
     } catch (e) {
       print(e);
+    } finally {
+      setState(() {
+        isLoading = false; // Set loading to false after all data is fetched
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Determine the number of columns based on the screen width
-    int crossAxisCount;
-    double screenWidth = MediaQuery.of(context).size.width;
-
-    if (screenWidth > 1200) {
-      crossAxisCount = 4; // For computers
-    } else if (screenWidth > 600) {
-      crossAxisCount = 3; // For iPads and tablets
-    } else {
-      crossAxisCount = 1; // For mobile devices
-    }
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E3A8A),
@@ -120,12 +116,12 @@ class _DashboardPageState extends State<DashboardPage> {
         leading: Builder(
           builder: (BuildContext context) {
             return IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              Scaffold.of(context).openDrawer(); // Use this context
-            },
-                  );
-          }
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
         ),
       ),
       drawer: const AppDrawerAdmin(),
@@ -137,172 +133,49 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Center(
                   child: Column(
                     children: [
-                      // Grid layout for containers
-                      GridView.count(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 10,
+                        runSpacing: 10,
                         children: [
                           // Total Voters Container
-                          Container(
+                          buildInfoContainer(
+                            title: 'Total of Voters: ${votedCount + notVotedCount}',
                             color: Colors.green,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-                                    child: Text(
-                                      'Total of Voters: ${votedCount + notVotedCount}',
-                                      style: const TextStyle(
-                                        fontSize: 23,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        shadows: [
-                                          Shadow(
-                                            offset: Offset(0.3, 0.3),
-                                            blurRadius: 3.0,
-                                            color: Colors.black54,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const Icon(Icons.people, size: 50, color: Colors.white),
-                                ],
-                              ),
-                            ),
+                            icon: Icons.people,
                           ),
                           // Total Candidates Container
-                          Container(
+                          buildInfoContainer(
+                            title: 'Total of Candidates: $totalCandidates',
                             color: Colors.blue,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-                                    child: Text(
-                                      'Total of Candidates: $totalCandidates',
-                                      style: const TextStyle(
-                                        fontSize: 23,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        shadows: [
-                                          Shadow(
-                                            offset: Offset(0.3, 0.3),
-                                            blurRadius: 3.0,
-                                            color: Colors.black54,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const Icon(Icons.people, size: 50, color: Colors.white),
-                                ],
-                              ),
-                            ),
+                            icon: Icons.people,
                           ),
                           // Total Evaluation Container
-                          Container(
+                          buildInfoContainer(
+                            title: 'Total of Evaluation: $totalEval',
                             color: Colors.red,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-                                    child: Text(
-                                      'Total of Evaluation: $totalEval',
-                                      style: const TextStyle(
-                                        fontSize: 23,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        shadows: [
-                                          Shadow(
-                                            offset: Offset(0.3, 0.3),
-                                            blurRadius: 3.0,
-                                            color: Colors.black54,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const Icon(Icons.question_answer, size: 50, color: Colors.white),
-                                ],
-                              ),
-                            ),
+                            icon: Icons.question_answer,
+                          ),
+                          // First PieChart
+                          buildPieChart(
+                            title: "Voted vs Not Voted",
+                            dataMap: {
+                              "Voted - $votedCount": votedCount.toDouble(),
+                              "Not Voted - $notVotedCount": notVotedCount.toDouble(),
+                            },
+                            colorList: const [Colors.blue, Colors.red],
+                          ),
+                          // Second PieChart
+                          buildPieChart(
+                            title: "Evaluation Answered vs Not Answered",
+                            dataMap: {
+                              "Answered - $totalEvalAns": totalEvalAns.toDouble(),
+                              "Not Answered - $totalEvalNotAns": totalEvalNotAns.toDouble(),
+                            },
+                            colorList: const [Colors.green, Colors.orange],
                           ),
                         ],
                       ),
-                      // PieChart
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.symmetric(vertical: 10),
-                              height: 340, // Set a fixed height for the PieChart
-                              child: PieChart(
-                                dataMap: {
-                                  "Voted - $votedCount": votedCount.toDouble(),
-                                  "Not Voted - $notVotedCount": notVotedCount.toDouble(),
-                                },
-                                chartType: ChartType.disc,
-                                animationDuration: const Duration(milliseconds: 1000),
-                                colorList: const [Colors.blue, Colors.red],
-                                legendOptions: const LegendOptions(
-                                  showLegendsInRow: false,
-                                  legendPosition: LegendPosition.right,
-                                  showLegends: true,
-                                  legendTextStyle: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 23,
-                                  ),
-                                ),
-                                chartValuesOptions: const ChartValuesOptions(
-                                  showChartValueBackground: true,
-                                  showChartValues: true,
-                                  showChartValuesInPercentage: true,
-                                  showChartValuesOutside: false,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              margin: const EdgeInsets.symmetric(vertical: 10),
-                              height: 340, // Set a fixed height for the PieChart
-                              child: PieChart(
-                                dataMap: {
-                                  "Total Answered Evaluation - $totalEvalAns": totalEvalAns.toDouble(),
-                                  "Not Answered - $totalEvalNotAns": totalEvalNotAns.toDouble(),
-                                },
-                                chartType: ChartType.disc,
-                                animationDuration: const Duration(milliseconds: 1000),
-                                colorList: const [Colors.green, Colors.purple],
-                                legendOptions: const LegendOptions(
-                                  showLegendsInRow: false,
-                                  legendPosition: LegendPosition.right,
-                                  showLegends: true,
-                                  legendTextStyle: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 23,
-                                  ),
-                                ),
-                                chartValuesOptions: const ChartValuesOptions(
-                                  showChartValueBackground: true,
-                                  showChartValues: true,
-                                  showChartValuesInPercentage: true,
-                                  showChartValuesOutside: false,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
                     ],
                   ),
                 ),
@@ -310,5 +183,83 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
     );
   }
-}
 
+  Widget buildInfoContainer({required String title, required Color color, required IconData icon}) {
+    return Container(
+      width: MediaQuery.of(context).size.width > 600
+          ? (MediaQuery.of(context).size.width / 3) - 20
+          : MediaQuery.of(context).size.width - 20,
+      height: 300,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            offset: const Offset(6, 6),
+            blurRadius: 5,
+          ),
+        ],
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 23,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(0.3, 0.3),
+                      blurRadius: 3.0,
+                      color: Colors.black54,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Icon(icon, size: 50, color: Colors.white),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildPieChart({required String title, required Map<String, double> dataMap, required List<Color> colorList}) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        height: 340,
+        child: PieChart(
+          dataMap: dataMap,
+          chartType: ChartType.disc,
+          animationDuration: const Duration(milliseconds: 1000),
+          colorList: colorList,
+          legendOptions: const LegendOptions(
+            showLegendsInRow: false,
+            legendPosition: LegendPosition.right,
+            showLegends: true,
+            legendTextStyle: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 23,
+            ),
+          ),
+          chartValuesOptions: const ChartValuesOptions(
+            showChartValueBackground: false,
+            showChartValues: true,
+            chartValueStyle: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

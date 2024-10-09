@@ -93,8 +93,13 @@ class _VotersPageState extends State<VotersPage> {
     if (response.statusCode == 200) {
       // Refresh the user list after deletion
       fetchUsers();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Voter deleted successfully'), backgroundColor: Colors.green),
+      );
     } else {
-      throw Exception('Failed to delete user');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to delete the voter'), backgroundColor: Colors.red),
+      );
     }
   }
 
@@ -112,8 +117,13 @@ class _VotersPageState extends State<VotersPage> {
   if (response.statusCode == 200) {
     // Refresh the user list after updating
     fetchUsers();
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Voter updated successfully'), backgroundColor: Colors.green),
+      );
   } else {
-    throw Exception('Failed to update user');
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to update the voter'), backgroundColor: Colors.red),
+      );
   }
 }
 
