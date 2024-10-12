@@ -415,7 +415,13 @@ class _CandidatesPageState extends State<CandidatesPage> {
             dropdownColor: const Color(0xFF1E3A8A),
             style: const TextStyle(color: Colors.white),
           ),
-          const SizedBox(width: 10),
+          // const SizedBox(width: 10),
+          IconButton(onPressed: (){
+            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const CandidatesPage()),
+                            );
+          }, icon: const Icon(Icons.refresh))
         ],
       ),
       body: Padding(

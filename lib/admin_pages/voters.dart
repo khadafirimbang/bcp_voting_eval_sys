@@ -255,7 +255,7 @@ class _VotersPageState extends State<VotersPage> {
             const SizedBox(height: 16.0),
             Expanded(
               child: filteredUsers.isEmpty
-                  ? Center(child: CircularProgressIndicator())
+                  ? Center(child: Text('No Voters yet.'))
                   : ListView.builder(
                       itemCount: currentPageUsers.length,
                       itemBuilder: (context, index) {

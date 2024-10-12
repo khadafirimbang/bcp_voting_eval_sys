@@ -47,34 +47,6 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
         context, MaterialPageRoute(builder: (context) => const LoginPage()));
   }
 
-  // Function to show logout confirmation dialog
-  // Future<void> _showLogoutDialog(BuildContext context) async {
-  //   return showDialog<void>(
-  //     context: context,
-  //     barrierDismissible: false, // Prevent dismissing by tapping outside
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('Logout Confirmation'),
-  //         content: const Text('Are you sure you want to logout?'),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop(); // Close the dialog
-  //             },
-  //             child: const Text('No'),
-  //           ),
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop(); // Close the dialog
-  //               _logout(context); // Call the logout function
-  //             },
-  //             child: const Text('Yes'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {

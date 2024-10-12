@@ -169,10 +169,10 @@ class _DashboardPageState extends State<DashboardPage> {
                           buildPieChart(
                             title: "Evaluation Answered vs Not Answered",
                             dataMap: {
-                              "Answered - $totalEvalAns": totalEvalAns.toDouble(),
-                              "Not Answered - $totalEvalNotAns": totalEvalNotAns.toDouble(),
+                              "Evaluation Answered - $totalEvalAns": totalEvalAns.toDouble(),
+                              "Evaluation Not Answered - $totalEvalNotAns": totalEvalNotAns.toDouble(),
                             },
-                            colorList: const [Colors.green, Colors.orange],
+                            colorList: const [Colors.green, Colors.red],
                           ),
                         ],
                       ),

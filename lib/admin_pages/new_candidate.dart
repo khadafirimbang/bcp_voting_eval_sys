@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:for_testing/admin_pages/candidates.dart';
+import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:image_picker_web/image_picker_web.dart'; // For Web Image Picker
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -190,6 +192,7 @@ void _submitForm() async {
         title: const Text('Add New Candidate', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
         ),
+      drawer: AppDrawerAdmin(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Container(
@@ -225,6 +228,19 @@ void _submitForm() async {
                     _buildImageUploadSection(),
                     const SizedBox(height: 20),
                     _buildSubmitButton(),
+                    const SizedBox(height: 10,),
+                    ElevatedButton(
+                      
+                      onPressed: () {
+                      Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const CandidatesPage()),
+                            );
+                    }, 
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red, // Set the background color
+                    ),
+                    child: const Text('Cancel', style: TextStyle(color: Colors.white),))
                   ],
                 ),
               ),
@@ -307,6 +323,9 @@ void _submitForm() async {
 
   Widget _buildSubmitButton() {
     return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E3A8A), // Set the background color
+                    ),
       onPressed: _isSaving || _isUploadingImage ? null : _submitForm, // Disable button while saving or uploading
       child: _isSaving || _isUploadingImage
           ? const Row(
@@ -317,7 +336,7 @@ void _submitForm() async {
                 // Text('Saving...'), // Optionally include text
               ],
             )
-          : const Text('Submit'),
+          : const Text('Submit', style: TextStyle(color: Colors.white)),
     );
   }
 }
