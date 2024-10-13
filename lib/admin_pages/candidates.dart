@@ -4,9 +4,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:for_testing/admin_pages/new_candidate.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'dart:html' as html;
 
 class CandidatesPage extends StatefulWidget {
   const CandidatesPage({super.key});
@@ -49,62 +49,6 @@ class _CandidatesPageState extends State<CandidatesPage> {
     _searchController.addListener(_filterCandidates);
   }
 
-  Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _image = pickedFile;
-        _readImageBytes();
-      });
-    }
-  }
-
-  Future<void> _readImageBytes() async {
-    if (_image == null) return;
-
-    final reader = html.FileReader();
-    final completer = Completer<Uint8List>();
-
-    reader.onLoadEnd.listen((_) {
-      completer.complete(reader.result as Uint8List);
-    });
-
-    reader.readAsArrayBuffer(html.File([await _image!.readAsBytes()], _image!.name));
-    final fileBytes = await completer.future;
-
-    setState(() {
-      _imageBytes = fileBytes;
-    });
-  }
-
-  Future<void> _uploadImage() async {
-    if (_image == null) return;
-
-    final url = Uri.parse('https://api.cloudinary.com/v1_1/dcmdta4rb/image/upload');
-    final request = http.MultipartRequest('POST', url);
-    request.fields['upload_preset'] = 'sjon389q';
-    request.files.add(http.MultipartFile.fromBytes('file', _imageBytes!, filename: _image!.name));
-
-    final response = await request.send();
-
-    if (response.statusCode == 200) {
-      final responseData = await response.stream.bytesToString();
-      final responseJson = json.decode(responseData);
-      if (responseJson['url'] != null) {
-        setState(() {
-          _uploadedImageUrl = responseJson['url'];
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Image upload failed'), backgroundColor: Colors.red),
-        );
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to upload image'), backgroundColor: Colors.red),
-      );
-    }
-  }
 
   Future<void> _fetchCandidates() async {
     final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_all_candidates.php');
@@ -449,7 +393,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
                       leading: CircleAvatar(
                         backgroundImage: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
                             ? NetworkImage(candidate['image_url'])
-                            : AssetImage('assets/bcp_logo.png'), // Replace with your placeholder path
+                            : const AssetImage('assets/bcp_logo.png'), // Replace with your placeholder path
                       ),
                       title: Text('${candidate['firstname']} ${candidate['lastname']}'),
                       subtitle: Text('Position: ${candidate['position']}'),
@@ -479,7 +423,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                    icon: Icon(Icons.arrow_back, color: Colors.black),
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
                     onPressed: currentPage > 0 ? () {
                     setState(() {
                       currentPage--;
@@ -488,7 +432,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
                   ),
                 Text('Page ${currentPage + 1} of $totalPages'),
                 IconButton(
-                    icon: Icon(Icons.arrow_forward, color: Colors.black),
+                    icon: const Icon(Icons.arrow_forward, color: Colors.black),
                     onPressed: currentPage < totalPages - 1 ? () {
                     setState(() {
                       currentPage++;
@@ -507,8 +451,8 @@ class _CandidatesPageState extends State<CandidatesPage> {
                 MaterialPageRoute(builder: (context) => NewCandidatePage()),
               );
         },
-        child: Icon(Icons.add, color: Colors.white),
         backgroundColor: const Color(0xFF1E3A8A),
+        child: Icon(Icons.add, color: Colors.white),
       ),
     );
   }

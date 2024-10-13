@@ -147,7 +147,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
   }
 
   void showAddEvaluationForm() {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
@@ -173,7 +173,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                 height: MediaQuery.of(context).size.height * 0.5,
                 child: SingleChildScrollView(
                   child: Form(
-                    key: _formKey,
+                    key: formKey,
                     child: Column(
                       children: [
                         for (int index = 0; index < newEvaluations.length; index++)
@@ -256,7 +256,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                     backgroundColor: const Color(0xFF1E3A8A), // Background color
                   ),
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {
+                    if (formKey.currentState!.validate()) {
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
@@ -318,7 +318,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
   }
 
   void showUpdateEvaluationForm(int id, String question, String type) {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
@@ -344,7 +344,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                 height: MediaQuery.of(context).size.height * 0.4,
                 child: SingleChildScrollView(
                   child: Form(
-                    key: _formKey,
+                    key: formKey,
                     child: Column(
                       children: [
                         TextFormField(
@@ -399,7 +399,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                     backgroundColor: const Color(0xFF1E3A8A), // Background color
                   ),
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {
+                    if (formKey.currentState!.validate()) {
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
@@ -607,12 +607,12 @@ class _EvaluationPageState extends State<EvaluationPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                    icon: Icon(Icons.arrow_back, color: Colors.black),
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
                     onPressed: _previousPage,
                   ),
-                Text('Page $_currentPage of ${(filteredEvaluations.length / _rowsPerPage).ceil()}', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('Page $_currentPage of ${(filteredEvaluations.length / _rowsPerPage).ceil()}', style: const TextStyle(fontWeight: FontWeight.bold)),
                 IconButton(
-                    icon: Icon(Icons.arrow_forward, color: Colors.black),
+                    icon: const Icon(Icons.arrow_forward, color: Colors.black),
                     onPressed: _nextPage,
                   ),
               ],

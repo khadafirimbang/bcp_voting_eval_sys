@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:for_testing/voter_pages/drawerbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,7 +15,7 @@ class HomePage extends StatelessWidget {
         // Exit the app when the back button is pressed
         return exit(0);
       },
-      child: Scaffold(
+      child: const Scaffold(
         body: ProfileInfo(),
       ),
     );
@@ -352,7 +351,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
                       const SizedBox(height: 20),
                       Row(
                         children: [
-                          Text('Account status: '),
+                          const Text('Account status: '),
                           Text(
                           statusController.text,
                           style: TextStyle(

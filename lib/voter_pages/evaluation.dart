@@ -379,14 +379,14 @@ class _EvaluationPageState extends State<EvaluationPage> {
       });
 
       // Show success Snackbar
-      final snackBar = const SnackBar(
+      const snackBar = SnackBar(
         content: Text('Successfully submitted!'),
         backgroundColor: Colors.green,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       // Show failure Snackbar
-      final snackBar = const SnackBar(
+      const snackBar = SnackBar(
         content: Text('Failed to submit!'),
         backgroundColor: Colors.red,
       );

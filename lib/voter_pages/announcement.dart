@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class AnnouncementPage extends StatefulWidget {
+  const AnnouncementPage({super.key});
+
   @override
   _AnnouncementPageState createState() => _AnnouncementPageState();
 }
@@ -60,7 +62,7 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
       ),
       drawer: const AppDrawer(),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Container(
               margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 20), // Margin around the container
               padding: const EdgeInsets.all(10.0), // Padding inside the container
@@ -72,7 +74,7 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
                     color: Colors.grey.withOpacity(0.5),
                     spreadRadius: 2,
                     blurRadius: 5,
-                    offset: Offset(0, 3), // Changes position of shadow
+                    offset: const Offset(0, 3), // Changes position of shadow
                   ),
                 ],
               ),
@@ -88,14 +90,14 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
                         Text(
                           announcement['title'],
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                         ),
                         const SizedBox(height: 10), // Space between title and description
                         Text(
                           announcement['description'],
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 10,),
+                        const SizedBox(height: 10,),
                         Text(
                           announcement['created_at'],
                           textAlign: TextAlign.center,
@@ -109,8 +111,8 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
                           )
                         else
                           const Text('', textAlign: TextAlign.center),
-                        SizedBox(height: 30,),
-                        Divider()
+                        const SizedBox(height: 30,),
+                        const Divider()
                       ],
                     ),
                   );
