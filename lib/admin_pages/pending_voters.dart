@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class PendingVotersPage extends StatefulWidget {
+  const PendingVotersPage({super.key});
+
   @override
   _PendingVotersPageState createState() => _PendingVotersPageState();
 }

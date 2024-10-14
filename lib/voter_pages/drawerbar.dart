@@ -13,7 +13,6 @@ import 'package:for_testing/results_pages/result_vicepres.dart';
 import 'package:for_testing/voter_pages/announcement.dart';
 import 'package:for_testing/voter_pages/evaluation.dart';
 import 'package:for_testing/voter_pages/profile.dart';
-import 'package:for_testing/signin.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -104,7 +103,7 @@ class _AppDrawerState extends State<AppDrawer> {
               ],
             ),
           ),
-          SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.announcement, color: Colors.white,),
             title: const Text('Announcement', style: TextStyle(color: Colors.white)),
@@ -113,16 +112,16 @@ class _AppDrawerState extends State<AppDrawer> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => AnnouncementPage()));
             },
           ),
-          SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.person, color: Colors.white,),
             title: const Text('Profile', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileInfo()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileInfo()));
             },
           ),
-          SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ExpansionTile(
             collapsedIconColor: Colors.white,
             leading: const Icon(Icons.contact_emergency_sharp, color: Colors.white,),
@@ -166,7 +165,7 @@ class _AppDrawerState extends State<AppDrawer> {
               ),
             ],
           ),
-          SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ExpansionTile(
             collapsedIconColor: Colors.white,
             leading: const Icon(Icons.file_copy, color: Colors.white,),
@@ -210,7 +209,7 @@ class _AppDrawerState extends State<AppDrawer> {
               ),
             ],
           ),
-          SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.question_answer, color: Colors.white,),
             title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
@@ -219,7 +218,7 @@ class _AppDrawerState extends State<AppDrawer> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const EvaluationPage()));
             },
           ),
-          SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.white,),
             title: const Text('Logout', style: TextStyle(color: Colors.white)),

@@ -4,6 +4,8 @@ import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:http/http.dart' as http;
 
 class VotersPage extends StatefulWidget {
+  const VotersPage({super.key});
+
   @override
   _VotersPageState createState() => _VotersPageState();
 }
@@ -11,7 +13,7 @@ class VotersPage extends StatefulWidget {
 class _VotersPageState extends State<VotersPage> {
   List users = [];
   List filteredUsers = [];
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   bool _isSearchVisible = false;
   int currentPage = 0; // Current page index
   final int rowsPerPage = 10; // Changed to 10 rows per page
@@ -64,21 +66,21 @@ class _VotersPageState extends State<VotersPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Delete Confirmation'),
+          title: const Text('Delete Confirmation'),
           content: Text('Are you sure you want to delete user with Student No: $studentNo?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () async {
                 await _deleteUser(studentNo);
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text('Delete'),
+              child: const Text('Delete'),
             ),
           ],
         );
@@ -147,23 +149,23 @@ class _VotersPageState extends State<VotersPage> {
             children: [
               TextField(
                 controller: firstnameController,
-                decoration: InputDecoration(labelText: 'First Name'),
+                decoration: const InputDecoration(labelText: 'First Name'),
               ),
               TextField(
                 controller: lastnameController,
-                decoration: InputDecoration(labelText: 'Last Name'),
+                decoration: const InputDecoration(labelText: 'Last Name'),
               ),
               TextField(
                 controller: middlenameController,
-                decoration: InputDecoration(labelText: 'Middle Name'),
+                decoration: const InputDecoration(labelText: 'Middle Name'),
               ),
               TextField(
                 controller: courseController,
-                decoration: InputDecoration(labelText: 'Course'),
+                decoration: const InputDecoration(labelText: 'Course'),
               ),
               TextField(
                 controller: sectionController,
-                decoration: InputDecoration(labelText: 'Section'),
+                decoration: const InputDecoration(labelText: 'Section'),
               ),
             ],
           ),
@@ -176,13 +178,13 @@ class _VotersPageState extends State<VotersPage> {
                   middlenameController.text, courseController.text, sectionController.text);
               Navigator.of(context).pop(); // Close the dialog
             },
-            child: Text('Update'),
+            child: const Text('Update'),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); // Close the dialog
             },
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
         ],
       );
@@ -255,7 +257,7 @@ class _VotersPageState extends State<VotersPage> {
             const SizedBox(height: 16.0),
             Expanded(
               child: filteredUsers.isEmpty
-                  ? Center(child: Text('No Voters yet.'))
+                  ? const Center(child: Text('No Voters yet.'))
                   : ListView.builder(
                       itemCount: currentPageUsers.length,
                       itemBuilder: (context, index) {
@@ -300,7 +302,7 @@ class _VotersPageState extends State<VotersPage> {
                 Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.arrow_back, color: Colors.black),
+                      icon: const Icon(Icons.arrow_back, color: Colors.black),
                       onPressed: currentPage > 0
                           ? () {
                               setState(() {
@@ -309,9 +311,9 @@ class _VotersPageState extends State<VotersPage> {
                             }
                           : null,
                     ),
-                    Text('Page ${currentPage + 1} of $totalPages', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Page ${currentPage + 1} of $totalPages', style: const TextStyle(fontWeight: FontWeight.bold)),
                     IconButton(
-                      icon: Icon(Icons.arrow_forward, color: Colors.black),
+                      icon: const Icon(Icons.arrow_forward, color: Colors.black),
                       onPressed: currentPage < totalPages - 1
                           ? () {
                               setState(() {

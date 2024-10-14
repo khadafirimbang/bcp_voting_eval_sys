@@ -4,6 +4,8 @@ import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:http/http.dart' as http;
 
 class ResponsesPage extends StatefulWidget {
+  const ResponsesPage({super.key});
+
   @override
   _ResponsesPageState createState() => _ResponsesPageState();
 }
@@ -14,7 +16,7 @@ class _ResponsesPageState extends State<ResponsesPage> {
   String _searchQuery = '';
   String _selectedFilter = 'All';
   bool _isSearchVisible = false;
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   int _currentPage = 1; // Current page number
   final int _rowsPerPage = 10; // Number of rows per page
 
@@ -25,7 +27,7 @@ class _ResponsesPageState extends State<ResponsesPage> {
   }
 
   Future<void> fetchResponses() async {
-    final url = 'https://studentcouncil.bcp-sms1.com/php/fetch_responses.php'; // Replace with your server URL
+    const url = 'https://studentcouncil.bcp-sms1.com/php/fetch_responses.php'; // Replace with your server URL
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {

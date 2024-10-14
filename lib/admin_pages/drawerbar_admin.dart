@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:for_testing/admin_pages/accounts.dart';
 import 'package:for_testing/admin_pages/announcement_admin.dart';
 import 'package:for_testing/admin_pages/candidates.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
@@ -74,7 +75,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => DashboardPage()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const DashboardPage()));
             },
           ),
           const SizedBox(height: 10,),
@@ -95,18 +96,18 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             children: [
               ListTile(
               leading: const Icon(Icons.people, color: Colors.white,),
-              title: const Text('Voters', style: TextStyle(color: Colors.white)),
+              title: const Text('Verified Voters', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) => VotersPage()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const VotersPage()));
               },
             ),
             ListTile(
-              leading: const Icon(Icons.people, color: Colors.white,),
-              title: const Text('Pending Voters', style: TextStyle(color: Colors.white)),
+              leading: const Icon(Icons.people_outline, color: Colors.white,),
+              title: const Text('Unverified Voters', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) => PendingVotersPage()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const PendingVotersPage()));
               },
             ),
             ],
@@ -118,7 +119,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             title: const Text('Election Schedules', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionScheduler()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ElectionScheduler()));
             },
           ),
           const SizedBox(height: 10,),
@@ -127,7 +128,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             title: const Text('Result', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAdminPage()));
             },
           ),
           const SizedBox(height: 10,),
@@ -136,7 +137,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             title: const Text('Announcement', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => AnnouncementAdminPage()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const AnnouncementAdminPage()));
             },
           ),
           const SizedBox(height: 10,),
@@ -148,7 +149,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             children: [
               ListTile(
               leading: const Icon(Icons.question_answer_outlined, color: Colors.white,),
-              title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
+              title: const Text('Evaluation List', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const EvaluationPage()));
@@ -159,10 +160,19 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               title: const Text('Evaluation Responses', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) => ResponsesPage()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const ResponsesPage()));
               },
             ),
             ],
+          ),
+          const SizedBox(height: 10,),
+          ListTile(
+            leading: const Icon(Icons.announcement, color: Colors.white,),
+            title: const Text('Accounts', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AccountsPage()));
+            },
           ),
           const SizedBox(height: 10,),
           ListTile(

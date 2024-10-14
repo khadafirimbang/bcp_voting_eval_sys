@@ -117,12 +117,12 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
         await prefs.setString('studentno', studentNo);
         await prefs.setString('role', data['role']); // Save the role to SharedPreferences
 
-        if (data['role'] == 'student') {
+        if (data['role'] == 'Voter') {
           Navigator.pushReplacement(
             context, 
             MaterialPageRoute(builder: (context) => AnnouncementPage())
           );
-        } else if (data['role'] == 'admin') {
+        } else if (data['role'] == 'Admin') {
           Navigator.pushReplacement(
             context, 
             MaterialPageRoute(builder: (context) => DashboardPage())

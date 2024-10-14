@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:pie_chart/pie_chart.dart';
 
 class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
+
   @override
   _DashboardPageState createState() => _DashboardPageState();
 }
@@ -193,10 +195,10 @@ class _DashboardPageState extends State<DashboardPage> {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
-            offset: const Offset(6, 6),
+            offset: Offset(6, 6),
             blurRadius: 5,
           ),
         ],

@@ -2,10 +2,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/candidates.dart';
 import 'package:for_testing/admin_pages/drawerbar_admin.dart';
-import 'package:image_picker_web/image_picker_web.dart'; // For Web Image Picker
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class NewCandidatePage extends StatefulWidget {
   @override
@@ -20,12 +19,12 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
   TextEditingController _lastNameController = TextEditingController();
   TextEditingController _sectionController = TextEditingController();
   TextEditingController _courseController = TextEditingController();
-  TextEditingController _sloganController = TextEditingController(); // New slogan field
+  TextEditingController _sloganController = TextEditingController();
 
   String? _selectedPosition;
   Uint8List? _imageFile;
   bool _isUploadingImage = false;
-  bool _isSaving = false; // To handle loading state
+  bool _isSaving = false;
 
   final List<String> _positions = [
     'President',
@@ -36,10 +35,13 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
   ];
 
   Future<void> _pickImage() async {
-    var pickedFile = await ImagePickerWeb.getImageAsBytes();
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
     if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
       setState(() {
-        _imageFile = pickedFile;
+        _imageFile = bytes;
       });
     }
   }
@@ -53,14 +55,13 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
     String apiKey = '187942544922379';
     String uploadPreset = 'sjon389q';
 
-    // Generate the filename using student number
     String studentNo = _studentNoController.text;
-    String filename = 'candidate_$studentNo.png'; // Set the filename
+    String filename = 'candidate_$studentNo.png';
 
     var request = http.MultipartRequest('POST', Uri.parse(cloudinaryUrl));
     request.fields['upload_preset'] = uploadPreset;
     request.fields['api_key'] = apiKey;
-    request.files.add(http.MultipartFile.fromBytes('file', image, filename: filename)); // Use generated filename
+    request.files.add(http.MultipartFile.fromBytes('file', image, filename: filename));
 
     var response = await request.send();
 
@@ -81,7 +82,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
 
   Future<void> _saveCandidate(String imageUrl) async {
     setState(() {
-      _isSaving = true; // Start saving state
+      _isSaving = true;
     });
 
     final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/add_candidate.php');
@@ -94,7 +95,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
         'lastname': _lastNameController.text,
         'section': _sectionController.text,
         'course': _courseController.text,
-        'slogan': _sloganController.text, // Slogan field data
+        'slogan': _sloganController.text,
         'position': _selectedPosition,
         'image_url': imageUrl,
       },
@@ -108,7 +109,6 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
         content: Text('Candidate added successfully!'),
       ));
 
-      // Reset form fields after success
       _resetFormFields();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -118,58 +118,55 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
     }
 
     setState(() {
-      _isSaving = false; // Stop saving state
+      _isSaving = false;
     });
-}
-
+  }
 
   Future<bool> _checkStudentNoExists(String studentNo) async {
-  final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/check_studentno.php');
-  final response = await http.post(url, body: {
-    'studentno': studentNo,
-  });
+    final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/check_studentno.php');
+    final response = await http.post(url, body: {
+      'studentno': studentNo,
+    });
 
-  if (response.statusCode == 200) {
-    final jsonResponse = json.decode(response.body);
-    return jsonResponse['exists'] == true;
-  } else {
-    return false; // In case of error, consider it does not exist
-  }
-}
-
-void _submitForm() async {
-  if (_formKey.currentState!.validate()) {
-    // Check if the student number already exists
-    final studentNo = _studentNoController.text;
-    bool exists = await _checkStudentNoExists(studentNo);
-
-    if (exists) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        backgroundColor: Colors.red,
-        content: Text('Student number already exists!'),
-      ));
-      return; // Exit the method without proceeding
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      return jsonResponse['exists'] == true;
+    } else {
+      return false;
     }
+  }
 
-    if (_imageFile != null) {
-      final imageUrl = await _uploadImageToCloudinary(_imageFile!);
-      if (imageUrl != null) {
-        _saveCandidate(imageUrl);
+  void _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      final studentNo = _studentNoController.text;
+      bool exists = await _checkStudentNoExists(studentNo);
+
+      if (exists) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text('Student number already exists!'),
+        ));
+        return;
+      }
+
+      if (_imageFile != null) {
+        final imageUrl = await _uploadImageToCloudinary(_imageFile!);
+        if (imageUrl != null) {
+          await _saveCandidate(imageUrl);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Image upload failed.'),
+          ));
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           backgroundColor: Colors.red,
-          content: Text('Image upload failed.'),
+          content: Text('Please upload an image.'),
         ));
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        backgroundColor: Colors.red,
-        content: Text('Please upload an image.'),
-      ));
     }
   }
-}
-
 
   void _resetFormFields() {
     _studentNoController.clear();
@@ -178,7 +175,7 @@ void _submitForm() async {
     _lastNameController.clear();
     _sectionController.clear();
     _courseController.clear();
-    _sloganController.clear(); // Reset slogan field
+    _sloganController.clear();
     _selectedPosition = null;
     _imageFile = null;
     setState(() {});
@@ -191,20 +188,20 @@ void _submitForm() async {
         backgroundColor: const Color(0xFF1E3A8A),
         title: const Text('Add New Candidate', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
-        ),
+      ),
       drawer: AppDrawerAdmin(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12), // Rounded corners
+            borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
                 color: Colors.grey.withOpacity(0.5),
                 spreadRadius: 5,
                 blurRadius: 7,
-                offset: const Offset(0, 3), // Changes position of shadow
+                offset: const Offset(0, 3),
               ),
             ],
           ),
@@ -222,25 +219,25 @@ void _submitForm() async {
                     _buildTextField(_lastNameController, 'Last Name'),
                     _buildTextField(_sectionController, 'Section'),
                     _buildTextField(_courseController, 'Course'),
-                    _buildTextField(_sloganController, 'Slogan'), // Slogan field
+                    _buildTextField(_sloganController, 'Slogan'),
                     _buildDropdownField(),
                     const SizedBox(height: 10),
                     _buildImageUploadSection(),
                     const SizedBox(height: 20),
                     _buildSubmitButton(),
-                    const SizedBox(height: 10,),
+                    const SizedBox(height: 10),
                     ElevatedButton(
-                      
                       onPressed: () {
-                      Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const CandidatesPage()),
-                            );
-                    }, 
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red, // Set the background color
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const CandidatesPage()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      child: const Text('Cancel', style: TextStyle(color: Colors.white)),
                     ),
-                    child: const Text('Cancel', style: TextStyle(color: Colors.white),))
                   ],
                 ),
               ),
@@ -256,17 +253,14 @@ void _submitForm() async {
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: TextFormField(
         controller: controller,
-        maxLength: maxLength, // Set maximum length for student number
+        maxLength: maxLength,
         decoration: InputDecoration(
           labelText: label,
-          counterText: maxLength != null ? '' : null, // Hide counter if not needed
+          counterText: maxLength != null ? '' : null,
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'Please enter $label';
-          }
-          if (label == 'Student No' && value.length != 8) { // Validate student number length
-            return 'Student number must be 8 characters';
           }
           return null;
         },
@@ -278,17 +272,17 @@ void _submitForm() async {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: DropdownButtonFormField<String>(
-        decoration: const InputDecoration(labelText: 'Position'),
+        decoration: InputDecoration(labelText: 'Position'),
         value: _selectedPosition,
-        items: _positions.map((String position) {
-          return DropdownMenuItem<String>(
+        items: _positions.map((position) {
+          return DropdownMenuItem(
             value: position,
             child: Text(position),
           );
         }).toList(),
-        onChanged: (value) {
+        onChanged: (newValue) {
           setState(() {
-            _selectedPosition = value;
+            _selectedPosition = newValue;
           });
         },
         validator: (value) {
@@ -303,40 +297,43 @@ void _submitForm() async {
 
   Widget _buildImageUploadSection() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center, // Align image section center
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        if (_imageFile != null) 
+          Image.memory(
+            _imageFile!,
+            height: 150,
+            width: 150,
+            fit: BoxFit.cover,
+          ),
+        const SizedBox(height: 10),
         ElevatedButton(
           onPressed: _pickImage,
+          style: ElevatedButton.styleFrom(
+            // backgroundColor: Colors.blue,
+          ),
           child: const Text('Upload Image'),
         ),
-        const SizedBox(height: 10),
-        _imageFile != null
-            ? Image.memory(
-                _imageFile!,
-                width: 200,
-                fit: BoxFit.cover,
-              )
-            : const Text('No image selected', style: TextStyle(fontSize: 14)),
       ],
     );
   }
 
   Widget _buildSubmitButton() {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1E3A8A), // Set the background color
-                    ),
-      onPressed: _isSaving || _isUploadingImage ? null : _submitForm, // Disable button while saving or uploading
-      child: _isSaving || _isUploadingImage
-          ? const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(width: 10),
-                // Text('Saving...'), // Optionally include text
-              ],
-            )
-          : const Text('Submit', style: TextStyle(color: Colors.white)),
+    return SizedBox(
+      width: 150,
+      child: ElevatedButton(
+        onPressed: _isSaving || _isUploadingImage ? null : _submitForm,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF1E3A8A),
+          padding: const EdgeInsets.symmetric(vertical: 15),
+        ),
+        child: _isSaving
+            ? const CircularProgressIndicator(
+                color: Colors.white,
+              )
+            : const Text('Save Candidate', style: TextStyle(color: Colors.white)),
+      ),
     );
   }
 }
+

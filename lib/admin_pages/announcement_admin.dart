@@ -7,6 +7,8 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class AnnouncementAdminPage extends StatefulWidget {
+  const AnnouncementAdminPage({super.key});
+
   @override
   _AnnouncementAdminPageState createState() => _AnnouncementAdminPageState();
 }

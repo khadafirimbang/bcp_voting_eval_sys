@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:for_testing/voter_pages/drawerbar.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       home: VotePage(),
     );
   }

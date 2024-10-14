@@ -5,6 +5,8 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:http/http.dart' as http;
 
 class ResultAdminPage extends StatefulWidget {
+  const ResultAdminPage({super.key});
+
   @override
   _ResultAdminPageState createState() => _ResultAdminPageState();
 }

@@ -9,6 +9,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,6 +20,8 @@ class MyApp extends StatelessWidget {
 }
 
 class ElectionScheduler extends StatefulWidget {
+  const ElectionScheduler({super.key});
+
   @override
   _ElectionSchedulerState createState() => _ElectionSchedulerState();
 }
@@ -94,16 +98,16 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Confirm'),
-        content: Text('Are you sure you want to end the Election?'),
+        title: const Text('Confirm'),
+        content: const Text('Are you sure you want to end the Election?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Confirm'),
+            child: const Text('Confirm'),
           ),
         ],
       ),
@@ -122,7 +126,7 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
         children: [
           TextField(
             controller: nameController,
-            decoration: InputDecoration(labelText: 'Election Name'),
+            decoration: const InputDecoration(labelText: 'Election Name'),
           ),
           DateTimeField(
             label: 'Start Date',
@@ -155,13 +159,13 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
             );
             Navigator.of(context).pop(updatedSchedule);
           },
-          child: Text('Save'),
+          child: const Text('Save'),
         ),
         TextButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
       ],
     );
@@ -209,11 +213,11 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: Icon(Icons.edit),
+                          icon: const Icon(Icons.edit),
                           onPressed: () => _editSchedule(schedule),
                         ),
                         IconButton(
-                          icon: Icon(Icons.stop_sharp),
+                          icon: const Icon(Icons.stop_sharp),
                           onPressed: () => _deleteSchedule(schedule.id),
                         ),
                       ],
@@ -227,8 +231,8 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addSchedule,
-        child: Icon(Icons.add, color: Colors.white),
         backgroundColor: const Color(0xFF1E3A8A),
+        child: Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -333,7 +337,7 @@ class DateTimeField extends StatefulWidget {
   final DateTime? selectedDate;
   final ValueChanged<DateTime> onDateSelected;
 
-  DateTimeField({
+  const DateTimeField({super.key, 
     required this.label,
     required this.selectedDate,
     required this.onDateSelected,

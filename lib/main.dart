@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
 import 'package:for_testing/voter_pages/announcement.dart';
-import 'package:for_testing/voter_pages/profile.dart';
 import 'package:for_testing/signin.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
@@ -80,9 +79,9 @@ class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
   }
 
   void _navigateToRoleBasedPage(String? role) {
-    if (role == 'student') {
+    if (role == 'Voter') {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AnnouncementPage()));
-    } else if (role == 'admin') {
+    } else if (role == 'Admin') {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DashboardPage()));
     } else {
       // Redirect to LoginPage if role is not recognized
