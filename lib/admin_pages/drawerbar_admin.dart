@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:for_testing/admin_pages/accounts.dart';
 import 'package:for_testing/admin_pages/announcement_admin.dart';
 import 'package:for_testing/admin_pages/candidates.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
@@ -163,6 +164,15 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               },
             ),
             ],
+          ),
+          const SizedBox(height: 10,),
+          ListTile(
+            leading: const Icon(Icons.announcement, color: Colors.white,),
+            title: const Text('Accounts', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AccountsPage()));
+            },
           ),
           const SizedBox(height: 10,),
           ListTile(

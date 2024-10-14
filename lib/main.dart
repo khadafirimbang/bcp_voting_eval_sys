@@ -79,9 +79,9 @@ class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
   }
 
   void _navigateToRoleBasedPage(String? role) {
-    if (role == 'student') {
+    if (role == 'Voter') {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AnnouncementPage()));
-    } else if (role == 'admin') {
+    } else if (role == 'Admin') {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DashboardPage()));
     } else {
       // Redirect to LoginPage if role is not recognized
