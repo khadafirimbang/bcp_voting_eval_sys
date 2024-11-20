@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:for_testing/admin_pages/new_candidate.dart';
+import 'package:for_testing/admin_pages/partylist.dart';
 import 'package:for_testing/admin_pages/positions.dart';
 
 import 'package:http/http.dart' as http;
@@ -20,13 +21,8 @@ class _CandidatesPageState extends State<CandidatesPage> {
   List candidates = [];
   List filteredCandidates = [];
   final TextEditingController _searchController = TextEditingController();
-  final List<String> positions = [
-    'President',
-    'Vice President',
-    'Secretary',
-    'Treasurer',
-    'Auditor'
-  ];
+  final List<String> positions = [];
+  final List<String> partylists = [];
   final List<String> positionsFilter = [
     'All',
     'President',
@@ -36,6 +32,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
     'Auditor'
   ];
   String? selectedPosition;
+  String? selectedPartylist;
   bool _isSearchVisible = false;
   XFile? _image;
   String? _uploadedImageUrl;
@@ -48,8 +45,65 @@ class _CandidatesPageState extends State<CandidatesPage> {
     super.initState();
     _fetchCandidates();
     _searchController.addListener(_filterCandidates);
+    _loadPositions();
+    _loadPartylist();
   }
 
+  Future<void> _loadPartylist() async {
+    final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/get_partylist.php'); // Replace with your endpoint
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          setState(() {
+            partylists.clear();
+            partylists.addAll(List<String>.from(data['partylist']));
+          });
+        } else {
+          throw Exception(data['message']);
+        }
+      } else {
+        throw Exception('Failed to load partylist');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading partylist: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _loadPositions() async {
+    final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/get_positions.php');
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          setState(() {
+            positions.clear();
+            positions.addAll(List<String>.from(data['positions']));
+          });
+        } else {
+          throw Exception(data['message']);
+        }
+      } else {
+        throw Exception('Failed to load positions');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading positions: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   Future<void> _fetchCandidates() async {
     final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_all_candidates.php');
@@ -141,6 +195,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
     final TextEditingController sectionController = TextEditingController(text: candidate['section']);
     final TextEditingController sloganController = TextEditingController(text: candidate['slogan']);
     String? selectedPosition = candidate['position'];
+    String? selectedPartylist= candidate['partylist'];
 
     showDialog(
       context: context,
@@ -240,6 +295,21 @@ class _CandidatesPageState extends State<CandidatesPage> {
                         });
                       },
                     ),
+                    DropdownButtonFormField<String>(
+                      value: selectedPartylist,
+                      decoration: const InputDecoration(labelText: 'Partylist'),
+                      items: partylists.map((String partylist) {
+                        return DropdownMenuItem<String>(
+                          value: partylist,
+                          child: Text(partylist),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedPartylist = newValue;
+                        });
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -255,7 +325,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
             TextButton(
               onPressed: () {
                 if (formKey.currentState!.validate()) {
-                  _updateCandidate(studentnoController.text, lastnameController.text, firstnameController.text, middlenameController.text, courseController.text, sectionController.text, sloganController.text, selectedPosition);
+                  _updateCandidate(studentnoController.text, lastnameController.text, firstnameController.text, middlenameController.text, courseController.text, sectionController.text, sloganController.text, selectedPosition, selectedPartylist);
                   Navigator.pop(context);
                 }
               },
@@ -267,7 +337,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
     );
   }
 
-  Future<void> _updateCandidate(String studentno, String lastname, String firstname, String middlename, String course, String section, String slogan, String? position) async {
+  Future<void> _updateCandidate(String studentno, String lastname, String firstname, String middlename, String course, String section, String slogan, String? position, String? partylist) async {
     final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/update_candidate.php');
     final response = await http.post(url, body: {
       'studentno': studentno,
@@ -278,6 +348,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
       'section': section,
       'slogan': slogan,
       'position': position,
+      'partylist': partylist,
     });
 
     if (response.statusCode == 200) {
@@ -382,29 +453,58 @@ class _CandidatesPageState extends State<CandidatesPage> {
                 ),
               ),
             const SizedBox(height: 16.0),
-            SizedBox(
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                padding: const EdgeInsets.all(14.0),
+                                backgroundColor: const Color(0xFF1E3A8A),
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const PositionsPage()),
+                                );
+                              },
+                              child: const Text('View Positions', 
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
-                            padding: const EdgeInsets.all(14.0),
-                            backgroundColor: const Color(0xFF1E3A8A),
                           ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const PositionsPage()),
-                            );
-                          },
-                          child: const Text('View Positions', 
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
+                const SizedBox(width: 10.0),
+                SizedBox(
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                padding: const EdgeInsets.all(14.0),
+                                backgroundColor: const Color(0xFF1E3A8A),
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const PartyListPage()),
+                                );
+                              },
+                              child: const Text('View Partylists', 
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
+              ],
+            ),
             const SizedBox(height: 16.0),
             Expanded(
               child: ListView.builder(
@@ -421,7 +521,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
                             : const AssetImage('assets/bcp_logo.png'), // Replace with your placeholder path
                       ),
                       title: Text('${candidate['firstname']} ${candidate['lastname']}'),
-                      subtitle: Text('Position: ${candidate['position']}'),
+                      subtitle: Text('Position: ${candidate['position']} | Partylist: ${candidate['partylist']}'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

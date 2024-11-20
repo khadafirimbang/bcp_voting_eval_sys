@@ -22,45 +22,76 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
   TextEditingController _sloganController = TextEditingController();
 
   String? _selectedPosition;
+  String? _selectedPartylist;
   Uint8List? _imageFile;
   bool _isUploadingImage = false;
   bool _isSaving = false;
 
   final List<String> _positions = [];
+  final List<String> _partylist = [];
 
   @override
   void initState() {
     super.initState();
     _loadPositions();
+    _loadPartylist();
+  }
+
+  Future<void> _loadPartylist() async {
+    final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/get_partylist.php'); // Replace with your endpoint
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          setState(() {
+            _partylist.clear();
+            _partylist.addAll(List<String>.from(data['partylist']));
+          });
+        } else {
+          throw Exception(data['message']);
+        }
+      } else {
+        throw Exception('Failed to load partylist');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading partylist: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Future<void> _loadPositions() async {
-  final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/get_positions.php');
-  try {
-    final response = await http.get(url);
+    final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/get_positions.php');
+    try {
+      final response = await http.get(url);
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['status'] == 'success') {
-        setState(() {
-          _positions.clear();
-          _positions.addAll(List<String>.from(data['positions']));
-        });
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          setState(() {
+            _positions.clear();
+            _positions.addAll(List<String>.from(data['positions']));
+          });
+        } else {
+          throw Exception(data['message']);
+        }
       } else {
-        throw Exception(data['message']);
+        throw Exception('Failed to load positions');
       }
-    } else {
-      throw Exception('Failed to load positions');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading positions: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Error loading positions: $e'),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
-}
 
 
   Future<void> _pickImage() async {
@@ -126,6 +157,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
         'course': _courseController.text,
         'slogan': _sloganController.text,
         'position': _selectedPosition,
+        'partylist': _selectedPartylist,
         'image_url': imageUrl,
       },
     );
@@ -140,6 +172,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
 
       _resetFormFields();
     } else {
+      print(responseBody['message']);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: Colors.red,
         content: Text(responseBody['message']),
@@ -206,6 +239,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
     _courseController.clear();
     _sloganController.clear();
     _selectedPosition = null;
+    _selectedPartylist = null;
     _imageFile = null;
     setState(() {});
   }
@@ -249,7 +283,8 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
                     _buildTextField(_sectionController, 'Section'),
                     _buildTextField(_courseController, 'Course'),
                     _buildTextField(_sloganController, 'Slogan'),
-                    _buildDropdownField(),
+                    _buildDropdownFieldPosition(),
+                    _buildDropdownFieldPartylist(),
                     const SizedBox(height: 10),
                     _buildImageUploadSection(),
                     const SizedBox(height: 20),
@@ -297,7 +332,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
     );
   }
 
-  Widget _buildDropdownField() {
+  Widget _buildDropdownFieldPosition() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: DropdownButtonFormField<String>(
@@ -317,6 +352,33 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
         validator: (value) {
           if (value == null) {
             return 'Please select a position';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildDropdownFieldPartylist() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: DropdownButtonFormField<String>(
+        decoration: InputDecoration(labelText: 'Partylist'),
+        value: _selectedPartylist,
+        items: _partylist.map((partylist) {
+          return DropdownMenuItem(
+            value: partylist,
+            child: Text(partylist),
+          );
+        }).toList(),
+        onChanged: (newValue) {
+          setState(() {
+            _selectedPartylist = newValue;
+          });
+        },
+        validator: (value) {
+          if (value == null) {
+            return 'Please select a partylist';
           }
           return null;
         },
@@ -365,4 +427,3 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
     );
   }
 }
-
