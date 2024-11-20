@@ -6,6 +6,7 @@ import 'package:for_testing/admin_pages/dashboard.dart';
 import 'package:for_testing/admin_pages/election_sched.dart';
 import 'package:for_testing/admin_pages/evaluation_admin.dart';
 import 'package:for_testing/admin_pages/pending_voters.dart';
+import 'package:for_testing/admin_pages/positions.dart';
 import 'package:for_testing/admin_pages/responses.dart';
 import 'package:for_testing/admin_pages/resultAdmin.dart';
 import 'package:for_testing/admin_pages/voters.dart';
@@ -86,7 +87,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => const CandidatesPage()));
             },
-          ),
+          ),        
           const SizedBox(height: 10,),
           ExpansionTile(
             collapsedIconColor: Colors.white,

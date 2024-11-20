@@ -26,13 +26,42 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
   bool _isUploadingImage = false;
   bool _isSaving = false;
 
-  final List<String> _positions = [
-    'President',
-    'Vice President',
-    'Secretary',
-    'Treasurer',
-    'Auditor'
-  ];
+  final List<String> _positions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPositions();
+  }
+
+  Future<void> _loadPositions() async {
+  final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/get_positions.php');
+  try {
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['status'] == 'success') {
+        setState(() {
+          _positions.clear();
+          _positions.addAll(List<String>.from(data['positions']));
+        });
+      } else {
+        throw Exception(data['message']);
+      }
+    } else {
+      throw Exception('Failed to load positions');
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error loading positions: $e'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}
+
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();

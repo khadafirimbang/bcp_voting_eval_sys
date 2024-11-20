@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:for_testing/admin_pages/new_candidate.dart';
+import 'package:for_testing/admin_pages/positions.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -380,6 +381,30 @@ class _CandidatesPageState extends State<CandidatesPage> {
                   border: OutlineInputBorder(),
                 ),
               ),
+            const SizedBox(height: 16.0),
+            SizedBox(
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            padding: const EdgeInsets.all(14.0),
+                            backgroundColor: const Color(0xFF1E3A8A),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const PositionsPage()),
+                            );
+                          },
+                          child: const Text('View Positions', 
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
             const SizedBox(height: 16.0),
             Expanded(
               child: ListView.builder(
