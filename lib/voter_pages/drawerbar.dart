@@ -13,6 +13,7 @@ import 'package:for_testing/results_pages/result_vicepres.dart';
 import 'package:for_testing/voter_pages/announcement.dart';
 import 'package:for_testing/voter_pages/evaluation.dart';
 import 'package:for_testing/voter_pages/profile.dart';
+import 'package:for_testing/voter_pages/vote.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -119,6 +120,15 @@ class _AppDrawerState extends State<AppDrawer> {
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileInfo()));
+            },
+          ),
+          const SizedBox(height: 10,),
+          ListTile(
+            leading: const Icon(Icons.person, color: Colors.white,),
+            title: const Text('Votes', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => VotePage()));
             },
           ),
           const SizedBox(height: 10,),
