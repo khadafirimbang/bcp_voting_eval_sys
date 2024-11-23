@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:for_testing/voter_pages/candidate_info.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:cached_network_image/cached_network_image.dart';
 
 class VotePage extends StatefulWidget {
   @override
@@ -17,40 +19,35 @@ class _VotePageState extends State<VotePage> {
   @override
   void initState() {
     super.initState();
-    fetchCandidates();
-    fetchPositions();
+    fetchCandidatesAndPositions();
   }
 
-  Future<void> fetchCandidates() async {
-    final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_candidates.php'));
-    if (response.statusCode == 200) {
+  // Fetch candidates and positions in one function to reduce network calls
+  Future<void> fetchCandidatesAndPositions() async {
+    try {
+      final candidatesResponse = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_candidates.php'));
+      final positionsResponse = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_positions.php'));
+
+      if (candidatesResponse.statusCode == 200 && positionsResponse.statusCode == 200) {
+        setState(() {
+          candidates = json.decode(candidatesResponse.body);
+          positions = json.decode(positionsResponse.body);
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load data');
+      }
+    } catch (e) {
       setState(() {
-        candidates = json.decode(response.body);
-        isLoading = false; // Hide loading indicator after data is fetched
-      });
-    } else {
-      setState(() {
-        isLoading = false; // Hide loading indicator in case of failure
+        isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load candidates.')),
+        SnackBar(content: Text('Error loading data: $e')),
       );
     }
   }
 
-  Future<void> fetchPositions() async {
-    final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_positions.php'));
-    if (response.statusCode == 200) {
-      setState(() {
-        positions = json.decode(response.body);
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load positions.')),
-      );
-    }
-  }
-
+  // Voting function optimized to only update necessary state
   Future<void> voteCandidate(String studentNo, String position, int votesQty) async {
     userVotes[position] ??= [];
     if ((userVotes[position]?.length ?? 0) >= votesQty) {
@@ -81,7 +78,6 @@ class _VotePageState extends State<VotePage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Vote cast successfully!')),
           );
-          fetchCandidates(); // Refresh candidates list
         } else {
           throw Exception(result['error'] ?? 'Failed to vote');
         }
@@ -103,14 +99,11 @@ class _VotePageState extends State<VotePage> {
             ? 380 // Tablet size
             : 360; // Mobile screens
 
-    // Determine the number of candidates per row based on device size
-    int candidatesPerRow = 5; // Default for large screens (computers)
-    if (MediaQuery.of(context).size.width <= 1024) {
-      candidatesPerRow = 3; // For iPads and Tablets
-    }
-    if (MediaQuery.of(context).size.width <= 540) {
-      candidatesPerRow = 1; // For Mobile devices
-    }
+    int candidatesPerRow = MediaQuery.of(context).size.width > 1024
+        ? 5 // Desktop
+        : MediaQuery.of(context).size.width > 540
+            ? 3 // Tablets
+            : 1; // Mobile devices
 
     return Scaffold(
       appBar: AppBar(
@@ -138,98 +131,117 @@ class _VotePageState extends State<VotePage> {
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: isLoading
-            ? Center(child: CircularProgressIndicator()) // Show loading indicator while fetching
-            : SingleChildScrollView( // Wrap content in a scrollable container
+            ? Center(child: CircularProgressIndicator()) // Loading indicator
+            : SingleChildScrollView(
                 child: Column(
-                  children: positions
-                      .map((position) => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Show position name if it matches the selected filter
-                              if (selectedPosition == 'All' || selectedPosition == position['name'])
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    position['name'],
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              // Display candidates for this position if the filter matches
-                              Align(
-                                alignment: Alignment.topCenter,
-                                child: GridView.builder(
-                                  shrinkWrap: true, // Allows the GridView to fit inside a ListView
-                                  physics: NeverScrollableScrollPhysics(), // Disable scrolling within GridView
-                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: candidatesPerRow,
-                                    crossAxisSpacing: 8.0,
-                                    mainAxisSpacing: 8.0,
-                                    mainAxisExtent: cardHeight,
-                                  ),
-                                  itemCount: candidates
-                                      .where((candidate) => selectedPosition == 'All' || candidate['position'] == position['name'])
-                                      .toList()
-                                      .length,
-                                  itemBuilder: (context, index) {
-                                    var candidate = candidates
-                                        .where((candidate) => selectedPosition == 'All' || candidate['position'] == position['name'])
-                                        .toList()[index];
-                                    return Card(
-                                      elevation: 2.0,
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(10.0),
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.center,
-                                              children: [
-                                                ClipOval(
-                                                  child: Image.network(
-                                                    candidate['image_url'],
-                                                    width: 155, // Adjust size based on device
-                                                    height: 155, // Adjust size based on device
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: Text(
-                                                    '${candidate['firstname']} ${candidate['lastname']}',
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                                  ),
-                                                ),
-                                                Text(
-                                                  candidate['slogan'] ?? '',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(fontStyle: FontStyle.italic),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          ElevatedButton(
-                                            onPressed: () {
-                                              voteCandidate(
-                                                candidate['studentno'] as String,
-                                                position['name'] as String,
-                                                position['votes_qty'] as int,
-                                              );
-                                            },
-                                            child: Text('Vote'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ))
-                      .toList(),
+                  children: selectedPosition == 'All'
+                      ? positions.map((position) {
+                          var filteredCandidates = candidates
+                              .where((candidate) => candidate['position'] == position['name'])
+                              .toList();
+
+                          return _buildCandidateGrid(position, filteredCandidates, candidatesPerRow, cardHeight);
+                        }).toList()
+                      : positions.where((position) => position['name'] == selectedPosition).map((position) {
+                          var filteredCandidates = candidates
+                              .where((candidate) => candidate['position'] == position['name'])
+                              .toList();
+
+                          return _buildCandidateGrid(position, filteredCandidates, candidatesPerRow, cardHeight);
+                        }).toList(),
                 ),
               ),
-      ),
+    ));
+  }
+
+  // Helper function to create the candidate grid
+  Widget _buildCandidateGrid(dynamic position, List<dynamic> filteredCandidates, int candidatesPerRow, double cardHeight) {
+    if (filteredCandidates.isEmpty) return SizedBox.shrink(); // Skip if no candidates
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            position['name'],
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: candidatesPerRow,
+            crossAxisSpacing: 8.0,
+            mainAxisSpacing: 8.0,
+            mainAxisExtent: cardHeight,
+          ),
+          itemCount: filteredCandidates.length,
+          itemBuilder: (context, index) {
+            var candidate = filteredCandidates[index];
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CandidateDetailPage(candidate: candidate),
+                  ),
+                );
+              },
+              child: Card(
+                elevation: 2.0,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: candidate['image_url'],
+                              width: 155,
+                              height: 155,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => CircularProgressIndicator(),
+                              errorWidget: (context, url, error) => Icon(Icons.error),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              '${candidate['firstname']} ${candidate['lastname']} | ${candidate['position']}',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Text(
+                            candidate['slogan'] ?? '',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontStyle: FontStyle.italic),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        voteCandidate(
+                          candidate['studentno'] as String,
+                          position['name'] as String,
+                          position['votes_qty'] as int,
+                        );
+                      },
+                      child: Text('Vote'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }
