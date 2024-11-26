@@ -6,6 +6,7 @@ import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:for_testing/admin_pages/new_candidate.dart';
 import 'package:for_testing/admin_pages/partylist.dart';
 import 'package:for_testing/admin_pages/positions.dart';
+import 'package:for_testing/voter_pages/candidate_info.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -23,14 +24,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
   final TextEditingController _searchController = TextEditingController();
   final List<String> positions = [];
   final List<String> partylists = [];
-  final List<String> positionsFilter = [
-    'All',
-    'President',
-    'Vice President',
-    'Secretary',
-    'Treasurer',
-    'Auditor'
-  ];
+
   String? selectedPosition;
   String? selectedPartylist;
   bool _isSearchVisible = false;
@@ -416,12 +410,13 @@ class _CandidatesPageState extends State<CandidatesPage> {
             icon: const Icon(Icons.filter_list, color: Colors.white),
             hint: const Text('All', style: TextStyle(color: Colors.white)),
             value: selectedPosition,
-            items: positionsFilter.map((String position) {
-              return DropdownMenuItem<String>(
-                value: position,
-                child: Text(position),
-              );
-            }).toList(),
+            items: <String>['All', ...positions]
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
             onChanged: (String? newValue) {
               setState(() {
                 selectedPosition = newValue;
@@ -511,33 +506,44 @@ class _CandidatesPageState extends State<CandidatesPage> {
                 itemCount: currentPageUsers.length,
                 itemBuilder: (context, index) {
                   final candidate = currentPageUsers[index];
-                  return Card(
-                    color: Colors.white,
-                    elevation: 2,
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
-                            ? NetworkImage(candidate['image_url'])
-                            : const AssetImage('assets/bcp_logo.png'), // Replace with your placeholder path
-                      ),
-                      title: Text('${candidate['firstname']} ${candidate['lastname']}'),
-                      subtitle: Text('Position: ${candidate['position']} | Partylist: ${candidate['partylist']}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () {
-                              _showUpdateForm(candidate);
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              _showDeleteConfirmation(candidate['studentno']);
-                            },
-                          ),
-                        ],
+                  return GestureDetector(
+                    onTap: () {
+                      // Navigate to the candidate detail page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CandidateDetailPage(candidate: candidate),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      color: Colors.white,
+                      elevation: 2,
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
+                              ? NetworkImage(candidate['image_url'])
+                              : const AssetImage('assets/bcp_logo.png'), // Replace with your placeholder path
+                        ),
+                        title: Text('${candidate['firstname']} ${candidate['lastname']}'),
+                        subtitle: Text('Position: ${candidate['position']} | Partylist: ${candidate['partylist']}'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                _showUpdateForm(candidate);
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                _showDeleteConfirmation(candidate['studentno']);
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
