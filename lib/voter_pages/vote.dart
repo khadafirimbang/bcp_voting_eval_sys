@@ -3,6 +3,7 @@ import 'package:for_testing/voter_pages/candidate_info.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
 
 class VotePage extends StatefulWidget {
   @override
@@ -13,8 +14,11 @@ class _VotePageState extends State<VotePage> {
   List<dynamic> candidates = [];
   List<dynamic> positions = [];
   String selectedPosition = 'All';
-  Map<String, List<String>> userVotes = {}; // Tracks user votes per position
-  bool isLoading = true; // Flag to show loading screen
+  String searchQuery = '';
+  Map<String, List<String>> userVotes = {};
+  bool isLoading = true;
+  bool showSearchField = false; // State to toggle search field
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -22,16 +26,23 @@ class _VotePageState extends State<VotePage> {
     fetchCandidatesAndPositions();
   }
 
-  // Fetch candidates and positions in one function to reduce network calls
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
   Future<void> fetchCandidatesAndPositions() async {
     try {
-      final candidatesResponse = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_candidates.php'));
-      final positionsResponse = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_positions.php'));
+      final candidatesFuture = http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_candidates.php'));
+      final positionsFuture = http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_positions.php'));
 
-      if (candidatesResponse.statusCode == 200 && positionsResponse.statusCode == 200) {
+      final responses = await Future.wait([candidatesFuture, positionsFuture]);
+
+      if (responses[0].statusCode == 200 && responses[1].statusCode == 200) {
         setState(() {
-          candidates = json.decode(candidatesResponse.body);
-          positions = json.decode(positionsResponse.body);
+          candidates = json.decode(responses[0].body);
+          positions = json.decode(responses[1].body);
           isLoading = false;
         });
       } else {
@@ -47,7 +58,15 @@ class _VotePageState extends State<VotePage> {
     }
   }
 
-  // Voting function optimized to only update necessary state
+  void debounceSearch(String value) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(Duration(milliseconds: 300), () {
+      setState(() {
+        searchQuery = value.toLowerCase();
+      });
+    });
+  }
+
   Future<void> voteCandidate(String studentNo, String position, int votesQty) async {
     userVotes[position] ??= [];
     if ((userVotes[position]?.length ?? 0) >= votesQty) {
@@ -94,21 +113,32 @@ class _VotePageState extends State<VotePage> {
   @override
   Widget build(BuildContext context) {
     double cardHeight = MediaQuery.of(context).size.width > 1200
-        ? 350 // Desktop, larger screens
+        ? 350
         : MediaQuery.of(context).size.width > 800
-            ? 380 // Tablet size
-            : 360; // Mobile screens
+            ? 380
+            : 360;
 
     int candidatesPerRow = MediaQuery.of(context).size.width > 1024
-        ? 5 // Desktop
+        ? 5
         : MediaQuery.of(context).size.width > 540
-            ? 3 // Tablets
-            : 1; // Mobile devices
+            ? 3
+            : 1;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Vote'),
         actions: [
+          IconButton(
+            icon: Icon(showSearchField ? Icons.close : Icons.search),
+            onPressed: () {
+              setState(() {
+                showSearchField = !showSearchField;
+                if (!showSearchField) {
+                  searchQuery = '';
+                }
+              });
+            },
+          ),
           DropdownButton<String>(
             value: selectedPosition,
             onChanged: (value) {
@@ -131,32 +161,77 @@ class _VotePageState extends State<VotePage> {
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: isLoading
-            ? Center(child: CircularProgressIndicator()) // Loading indicator
+            ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Column(
-                  children: selectedPosition == 'All'
-                      ? positions.map((position) {
-                          var filteredCandidates = candidates
-                              .where((candidate) => candidate['position'] == position['name'])
-                              .toList();
-
-                          return _buildCandidateGrid(position, filteredCandidates, candidatesPerRow, cardHeight);
-                        }).toList()
-                      : positions.where((position) => position['name'] == selectedPosition).map((position) {
-                          var filteredCandidates = candidates
-                              .where((candidate) => candidate['position'] == position['name'])
-                              .toList();
-
-                          return _buildCandidateGrid(position, filteredCandidates, candidatesPerRow, cardHeight);
-                        }).toList(),
+                  children: [
+                    // Search TextField at the top of the list
+                    if (showSearchField)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Search...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                          ),
+                          onChanged: debounceSearch,
+                        ),
+                      ),
+                    selectedPosition == 'All'
+                        ? Column(
+                            children: positions.map((position) {
+                              var filteredCandidates =
+                                  _filterCandidates(position['name']);
+                              return _buildCandidateGrid(
+                                  position,
+                                  filteredCandidates,
+                                  candidatesPerRow,
+                                  cardHeight);
+                            }).toList(),
+                          )
+                        : Column(
+                            children: positions
+                                .where((position) =>
+                                    position['name'] == selectedPosition)
+                                .map((position) {
+                              var filteredCandidates =
+                                  _filterCandidates(position['name']);
+                              return _buildCandidateGrid(
+                                  position,
+                                  filteredCandidates,
+                                  candidatesPerRow,
+                                  cardHeight);
+                            }).toList(),
+                          ),
+                  ],
                 ),
               ),
-    ));
+      ),
+    );
   }
 
-  // Helper function to create the candidate grid
-  Widget _buildCandidateGrid(dynamic position, List<dynamic> filteredCandidates, int candidatesPerRow, double cardHeight) {
-    if (filteredCandidates.isEmpty) return SizedBox.shrink(); // Skip if no candidates
+  List<dynamic> _filterCandidates(String positionName) {
+  return candidates
+      .where((candidate) =>
+          candidate['position'] == positionName &&
+          (
+            (candidate['firstname']?.toLowerCase() ?? '').contains(searchQuery) ||
+            (candidate['lastname']?.toLowerCase() ?? '').contains(searchQuery) ||
+            (candidate['studentno']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
+            (candidate['section']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
+            (candidate['course']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
+            (candidate['partylist']?.toString().toLowerCase() ?? '').contains(searchQuery)
+          ))
+      .toList();
+}
+
+  Widget _buildCandidateGrid(dynamic position, List<dynamic> filteredCandidates,
+      int candidatesPerRow, double cardHeight) {
+    if (filteredCandidates.isEmpty) return SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -185,7 +260,8 @@ class _VotePageState extends State<VotePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CandidateDetailPage(candidate: candidate),
+                    builder: (context) =>
+                        CandidateDetailPage(candidate: candidate),
                   ),
                 );
               },
@@ -205,8 +281,10 @@ class _VotePageState extends State<VotePage> {
                               width: 155,
                               height: 155,
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => CircularProgressIndicator(),
-                              errorWidget: (context, url, error) => Icon(Icons.error),
+                              placeholder: (context, url) =>
+                                  CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error),
                             ),
                           ),
                           Padding(
@@ -222,18 +300,20 @@ class _VotePageState extends State<VotePage> {
                             textAlign: TextAlign.center,
                             style: TextStyle(fontStyle: FontStyle.italic),
                           ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                voteCandidate(
+                                    candidate['studentno'],
+                                    position['name'],
+                                    1);
+                              },
+                              child: Text('Vote'),
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        voteCandidate(
-                          candidate['studentno'] as String,
-                          position['name'] as String,
-                          position['votes_qty'] as int,
-                        );
-                      },
-                      child: Text('Vote'),
                     ),
                   ],
                 ),
