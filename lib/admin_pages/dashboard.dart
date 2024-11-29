@@ -111,19 +111,32 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
-        title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-        leading: Builder(
-          builder: (BuildContext context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+        child: Container(
+          alignment: Alignment.center, // Align the AppBar in the center
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+          decoration: BoxDecoration(
+            color: Colors.white, 
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3), // Shadow color
+                blurRadius: 8, // Blur intensity
+                spreadRadius: 1, // Spread radius
+                offset: const Offset(0, 4), // Vertical shadow position
+              ),
+            ],
+          ),
+          child: AppBar(
+            titleSpacing: -5,
+            backgroundColor: Colors.transparent, // Make inner AppBar transparent
+            elevation: 0, // Remove shadow
+            title: const Text(
+              'Dashboard',
+              style: TextStyle(fontSize: 18, color: Colors.black54),
+            ),
+            iconTheme: const IconThemeData(color: Colors.black45),
+          ),
         ),
       ),
       drawer: const AppDrawerAdmin(),

@@ -55,59 +55,30 @@ class _AppDrawerState extends State<AppDrawer> {
     );
   }
 
-  // Function to show logout confirmation dialog
-  // Future<void> _showLogoutDialog(BuildContext context) async {
-  //   return showDialog<void>(
-  //     context: context,
-  //     barrierDismissible: false, // Prevent dismissing by tapping outside
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('Logout Confirmation'),
-  //         content: const Text('Are you sure you want to logout?'),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop(); // Close the dialog
-  //             },
-  //             child: const Text('No'),
-  //           ),
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop(); // Close the dialog
-  //               _logout(context); // Call the logout function
-  //             },
-  //             child: const Text('Yes'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: const Color(0xFF1E3A8A), // Hex color #1E3A8A,
+      backgroundColor: Colors.white, // Hex color #1E3A8A,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
             decoration: const BoxDecoration(
-              color: Color(0xFF1E3A8A), // Hex color #1E3A8A
+              color: Colors.white, // Hex color #1E3A8A
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                const Icon(Icons.account_circle, size: 90, color: Colors.white),
+                Image.asset('assets/bcp_logo.png', width: 90),
                 const SizedBox(height: 10),
-                Text(studentNo ?? 'Student No', style: const TextStyle(color: Colors.white, fontSize: 18)),
+                Text(studentNo ?? 'Student No', style: const TextStyle(color: Colors.black, fontSize: 18)),
               ],
             ),
           ),
           const SizedBox(height: 10,),
           ListTile(
-            leading: const Icon(Icons.announcement, color: Colors.white,),
-            title: const Text('Announcement', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.announcement, color: Colors.black,),
+            title: const Text('Announcement', style: TextStyle(color: Colors.black)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => AnnouncementPage()));
@@ -115,8 +86,8 @@ class _AppDrawerState extends State<AppDrawer> {
           ),
           const SizedBox(height: 10,),
           ListTile(
-            leading: const Icon(Icons.person, color: Colors.white,),
-            title: const Text('Profile', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.person, color: Colors.black,),
+            title: const Text('Profile', style: TextStyle(color: Colors.black)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileInfo()));
@@ -124,8 +95,8 @@ class _AppDrawerState extends State<AppDrawer> {
           ),
           const SizedBox(height: 10,),
           ListTile(
-            leading: const Icon(Icons.person, color: Colors.white,),
-            title: const Text('Votes', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.person, color: Colors.black,),
+            title: const Text('Votes', style: TextStyle(color: Colors.black)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => VotePage()));
@@ -133,41 +104,41 @@ class _AppDrawerState extends State<AppDrawer> {
           ),
           const SizedBox(height: 10,),
           ExpansionTile(
-            collapsedIconColor: Colors.white,
-            leading: const Icon(Icons.contact_emergency_sharp, color: Colors.white,),
-            title: const Text('Vote', style: TextStyle(color: Colors.white)),
+            collapsedIconColor: Colors.black,
+            leading: const Icon(Icons.contact_emergency_sharp, color: Colors.black,),
+            title: const Text('Vote', style: TextStyle(color: Colors.black)),
             childrenPadding: const EdgeInsets.only(left: 37),
             children: [
               ListTile(
-                title: const Text('President', style: TextStyle(color: Colors.white)),
+                title: const Text('President', style: TextStyle(color: Colors.black)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const ForPres()));
                 },
               ),
               ListTile(
-                title: const Text('Vice President', style: TextStyle(color: Colors.white)),
+                title: const Text('Vice President', style: TextStyle(color: Colors.black)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const ForVicePres()));
                 },
               ),
               ListTile(
-                title: const Text('Secretary', style: TextStyle(color: Colors.white)),
+                title: const Text('Secretary', style: TextStyle(color: Colors.black)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const ForSecretary()));
                 },
               ),
               ListTile(
-                title: const Text('Treasurer', style: TextStyle(color: Colors.white)),
+                title: const Text('Treasurer', style: TextStyle(color: Colors.black)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const ForTreasurer()));
                 },
               ),
               ListTile(
-                title: const Text('Auditor', style: TextStyle(color: Colors.white)),
+                title: const Text('Auditor', style: TextStyle(color: Colors.black)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const ForAuditor()));
@@ -177,41 +148,41 @@ class _AppDrawerState extends State<AppDrawer> {
           ),
           const SizedBox(height: 10,),
           ExpansionTile(
-            collapsedIconColor: Colors.white,
-            leading: const Icon(Icons.file_copy, color: Colors.white,),
-            title: const Text('Results', style: TextStyle(color: Colors.white)),
+            collapsedIconColor: Colors.black,
+            leading: const Icon(Icons.file_copy, color: Colors.black,),
+            title: const Text('Results', style: TextStyle(color: Colors.black)),
             childrenPadding: const EdgeInsets.only(left: 37),
             children: [
               ListTile(
-                title: const Text('President', style: TextStyle(color: Colors.white)),
+                title: const Text('President', style: TextStyle(color: Colors.black)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultPres()));
                 },
               ),
               ListTile(
-                title: const Text('Vice President', style: TextStyle(color: Colors.white)),
+                title: const Text('Vice President', style: TextStyle(color: Colors.black)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultVicePres()));
                 },
               ),
               ListTile(
-                title: const Text('Secretary', style: TextStyle(color: Colors.white)),
+                title: const Text('Secretary', style: TextStyle(color: Colors.black)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultSecretary()));
                 },
               ),
               ListTile(
-                title: const Text('Treasurer', style: TextStyle(color: Colors.white)),
+                title: const Text('Treasurer', style: TextStyle(color: Colors.black)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultTreasurer()));
                 },
               ),
               ListTile(
-                title: const Text('Auditor', style: TextStyle(color: Colors.white)),
+                title: const Text('Auditor', style: TextStyle(color: Colors.black)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAuditor()));
@@ -221,8 +192,8 @@ class _AppDrawerState extends State<AppDrawer> {
           ),
           const SizedBox(height: 10,),
           ListTile(
-            leading: const Icon(Icons.question_answer, color: Colors.white,),
-            title: const Text('Evaluation', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.question_answer, color: Colors.black,),
+            title: const Text('Evaluation', style: TextStyle(color: Colors.black)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => const EvaluationPage()));
@@ -230,8 +201,8 @@ class _AppDrawerState extends State<AppDrawer> {
           ),
           const SizedBox(height: 10,),
           ListTile(
-            leading: const Icon(Icons.logout, color: Colors.white,),
-            title: const Text('Logout', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.logout, color: Colors.black,),
+            title: const Text('Logout', style: TextStyle(color: Colors.black)),
             onTap: () {
               _logout(context);
             },

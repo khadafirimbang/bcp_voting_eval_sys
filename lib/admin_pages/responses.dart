@@ -76,53 +76,75 @@ class _ResponsesPageState extends State<ResponsesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
-        title: const Text('Responses', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-        leading: Builder(
-          builder: (BuildContext context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer(); // Use this context
-              },
-            );
-          }
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56),
+        child: Container(
+          alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
+            ),
+          child: AppBar(
+            titleSpacing: -5,
+                    backgroundColor: Colors.transparent, // Make inner AppBar transparent
+                    elevation: 0, // Remove shadow
+                    title: const Text(
+                      'Responses',
+                      style: TextStyle(fontSize: 18, color: Colors.black54),
+                    ),
+                    iconTheme: const IconThemeData(color: Colors.black45),
+            leading: Builder(
+              builder: (BuildContext context) {
+                return IconButton(
+                  icon: const Icon(Icons.menu),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer(); // Use this context
+                  },
+                );
+              }
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(_isSearchVisible ? Icons.close : Icons.search),
+                onPressed: () {
+                  setState(() {
+                    _isSearchVisible = !_isSearchVisible;
+                    if (!_isSearchVisible) {
+                      // Clear search query when closing the search bar
+                      _searchController.clear();
+                      _searchQuery = '';
+                      _filterResponses(); // Reset filter when search is closed
+                    }
+                  });
+                },
+              ),
+              DropdownButton<String>(
+                value: _selectedFilter,
+                icon: const Icon(Icons.filter_list, color: Colors.black54),
+                items: ['All', 'Survey', 'Feedback'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value, style: const TextStyle(color: Colors.black54)),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedFilter = value!;
+                    _filterResponses(); // Reapply filtering whenever the dropdown changes
+                  });
+                },
+              ),
+            ],
+          ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(_isSearchVisible ? Icons.close : Icons.search),
-            onPressed: () {
-              setState(() {
-                _isSearchVisible = !_isSearchVisible;
-                if (!_isSearchVisible) {
-                  // Clear search query when closing the search bar
-                  _searchController.clear();
-                  _searchQuery = '';
-                  _filterResponses(); // Reset filter when search is closed
-                }
-              });
-            },
-          ),
-          DropdownButton<String>(
-            value: _selectedFilter,
-            dropdownColor: const Color(0xFF1E3A8A),
-            icon: const Icon(Icons.filter_list, color: Colors.white),
-            items: ['All', 'Survey', 'Feedback'].map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value, style: const TextStyle(color: Colors.white)),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedFilter = value!;
-                _filterResponses(); // Reapply filtering whenever the dropdown changes
-              });
-            },
-          ),
-        ],
       ),
       drawer: const AppDrawerAdmin(),
       body: Padding(

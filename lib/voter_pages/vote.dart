@@ -125,38 +125,63 @@ class _VotePageState extends State<VotePage> {
             : 1;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Vote'),
-        actions: [
-          IconButton(
-            icon: Icon(showSearchField ? Icons.close : Icons.search),
-            onPressed: () {
-              setState(() {
-                showSearchField = !showSearchField;
-                if (!showSearchField) {
-                  searchQuery = '';
-                }
-              });
-            },
-          ),
-          DropdownButton<String>(
-            value: selectedPosition,
-            onChanged: (value) {
-              setState(() {
-                selectedPosition = value!;
-              });
-            },
-            items: [
-              DropdownMenuItem<String>(value: 'All', child: Text('All')),
-              ...positions.map<DropdownMenuItem<String>>((position) {
-                return DropdownMenuItem<String>(
-                  value: position['name'] as String,
-                  child: Text(position['name'] as String),
-                );
-              }).toList(),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56),
+        child: Container(
+          alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
+            ),
+          child: AppBar(
+            titleSpacing: -5,
+                        backgroundColor: Colors.transparent, // Make inner AppBar transparent
+                        elevation: 0, // Remove shadow
+                        title: const Text(
+                          'Vote',
+                          style: TextStyle(fontSize: 18, color: Colors.black54),
+                        ),
+                        iconTheme: const IconThemeData(color: Colors.black45),
+            actions: [
+              IconButton(
+                icon: Icon(showSearchField ? Icons.close : Icons.search),
+                onPressed: () {
+                  setState(() {
+                    showSearchField = !showSearchField;
+                    if (!showSearchField) {
+                      searchQuery = '';
+                    }
+                  });
+                },
+              ),
+              DropdownButton<String>(
+                value: selectedPosition,
+                onChanged: (value) {
+                  setState(() {
+                    selectedPosition = value!;
+                  });
+                },
+                items: [
+                  DropdownMenuItem<String>(value: 'All', child: Text('All')),
+                  ...positions.map<DropdownMenuItem<String>>((position) {
+                    return DropdownMenuItem<String>(
+                      value: position['name'] as String,
+                      child: Text(position['name'] as String),
+                    );
+                  }).toList(),
+                ],
+              ),
             ],
           ),
-        ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
