@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/accounts.dart';
 import 'package:for_testing/admin_pages/announcement_admin.dart';
 import 'package:for_testing/admin_pages/candidates.dart';
+import 'package:for_testing/admin_pages/chatbot_admin.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
 import 'package:for_testing/admin_pages/election_sched.dart';
 import 'package:for_testing/admin_pages/evaluation_admin.dart';
@@ -86,6 +87,15 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => const CandidatesPage()));
+            },
+          ),        
+          const SizedBox(height: 10,),
+          ListTile(
+            leading: const Icon(Icons.people, color: Colors.black,),
+            title: const Text('Chatbot', style: TextStyle(color: Colors.black)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotAdminPage()));
             },
           ),        
           const SizedBox(height: 10,),
