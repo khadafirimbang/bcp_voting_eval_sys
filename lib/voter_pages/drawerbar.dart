@@ -99,15 +99,6 @@ class _AppDrawerState extends State<AppDrawer> {
             },
           ),
           const SizedBox(height: 10,),
-          ListTile(
-            leading: const Icon(Icons.person, color: Colors.black,),
-            title: const Text('Chatbot', style: TextStyle(color: Colors.black)),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()));
-            },
-          ),
-          const SizedBox(height: 10,),
           ExpansionTile(
             collapsedIconColor: Colors.black,
             leading: const Icon(Icons.file_copy, color: Colors.black,),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:for_testing/voter_pages/chatbot.dart';
 import 'package:for_testing/voter_pages/drawerbar.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -366,6 +367,13 @@ class _EvaluationPageState extends State<EvaluationPage> {
             ),
           ),
         ),
+      ),
+    floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()),
+          );
+        },
+        child: Icon(Icons.chat_outlined),
       ),
     );
   }

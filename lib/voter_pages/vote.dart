@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:for_testing/voter_pages/candidate_info.dart';
+import 'package:for_testing/voter_pages/chatbot.dart';
+import 'package:for_testing/voter_pages/drawerbar.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -183,6 +185,7 @@ class _VotePageState extends State<VotePage> {
           ),
         ),
       ),
+      drawer: const AppDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: isLoading
@@ -235,6 +238,13 @@ class _VotePageState extends State<VotePage> {
                   ],
                 ),
               ),
+      ),
+    floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()),
+          );
+        },
+        child: Icon(Icons.chat_outlined),
       ),
     );
   }

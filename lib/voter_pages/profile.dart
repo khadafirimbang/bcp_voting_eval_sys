@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:for_testing/voter_pages/chatbot.dart';
 import 'package:for_testing/voter_pages/drawerbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -403,6 +404,13 @@ class _ProfileInfoState extends State<ProfileInfo> {
             ),
           ],
         ),
+      ),
+    floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()),
+          );
+        },
+        child: Icon(Icons.chat_outlined),
       ),
     );
   }

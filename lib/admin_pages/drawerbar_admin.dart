@@ -91,8 +91,8 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
           ),        
           const SizedBox(height: 10,),
           ListTile(
-            leading: const Icon(Icons.people, color: Colors.black,),
-            title: const Text('Chatbot', style: TextStyle(color: Colors.black)),
+            leading: const Icon(Icons.chat, color: Colors.black,),
+            title: const Text('Chatbot Management', style: TextStyle(color: Colors.black)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotAdminPage()));

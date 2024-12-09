@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:for_testing/voter_pages/chatbot.dart';
 import 'package:for_testing/voter_pages/drawerbar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -142,6 +143,13 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
                 },
               ),
             ),
+        floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()),
+          );
+        },
+        child: Icon(Icons.chat_outlined),
+      ),
     );
   }
 }
