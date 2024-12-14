@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class VotePage extends StatefulWidget {
   @override
   _VotePageState createState() => _VotePageState();
@@ -21,6 +23,7 @@ class _VotePageState extends State<VotePage> {
   bool isLoading = true;
   bool showSearchField = false; // State to toggle search field
   Timer? _debounce;
+  
 
   @override
   void initState() {
@@ -69,48 +72,62 @@ class _VotePageState extends State<VotePage> {
     });
   }
 
-  Future<void> voteCandidate(String studentNo, String position, int votesQty) async {
-    userVotes[position] ??= [];
-    if ((userVotes[position]?.length ?? 0) >= votesQty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('You have reached the voting limit for $position.')),
+  void _voteForCandidate(dynamic candidate) async {
+  final confirmVote = await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("Confirm Vote"),
+        content: Text("Are you sure you want to vote for ${candidate['firstname']} ${candidate['lastname']}?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text("Confirm"),
+          ),
+        ],
       );
-      return;
-    }
-    if (userVotes[position]!.contains(studentNo)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('You have already voted for this candidate.')),
-      );
-      return;
-    }
+    },
+  );
 
+  if (confirmVote == true) {
     try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? loggedInStudentno = prefs.getString('studentno');
+      
       final response = await http.post(
         Uri.parse('https://studentcouncil.bcp-sms1.com/php/1vote_candidate.php'),
-        body: {'studentno': studentNo},
+        body: {
+          'studentno': loggedInStudentno, // Replace with actual studentno from SharedPreferences
+          'candidate_id': candidate['studentno'].toString(),
+          'position': candidate['position'],
+        },
       );
 
-      if (response.statusCode == 200) {
-        final result = json.decode(response.body);
-        if (result['success'] == true) {
-          setState(() {
-            userVotes[position]!.add(studentNo);
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Vote cast successfully!')),
-          );
-        } else {
-          throw Exception(result['error'] ?? 'Failed to vote');
-        }
+      final result = json.decode(response.body);
+
+      if (result['success']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'])),
+        );
+        fetchCandidatesAndPositions(); // Refresh data after voting
       } else {
-        throw Exception('Server error: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'])),
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('An error occurred: $e')),
       );
     }
   }
+}
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -339,10 +356,7 @@ class _VotePageState extends State<VotePage> {
                             padding: const EdgeInsets.all(8.0),
                             child: ElevatedButton(
                               onPressed: () {
-                                voteCandidate(
-                                    candidate['studentno'],
-                                    position['name'],
-                                    1);
+                                _voteForCandidate(candidate);
                               },
                               child: Text('Vote'),
                             ),
