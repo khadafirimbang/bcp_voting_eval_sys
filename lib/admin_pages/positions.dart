@@ -22,11 +22,11 @@ class _PositionsPageState extends State<PositionsPage> {
   Future<List<dynamic>> _fetchPositions() async {
     try {
       final response = await http.get(Uri.parse(
-          'https://studentcouncil.bcp-sms1.com/php/fetch_positions.php')); // Replace with your URL
+          'https://studentcouncil.bcp-sms1.com/php/fetch_positions.php'));
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
         if (jsonResponse['status'] == 'success') {
-          return jsonResponse['data']; // Only return the 'data' without 'id'
+          return jsonResponse['data'];
         } else {
           throw Exception(jsonResponse['message']);
         }
@@ -38,11 +38,18 @@ class _PositionsPageState extends State<PositionsPage> {
     }
   }
 
-  Future<void> _editPosition(String positionId, String newName) async {
+  Future<void> _editPosition(String positionId, String newName, String votesQty) async {
     try {
+      if (votesQty.isEmpty || int.tryParse(votesQty) == null) {
+        throw Exception('Votes Quantity must be a valid number');
+      }
       final response = await http.post(
         Uri.parse('https://studentcouncil.bcp-sms1.com/php/edit_position.php'),
-        body: {'id': positionId, 'name': newName},
+        body: {
+          'id': positionId,
+          'name': newName,
+          'votes_qty': votesQty, // Ensure votes_qty is passed here
+        },
       );
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['status'] == 'success') {
@@ -50,45 +57,28 @@ class _PositionsPageState extends State<PositionsPage> {
           _positions = _fetchPositions();
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Position updated successfully'), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text('Position updated successfully'),
+              backgroundColor: Colors.green),
         );
       } else {
         throw Exception(jsonResponse['message']);
       }
     } catch (e) {
-      throw Exception(e.toString());
-    }
-  }
-
-  // Fixing the deletePosition function: convert id to string
-  Future<void> _deletePosition(String positionId) async {
-    try {
-      // Convert positionId to String
-      final response = await http.post(
-        Uri.parse('https://studentcouncil.bcp-sms1.com/php/delete_position.php'),
-        body: {'id': positionId.toString()},  // Ensure positionId is a string
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
       );
-      final jsonResponse = json.decode(response.body);
-      if (jsonResponse['status'] == 'success') {
-        setState(() {
-          _positions = _fetchPositions();
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Position deleted successfully'), backgroundColor: Colors.green),
-        );
-      } else {
-        throw Exception(jsonResponse['message']);
-      }
-    } catch (e) {
-      throw Exception(e.toString());
     }
   }
 
-  Future<void> _addPosition(String name) async {
+  Future<void> _addPosition(String name, String votesQty) async {
     try {
+      if (votesQty.isEmpty || int.tryParse(votesQty) == null) {
+        throw Exception('Votes Quantity must be a valid number');
+      }
       final response = await http.post(
         Uri.parse('https://studentcouncil.bcp-sms1.com/php/add_position.php'),
-        body: {'name': name},
+        body: {'name': name, 'votes_qty': votesQty}, // Ensure votes_qty is passed here
       );
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['status'] == 'success') {
@@ -96,29 +86,70 @@ class _PositionsPageState extends State<PositionsPage> {
           _positions = _fetchPositions();
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Position added successfully'), backgroundColor: Colors.green,),
+          const SnackBar(
+              content: Text('Position added successfully'),
+              backgroundColor: Colors.green),
         );
       } else {
         throw Exception(jsonResponse['message']);
       }
     } catch (e) {
-      throw Exception(e.toString());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+      );
     }
   }
 
-  // Dialog to add or edit position
-  Future<void> _showPositionDialog({String? positionId, String? initialName}) async {
-    final nameController = TextEditingController(text: initialName);
+  Future<void> _deletePosition(String positionId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/delete_position.php'),
+        body: {'id': positionId},
+      );
+      final jsonResponse = json.decode(response.body);
+      if (jsonResponse['status'] == 'success') {
+        setState(() {
+          _positions = _fetchPositions();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Position deleted successfully'),
+              backgroundColor: Colors.green),
+        );
+      } else {
+        throw Exception(jsonResponse['message']);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+      );
+    }
+  }
 
-    return showDialog<void>( // Fixed the 'showDialog' function signature
+  Future<void> _showPositionDialog(
+      {String? positionId, String? initialName, String? initialVotesQty}) async {
+    final nameController = TextEditingController(text: initialName);
+    final votesQtyController = TextEditingController(text: initialVotesQty);
+
+    return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(positionId == null ? 'Add Position' : 'Edit Position'),
-          content: TextField(
-            controller: nameController,
-            decoration: const InputDecoration(hintText: 'Position Name'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(hintText: 'Position Name'),
+              ),
+              TextField(
+                controller: votesQtyController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(hintText: 'Votes Quantity'),
+              ),
+            ],
           ),
           actions: <Widget>[
             TextButton(
@@ -131,12 +162,28 @@ class _PositionsPageState extends State<PositionsPage> {
               child: const Text('Save'),
               onPressed: () {
                 final name = nameController.text.trim();
-                if (positionId == null) {
-                  _addPosition(name);
+                final votesQty = votesQtyController.text.trim();
+
+                if (name.isEmpty || votesQty.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('All fields are required'),
+                        backgroundColor: Colors.red),
+                  );
+                } else if (int.tryParse(votesQty) == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Votes Quantity must be a number'),
+                        backgroundColor: Colors.red),
+                  );
                 } else {
-                  _editPosition(positionId, name); // positionId is a String
+                  if (positionId == null) {
+                    _addPosition(name, votesQty);
+                  } else {
+                    _editPosition(positionId, name, votesQty);
+                  }
+                  Navigator.of(context).pop();
                 }
-                Navigator.of(context).pop();
               },
             ),
           ],
@@ -145,14 +192,13 @@ class _PositionsPageState extends State<PositionsPage> {
     );
   }
 
-  // Confirm delete dialog
-  Future<void> _confirmDelete(String positionId) async {
+  Future<void> _showDeleteDialog(String positionId) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirm Delete'),
+          title: const Text('Delete Position'),
           content: const Text('Are you sure you want to delete this position?'),
           actions: <Widget>[
             TextButton(
@@ -164,7 +210,7 @@ class _PositionsPageState extends State<PositionsPage> {
             TextButton(
               child: const Text('Delete'),
               onPressed: () {
-                _deletePosition(positionId); // positionId passed as string
+                _deletePosition(positionId);
                 Navigator.of(context).pop();
               },
             ),
@@ -208,20 +254,25 @@ class _PositionsPageState extends State<PositionsPage> {
                     color: Colors.white,
                     elevation: 2,
                     child: ListTile(
-                      title: Text(position['name']), // Display the 'name'
+                      title: Text(position['name']),
+                      subtitle: Text('Votes Quantity: ${position['votes_qty']}'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
                             icon: const Icon(Icons.edit),
                             onPressed: () {
-                              _showPositionDialog(positionId: position['id'].toString(), initialName: position['name']);
+                              _showPositionDialog(
+                                  positionId: position['id'].toString(),
+                                  initialName: position['name'],
+                                  initialVotesQty:
+                                      position['votes_qty'].toString());
                             },
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete),
                             onPressed: () {
-                              _confirmDelete(position['id'].toString()); // Ensure ID is passed as a string
+                              _showDeleteDialog(position['id'].toString());
                             },
                           ),
                         ],
