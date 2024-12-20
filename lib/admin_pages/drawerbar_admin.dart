@@ -8,6 +8,7 @@ import 'package:for_testing/admin_pages/election_sched.dart';
 import 'package:for_testing/admin_pages/evaluation_admin.dart';
 import 'package:for_testing/admin_pages/pending_voters.dart';
 import 'package:for_testing/admin_pages/positions.dart';
+import 'package:for_testing/admin_pages/prediction.dart';
 import 'package:for_testing/admin_pages/responses.dart';
 import 'package:for_testing/admin_pages/resultAdmin.dart';
 import 'package:for_testing/admin_pages/voters.dart';
@@ -175,6 +176,15 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               },
             ),
             ],
+          ),
+          const SizedBox(height: 10,),
+          ListTile(
+            leading: const Icon(Icons.online_prediction_outlined, color: Colors.black,),
+            title: const Text('Election Prediction', style: TextStyle(color: Colors.black)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionPredictionPage()));
+            },
           ),
           const SizedBox(height: 10,),
           ListTile(

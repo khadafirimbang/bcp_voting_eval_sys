@@ -97,7 +97,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   void _sendPredefinedMessage(String question, String answer) async {
     setState(() {
       _messages.add(ChatMessage(text: question, isUser: true));
-      _isTyping = true;
+      _isTyping = true; // Disable buttons
     });
 
     // Scroll to the latest question immediately
@@ -112,11 +112,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     });
 
     // Simulate typing delay for the answer
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(Duration(seconds: 1));
 
     setState(() {
       _messages.add(ChatMessage(text: answer, isUser: false));
-      _isTyping = false;
+      _isTyping = false; // Enable buttons after delay
     });
 
     // Ensure scrolling after the typing indicator is removed
@@ -170,11 +170,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                         return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                           child: ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                _selectedType = type;
-                              });
-                            },
+                            onPressed: _isTyping
+                                ? null
+                                : () {
+                                    setState(() {
+                                      _selectedType = type;
+                                    });
+                                  },
                             style: ElevatedButton.styleFrom(
                               minimumSize: Size(double.infinity, 50),
                               shape: RoundedRectangleBorder(
@@ -203,7 +205,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
                           child: ElevatedButton(
-                            onPressed: () => _sendPredefinedMessage(question, answer),
+                            onPressed: _isTyping
+                                ? null
+                                : () => _sendPredefinedMessage(question, answer),
                             style: ElevatedButton.styleFrom(
                               minimumSize: Size(double.infinity, 50),
                               shape: RoundedRectangleBorder(
@@ -223,11 +227,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedType = null;
-                        });
-                      },
+                      onPressed: _isTyping
+                          ? null
+                          : () {
+                              setState(() {
+                                _selectedType = null;
+                              });
+                            },
                       style: ElevatedButton.styleFrom(
                         minimumSize: Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
@@ -279,7 +285,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             SizedBox(width: 4),
             DotWidget(delay: 200),
             SizedBox(width: 4),
-            DotWidget(delay: 400),
+            DotWidget(delay: 300),
           ],
         ),
       ),
