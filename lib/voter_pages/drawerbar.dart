@@ -5,6 +5,7 @@ import 'package:for_testing/results_pages/result_pres.dart';
 import 'package:for_testing/results_pages/result_sec.dart';
 import 'package:for_testing/results_pages/result_treasurer.dart';
 import 'package:for_testing/results_pages/result_vicepres.dart';
+import 'package:for_testing/results_pages/results.dart';
 import 'package:for_testing/voter_pages/announcement.dart';
 import 'package:for_testing/voter_pages/chatbot.dart';
 import 'package:for_testing/voter_pages/evaluation.dart';
@@ -91,7 +92,7 @@ class _AppDrawerState extends State<AppDrawer> {
           ),
           const SizedBox(height: 10,),
           ListTile(
-            leading: const Icon(Icons.person, color: Colors.black,),
+            leading: const Icon(Icons.how_to_vote, color: Colors.black,),
             title: const Text('Votes', style: TextStyle(color: Colors.black)),
             onTap: () {
               Navigator.pop(context);
@@ -99,48 +100,13 @@ class _AppDrawerState extends State<AppDrawer> {
             },
           ),
           const SizedBox(height: 10,),
-          ExpansionTile(
-            collapsedIconColor: Colors.black,
-            leading: const Icon(Icons.file_copy, color: Colors.black,),
-            title: const Text('Results', style: TextStyle(color: Colors.black)),
-            childrenPadding: const EdgeInsets.only(left: 37),
-            children: [
-              ListTile(
-                title: const Text('President', style: TextStyle(color: Colors.black)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultPres()));
-                },
-              ),
-              ListTile(
-                title: const Text('Vice President', style: TextStyle(color: Colors.black)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultVicePres()));
-                },
-              ),
-              ListTile(
-                title: const Text('Secretary', style: TextStyle(color: Colors.black)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultSecretary()));
-                },
-              ),
-              ListTile(
-                title: const Text('Treasurer', style: TextStyle(color: Colors.black)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultTreasurer()));
-                },
-              ),
-              ListTile(
-                title: const Text('Auditor', style: TextStyle(color: Colors.black)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAuditor()));
-                },
-              ),
-            ],
+          ListTile(
+            leading: const Icon(Icons.people, color: Colors.black,),
+            title: const Text('Election Results', style: TextStyle(color: Colors.black)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ResultsPage()));
+            },
           ),
           const SizedBox(height: 10,),
           ListTile(
