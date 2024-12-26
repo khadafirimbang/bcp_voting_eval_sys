@@ -6,10 +6,11 @@ import 'package:for_testing/admin_pages/chatbot_admin.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
 import 'package:for_testing/admin_pages/election_sched.dart';
 import 'package:for_testing/admin_pages/evaluation_admin.dart';
+import 'package:for_testing/admin_pages/feedback_results.dart';
 import 'package:for_testing/admin_pages/pending_voters.dart';
 import 'package:for_testing/admin_pages/positions.dart';
 import 'package:for_testing/admin_pages/prediction.dart';
-import 'package:for_testing/admin_pages/responses.dart';
+import 'package:for_testing/admin_pages/survey_results.dart';
 import 'package:for_testing/admin_pages/resultAdmin.dart';
 import 'package:for_testing/admin_pages/voters.dart';
 import 'package:for_testing/signin.dart';
@@ -169,10 +170,18 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             ),
             ListTile(
               leading: const Icon(Icons.question_answer, color: Colors.black,),
-              title: const Text('Evaluation Responses', style: TextStyle(color: Colors.black)),
+              title: const Text('Survey Results', style: TextStyle(color: Colors.black)),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const ResponsesPage()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => SurveyResultsPage()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.question_answer, color: Colors.black,),
+              title: const Text('Feedback Results', style: TextStyle(color: Colors.black)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => QuestionsListPage()));
               },
             ),
             ],
