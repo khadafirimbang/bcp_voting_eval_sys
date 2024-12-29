@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:for_testing/results_pages/results.dart';
 import 'package:for_testing/voter_pages/candidate_info.dart';
 import 'package:for_testing/voter_pages/chatbot.dart';
 import 'package:for_testing/voter_pages/drawerbar.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:convert';
 import 'dart:async';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VotePage extends StatefulWidget {
@@ -17,30 +16,98 @@ class VotePage extends StatefulWidget {
 class _VotePageState extends State<VotePage> {
   List<dynamic> candidates = [];
   List<dynamic> positions = [];
+  Map<String, dynamic>? electionSchedule;
+  Duration? timeRemaining;
+  Timer? _countdownTimer;
+  Timer? _debounce;
+  bool isLoading = true;
+  bool showSearchField = false;
   String selectedPosition = 'All';
   String searchQuery = '';
   Map<String, List<String>> userVotes = {};
-  bool isLoading = true;
-  bool showSearchField = false; // State to toggle search field
-  Timer? _debounce;
-  
+  Timer? _scheduleCheckTimer;
 
   @override
   void initState() {
     super.initState();
-    fetchCandidatesAndPositions();
+    fetchElectionSchedule();
+
+    // Check election status every minute
+    _scheduleCheckTimer = Timer.periodic(Duration(minutes: 1), (_) {
+      fetchElectionSchedule();
+    });
   }
 
   @override
   void dispose() {
+    _countdownTimer?.cancel();
     _debounce?.cancel();
+    _scheduleCheckTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> fetchElectionSchedule() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_election_schedule.php')
+      );
+
+      if (response.statusCode == 200) {
+        final schedule = json.decode(response.body);
+        
+        if (mounted) {
+          setState(() {
+            electionSchedule = schedule;
+            
+            if (schedule != null) {
+              // Parse end date in Philippines timezone
+              final endDate = DateTime.parse(schedule['end_date']).toLocal();
+              
+              if (schedule['status'] == 'ongoing') {
+                // Check if the election has ended
+                if (isCurrentDateMatchEndDate(endDate)) {
+                  updateElectionStatus('ended');
+                } else {
+                  startCountdown(endDate);
+                  fetchCandidatesAndPositions();
+                }
+              }
+            }
+            
+            isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading election schedule: $e')),
+        );
+      }
+    }
+  }
+
+  bool isCurrentDateMatchEndDate(DateTime endDate) {
+    // Get current date in Philippines timezone
+    final now = DateTime.now();
+    
+    // Compare year, month, and day
+    return now.year == endDate.year &&
+           now.month == endDate.month &&
+           now.day == endDate.day;
   }
 
   Future<void> fetchCandidatesAndPositions() async {
     try {
-      final candidatesFuture = http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_candidates.php'));
-      final positionsFuture = http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_positions.php'));
+      final candidatesFuture = http.get(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_candidates.php')
+      );
+      final positionsFuture = http.get(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_positions.php')
+      );
 
       final responses = await Future.wait([candidatesFuture, positionsFuture]);
 
@@ -63,6 +130,46 @@ class _VotePageState extends State<VotePage> {
     }
   }
 
+  void startCountdown(DateTime endDate) {
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      final now = DateTime.now();
+      if (now.isAfter(endDate)) {
+        timer.cancel();
+        updateElectionStatus('ended');
+        setState(() {});
+      } else {
+        setState(() {
+          timeRemaining = endDate.difference(now);
+        });
+      }
+    });
+  }
+
+  Future<void> updateElectionStatus(String status) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/update_election_status.php'),
+        body: {
+          'election_id': electionSchedule?['id'].toString(),
+          'status': status
+        }
+      );
+
+      if (response.statusCode == 200) {
+        fetchElectionSchedule();
+      }
+    } catch (e) {
+      print('Error updating election status: $e');
+    }
+  }
+
+  String formatDuration(Duration? duration) {
+    if (duration == null) return '';
+    return '${duration.inDays}d ${duration.inHours.remainder(24)}h '
+           '${duration.inMinutes.remainder(60)}m ${duration.inSeconds.remainder(60)}s';
+  }
+
   void debounceSearch(String value) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(Duration(milliseconds: 300), () {
@@ -73,64 +180,141 @@ class _VotePageState extends State<VotePage> {
   }
 
   void _voteForCandidate(dynamic candidate) async {
-  final confirmVote = await showDialog<bool>(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text("Confirm Vote"),
-        content: Text("Are you sure you want to vote for ${candidate['firstname']} ${candidate['lastname']}?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text("Confirm"),
-          ),
-        ],
+    if (electionSchedule?['status'] != 'ongoing') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Voting is not currently available.')),
       );
-    },
-  );
+      return;
+    }
 
-  if (confirmVote == true) {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? loggedInStudentno = prefs.getString('studentno');
-      
-      final response = await http.post(
-        Uri.parse('https://studentcouncil.bcp-sms1.com/php/1vote_candidate.php'),
-        body: {
-          'studentno': loggedInStudentno, // Replace with actual studentno from SharedPreferences
-          'candidate_id': candidate['studentno'].toString(),
-          'position': candidate['position'],
-        },
-      );
-
-      final result = json.decode(response.body);
-
-      if (result['success']) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'])),
+    final confirmVote = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm Vote"),
+          content: Text("Are you sure you want to vote for ${candidate['firstname']} ${candidate['lastname']}?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text("Confirm"),
+            ),
+          ],
         );
-        fetchCandidatesAndPositions(); // Refresh data after voting
-      } else {
+      },
+    );
+
+    if (confirmVote == true) {
+      try {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String? loggedInStudentno = prefs.getString('studentno');
+        
+        final response = await http.post(
+          Uri.parse('https://studentcouncil.bcp-sms1.com/php/1vote_candidate.php'),
+          body: {
+            'studentno': loggedInStudentno,
+            'candidate_id': candidate['studentno'].toString(),
+            'position': candidate['position'],
+          },
+        );
+
+        final result = json.decode(response.body);
+
+        if (result['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result['message'])),
+          );
+          fetchCandidatesAndPositions();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result['message'])),
+          );
+        }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'])),
+          SnackBar(content: Text('An error occurred: $e')),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
     }
   }
-}
 
-  
+  List<dynamic> _filterCandidates(String positionName) {
+    return candidates
+        .where((candidate) =>
+            candidate['position'] == positionName &&
+            (
+              (candidate['firstname']?.toLowerCase() ?? '').contains(searchQuery) ||
+              (candidate['lastname']?.toLowerCase() ?? '').contains(searchQuery) ||
+              (candidate['studentno']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
+              (candidate['section']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
+              (candidate['course']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
+              (candidate['partylist']?.toString().toLowerCase() ?? '').contains(searchQuery)
+            ))
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (electionSchedule == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Elections')),
+        body: Center(child: Text('No active election scheduled.')),
+      );
+    }
+
+    if (electionSchedule!['status'] == 'ended') {
+      return Scaffold(
+        appBar: AppBar(title: Text('Election Ended')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Election Ended',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
+              ),
+              SizedBox(height: 20),
+              SizedBox(
+                        width: 340,
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            padding: const EdgeInsets.all(14.0),
+                            backgroundColor: const Color(0xFF1E3A8A),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ResultsPage()),
+                          );
+                          },
+                          child: const Text('Election Result', 
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+              
+            ],
+          ),
+        ),
+      );
+    }
+
     double cardHeight = MediaQuery.of(context).size.width > 1200
         ? 350
         : MediaQuery.of(context).size.width > 800
@@ -147,28 +331,28 @@ class _VotePageState extends State<VotePage> {
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56),
         child: Container(
-          alignment: Alignment.center, // Align the AppBar in the center
-            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-            decoration: BoxDecoration(
-              color: Colors.white, 
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3), // Shadow color
-                  blurRadius: 8, // Blur intensity
-                  spreadRadius: 1, // Spread radius
-                  offset: const Offset(0, 4), // Vertical shadow position
-                ),
-              ],
-            ),
+          alignment: Alignment.center,
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 8,
+                spreadRadius: 1,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: AppBar(
             titleSpacing: -5,
-                        backgroundColor: Colors.transparent, // Make inner AppBar transparent
-                        elevation: 0, // Remove shadow
-                        title: const Text(
-                          'Vote',
-                          style: TextStyle(fontSize: 18, color: Colors.black54),
-                        ),
-                        iconTheme: const IconThemeData(color: Colors.black45),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: const Text(
+              'Vote',
+              style: TextStyle(fontSize: 18, color: Colors.black54),
+            ),
+            iconTheme: const IconThemeData(color: Colors.black45),
             actions: [
               IconButton(
                 icon: Icon(showSearchField ? Icons.close : Icons.search),
@@ -202,15 +386,35 @@ class _VotePageState extends State<VotePage> {
           ),
         ),
       ),
-      drawer: const AppDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: isLoading
-            ? Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
+      drawer: AppDrawer(),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 16, 0, 6),
+            child: Text(electionSchedule!['election_name'],
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 21)
+            ),
+          ),
+          if (electionSchedule!['status'] == 'ongoing')
+            Container(
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Time Remaining: ',
+                    style: TextStyle(fontWeight: FontWeight.bold)
+                  ),
+                  Text(formatDuration(timeRemaining)),
+                ],
+              ),
+            ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    // Search TextField at the top of the list
                     if (showSearchField)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -232,10 +436,11 @@ class _VotePageState extends State<VotePage> {
                               var filteredCandidates =
                                   _filterCandidates(position['name']);
                               return _buildCandidateGrid(
-                                  position,
-                                  filteredCandidates,
-                                  candidatesPerRow,
-                                  cardHeight);
+                                position,
+                                filteredCandidates,
+                                candidatesPerRow,
+                                cardHeight
+                              );
                             }).toList(),
                           )
                         : Column(
@@ -246,40 +451,31 @@ class _VotePageState extends State<VotePage> {
                               var filteredCandidates =
                                   _filterCandidates(position['name']);
                               return _buildCandidateGrid(
-                                  position,
-                                  filteredCandidates,
-                                  candidatesPerRow,
-                                  cardHeight);
+                                position,
+                                filteredCandidates,
+                                candidatesPerRow,
+                                cardHeight
+                              );
                             }).toList(),
                           ),
                   ],
                 ),
               ),
+            ),
+          ),
+        ],
       ),
-    floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()),
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ChatbotScreen()),
           );
         },
         child: Icon(Icons.chat_outlined),
       ),
     );
   }
-
-  List<dynamic> _filterCandidates(String positionName) {
-  return candidates
-      .where((candidate) =>
-          candidate['position'] == positionName &&
-          (
-            (candidate['firstname']?.toLowerCase() ?? '').contains(searchQuery) ||
-            (candidate['lastname']?.toLowerCase() ?? '').contains(searchQuery) ||
-            (candidate['studentno']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
-            (candidate['section']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
-            (candidate['course']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
-            (candidate['partylist']?.toString().toLowerCase() ?? '').contains(searchQuery)
-          ))
-      .toList();
-}
 
   Widget _buildCandidateGrid(dynamic position, List<dynamic> filteredCandidates,
       int candidatesPerRow, double cardHeight) {
@@ -312,8 +508,7 @@ class _VotePageState extends State<VotePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        CandidateDetailPage(candidate: candidate),
+                    builder: (context) => CandidateDetailPage(candidate: candidate),
                   ),
                 );
               },
@@ -328,17 +523,20 @@ class _VotePageState extends State<VotePage> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           ClipOval(
-                            child: CachedNetworkImage(
-                              imageUrl: candidate['image_url'],
-                              width: 155,
-                              height: 155,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) =>
-                                  CircularProgressIndicator(),
-                              errorWidget: (context, url, error) =>
-                                  Icon(Icons.error),
-                            ),
-                          ),
+                                  child: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
+                                      ? Image.network(
+                                          candidate['image_url'],
+                                          height: 155,
+                                          width: 155,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Image.asset(
+                                          'assets/images/bcp_logo.png',
+                                          height: 155,
+                                          width: 155,
+                                          fit: BoxFit.cover,
+                                        ),
+                                ),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
