@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:for_testing/voter_pages/election_history.dart';
 import 'package:http/http.dart' as http;
 
 class ResultsPage extends StatefulWidget {
@@ -108,6 +109,31 @@ class _ResultsPageState extends State<ResultsPage> {
               'Total Not Voted Yet: $totalNotVoted',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            SizedBox(
+                        width: 340,
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            padding: const EdgeInsets.all(14.0),
+                            backgroundColor: const Color(0xFF1E3A8A),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ElectionHistory()),
+                          );
+                          },
+                          child: const Text('Election History', 
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
             SizedBox(height: 20),
             
             Expanded(
