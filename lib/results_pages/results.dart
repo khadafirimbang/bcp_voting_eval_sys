@@ -13,7 +13,7 @@ class _ResultsPageState extends State<ResultsPage> {
   int totalVoters = 0;
   int totalVoted = 0;
   int totalNotVoted = 0;
-  String selectedPosition = 'All';  // Default position filter
+  String selectedPosition = 'All'; // Default position filter
 
   // Fetch data from the PHP backend
   Future<void> fetchResults() async {
@@ -72,24 +72,28 @@ class _ResultsPageState extends State<ResultsPage> {
       groupedCandidates[candidate['position']]!.add(candidate);
     }
 
+    // Calculate percentages for overall stats
+    double votedPercentage = totalVoters > 0 ? (totalVoted / totalVoters) * 100 : 0;
+    double notVotedPercentage = totalVoters > 0 ? (totalNotVoted / totalVoters) * 100 : 0;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Election Results'),
         actions: [
           DropdownButton<String>(
-              value: selectedPosition,
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedPosition = newValue!;
-                });
-              },
-              items: positions.map<DropdownMenuItem<String>>((String position) {
-                return DropdownMenuItem<String>(
-                  value: position,
-                  child: Text(position),
-                );
-              }).toList(),
-            ),
+            value: selectedPosition,
+            onChanged: (String? newValue) {
+              setState(() {
+                selectedPosition = newValue!;
+              });
+            },
+            items: positions.map<DropdownMenuItem<String>>((String position) {
+              return DropdownMenuItem<String>(
+                value: position,
+                child: Text(position),
+              );
+            }).toList(),
+          ),
         ],
       ),
       body: Padding(
@@ -98,44 +102,44 @@ class _ResultsPageState extends State<ResultsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Total Voters: $totalVoters',
+              'Total Voters: $totalVoters - 100%',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
-              'Total Voted: $totalVoted',
+              'Total Voted: $totalVoted - ${votedPercentage.toStringAsFixed(1)}%',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
-              'Total Not Voted Yet: $totalNotVoted',
+              'Total Not Voted Yet: $totalNotVoted - ${notVotedPercentage.toStringAsFixed(1)}%',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(
-                        width: 340,
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: const EdgeInsets.all(14.0),
-                            backgroundColor: const Color(0xFF1E3A8A),
-                          ),
-                          onPressed: () {
-                            Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => ElectionHistory()),
-                          );
-                          },
-                          child: const Text('Election History', 
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
+              width: 340,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.all(14.0),
+                  backgroundColor: const Color(0xFF1E3A8A),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ElectionHistory()),
+                  );
+                },
+                child: const Text(
+                  'Election History',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
             SizedBox(height: 20),
-            
             Expanded(
               child: ListView(
                 children: groupedCandidates.entries.map((entry) {
@@ -159,15 +163,14 @@ class _ResultsPageState extends State<ResultsPage> {
                           crossAxisCount: crossAxisCount,
                           crossAxisSpacing: 8.0,
                           mainAxisSpacing: 8.0,
-                          // Removed childAspectRatio to let height fit content
                         ),
                         itemCount: entry.value.length,
                         itemBuilder: (context, index) {
                           var candidate = entry.value[index];
 
-                          // Calculate the percentage of votes for this candidate
-                          int percentage = totalPositionVotes > 0
-                              ? ((candidate['total_votes'] / totalPositionVotes) * 100).toInt()
+                          // Calculate the percentage of votes for this candidate based on total voters
+                          double percentage = totalVoters > 0
+                              ? (candidate['total_votes'] / totalVoters) * 100
                               : 0;
 
                           return Card(
@@ -206,7 +209,7 @@ class _ResultsPageState extends State<ResultsPage> {
                                     color: Colors.blue,
                                   ),
                                 ),
-                                Text('$percentage%'),
+                                Text('${percentage.toStringAsFixed(2)}%'), // Display the percentage with two decimal places
                               ],
                             ),
                           );
