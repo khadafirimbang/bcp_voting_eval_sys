@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/drawerbar_admin.dart';
+import 'package:for_testing/voter_pages/election_history.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
@@ -36,6 +37,12 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
     _fetchSchedules();
   }
 
+  @override
+  void dispose() {
+    // Cancel any ongoing tasks here
+    super.dispose();
+  }
+
   Future<void> _fetchSchedules() async {
     try {
       final schedules = await _apiService.getSchedules();
@@ -47,7 +54,32 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
     }
   }
 
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   Future<void> _addSchedule() async {
+    if (_schedules.isNotEmpty) {
+      final ongoingElection = _schedules.any((schedule) =>
+          schedule.startDate.isBefore(DateTime.now()) &&
+          schedule.endDate.isAfter(DateTime.now()));
+
+      if (ongoingElection) {
+        _showSnackbar(
+            'You can only add an election schedule if there is no ongoing election.');
+        return;
+      }
+
+      _showSnackbar(
+          'You can only add 1 election schedule. Delete or edit the current election schedule if you want to add.');
+      return;
+    }
+
     final schedule = await showDialog<ElectionSchedule>(
       context: context,
       builder: (context) => _buildScheduleDialog(),
@@ -191,6 +223,36 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
             ],
           ),
           child: AppBar(
+            actions: [
+              SizedBox(
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.all(14.0),
+                  backgroundColor: const Color(0xFF1E3A8A),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ElectionHistory()),
+                  );
+                },
+                child: const Text(
+                  'Election History',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            IconButton(onPressed: (){
+                _fetchSchedules();
+              }, icon: const Icon(Icons.refresh))
+            ],
             titleSpacing: -5,
             backgroundColor: Colors.transparent, // Make inner AppBar transparent
             elevation: 0, // Remove shadow
@@ -240,7 +302,7 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
                           onPressed: () => _editSchedule(schedule),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.stop_sharp),
+                          icon: const Icon(Icons.delete),
                           onPressed: () => _deleteSchedule(schedule.id),
                         ),
                       ],
