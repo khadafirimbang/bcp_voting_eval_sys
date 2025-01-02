@@ -33,6 +33,8 @@ class _CandidatesPageState extends State<CandidatesPage> {
   Uint8List? _imageBytes;
   int currentPage = 0; // Current page index
   final int rowsPerPage = 10; // Changed to 10 rows per page
+  List<String> selectedCandidates = [];
+  bool selectAll = false;
 
   @override
   void initState() {
@@ -43,6 +45,58 @@ class _CandidatesPageState extends State<CandidatesPage> {
     _loadPartylist();
   }
 
+  Future<void> _resetVotes() async {
+    final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/reset_votes.php');
+    final response = await http.post(url);
+
+    if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      if (result['status'] == 'success') {
+        _fetchCandidates(); // Refresh the list
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Votes reset successfully'), backgroundColor: Colors.green),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message']), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteSelected() async {
+    if (selectedCandidates.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No candidates selected'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/delete_selected.php');
+    final response = await http.post(
+      url,
+      body: {'selected_ids': json.encode(selectedCandidates)},
+    );
+
+    if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      if (result['status'] == 'success') {
+        setState(() {
+          selectedCandidates.clear();
+          selectAll = false;
+        });
+        _fetchCandidates(); // Refresh the list
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Selected candidates deleted successfully'), backgroundColor: Colors.green),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message']), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+  
   Future<void> _loadPartylist() async {
     final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/get_partylist.php'); // Replace with your endpoint
     try {
@@ -150,6 +204,60 @@ class _CandidatesPageState extends State<CandidatesPage> {
         const SnackBar(content: Text('Failed to delete candidate'), backgroundColor: Colors.red),
       );
     }
+  }
+
+  void _showResetVotesConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Reset'),
+          content: const Text('Are you sure you want to reset the votes? All of the total votes will be reset.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _resetVotes();
+              },
+              child: const Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteSelectedConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content: const Text('Are you sure you want to delete all of the selected candidates?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _deleteSelected();
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showDeleteConfirmation(String studentNo) {
@@ -524,56 +632,146 @@ class _CandidatesPageState extends State<CandidatesPage> {
                           ),
               ],
             ),
-            const SizedBox(height: 16.0),
-            Expanded(
-              child: ListView.builder(
-                itemCount: currentPageUsers.length,
-                itemBuilder: (context, index) {
-                  final candidate = currentPageUsers[index];
-                  return GestureDetector(
-                    onTap: () {
-                      // Navigate to the candidate detail page
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CandidateDetailPage(candidate: candidate),
-                        ),
-                      );
-                    },
-                    child: Card(
-                      color: Colors.white,
-                      elevation: 2,
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
-                              ? NetworkImage(candidate['image_url'])
-                              : const AssetImage('assets/bcp_logo.png'), // Replace with your placeholder path
-                        ),
-                        title: Text('${candidate['firstname']} ${candidate['lastname']}'),
-                        subtitle: Text('Position: ${candidate['position']} | Partylist: ${candidate['partylist']}'),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () {
-                                _showUpdateForm(candidate);
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () {
-                                _showDeleteConfirmation(candidate['studentno']);
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
+            SizedBox(height: 10,),
+            Row(
+      children: [
+        Checkbox(
+          value: selectAll,
+          onChanged: (bool? value) {
+            setState(() {
+              selectAll = value ?? false;
+              if (selectAll) {
+                selectedCandidates = currentPageUsers.map((c) => c['studentno'].toString()).toList();
+              } else {
+                selectedCandidates.clear();
+              }
+            });
+          },
+        ),
+        const Text('Select All'),
+        SizedBox(width: 20,),
+        SizedBox(
+          child: TextButton(
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.all(14.0),
+              backgroundColor: Colors.red,
+            ),
+            onPressed: _showDeleteSelectedConfirmation,
+            child: const Text(
+              'Delete Selected',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white,
               ),
             ),
+          ),
+        ),
+        SizedBox(width: 10,),
+        SizedBox(
+          child: TextButton(
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.all(14.0),
+              backgroundColor: const Color(0xFF1E3A8A),
+            ),
+            onPressed: _showResetVotesConfirmation,
+            child: const Text(
+              'Reset Votes',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+            const SizedBox(height: 16.0),
+            Expanded(
+  child: ListView.builder(
+    itemCount: currentPageUsers.length,
+    itemBuilder: (context, index) {
+      final candidate = currentPageUsers[index];
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CandidateDetailPage(candidate: candidate),
+            ),
+          );
+        },
+        child: Card(
+          color: Colors.white,
+          elevation: 2,
+          child: ListTile(
+            leading: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Checkbox(
+                  value: selectedCandidates.contains(candidate['studentno'].toString()),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value ?? false) {
+                        selectedCandidates.add(candidate['studentno'].toString());
+                      } else {
+                        selectedCandidates.remove(candidate['studentno'].toString());
+                      }
+                      selectAll = selectedCandidates.length == currentPageUsers.length;
+                    });
+                  },
+                ),
+                CircleAvatar(
+                  backgroundImage: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
+                      ? NetworkImage(candidate['image_url'])
+                      : const AssetImage('assets/bcp_logo.png') as ImageProvider,
+                ),
+              ],
+            ),
+            title: Text(
+              '${candidate['firstname']} ${candidate['lastname']}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Student No: ${candidate['studentno']}'),
+                Text('Position: ${candidate['position']}'),
+              ],
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.black),
+                  onPressed: () {
+                    _showUpdateForm(candidate);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.black),
+                  onPressed: () {
+                    _showDeleteConfirmation(candidate['studentno']);
+                  },
+                ),
+              ],
+            ),
+            isThreeLine: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          ),
+        ),
+      );
+    },
+  ),
+),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
