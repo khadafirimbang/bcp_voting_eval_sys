@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
+import 'package:for_testing/admin_pages/dashboard2.dart';
 import 'package:for_testing/voter_pages/announcement.dart';
 import 'package:for_testing/signup.dart';
 import 'package:http/http.dart' as http;
@@ -120,12 +121,12 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
         if (data['role'] == 'Voter') {
           Navigator.pushReplacement(
             context, 
-            MaterialPageRoute(builder: (context) => AnnouncementPage())
+            MaterialPageRoute(builder: (context) => const AnnouncementPage())
           );
         } else if (data['role'] == 'Admin') {
           Navigator.pushReplacement(
             context, 
-            MaterialPageRoute(builder: (context) => DashboardPage())
+            MaterialPageRoute(builder: (context) => DashboardPage2())
           );
         }
       } else {

@@ -4,6 +4,7 @@ import 'package:for_testing/admin_pages/announcement_admin.dart';
 import 'package:for_testing/admin_pages/candidates.dart';
 import 'package:for_testing/admin_pages/chatbot_admin.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
+import 'package:for_testing/admin_pages/dashboard2.dart';
 import 'package:for_testing/admin_pages/election_sched.dart';
 import 'package:for_testing/admin_pages/evaluation_admin.dart';
 import 'package:for_testing/admin_pages/feedback_results.dart';
@@ -79,7 +80,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             title: const Text('Dashboard', style: TextStyle(color: Colors.black)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const DashboardPage()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => DashboardPage2()));
             },
           ),
           const SizedBox(height: 10,),
