@@ -17,7 +17,6 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Exit the app when the back button is pressed
         return exit(0);
       },
       child: const Scaffold(
@@ -44,7 +43,6 @@ class _LoginWidgetState extends State<LoginWidget> {
   }
 }
 
-// Login Page
 class LoginWidgetWidget extends StatefulWidget {
   const LoginWidgetWidget({super.key});
 
@@ -70,23 +68,9 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
   void initState() {
     super.initState();
     _internetConnectionStreamSubcription = InternetConnection().onStatusChange.listen((event) {
-      switch (event) {
-        case InternetStatus.connected:
-          setState(() {
-            isConnectedToInternet = true;
-          });
-          break;
-        case InternetStatus.disconnected:
-          setState(() {
-            isConnectedToInternet = false;
-          });
-          break;
-        default:
-          setState(() {
-            isConnectedToInternet = false;
-          });
-          break;
-      }
+      setState(() {
+        isConnectedToInternet = event == InternetStatus.connected;
+      });
     });
   }
 
@@ -98,16 +82,14 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      // Sanitize input
       String studentNo = _sanitizeInput(_studentNoController.text);
       String password = _sanitizeInput(_passwordController.text);
 
       final response = await http.post(
-        // Uri.parse('http://192.168.1.6/for_testing/signin.php'),
         Uri.parse('https://studentcouncil.bcp-sms1.com/php/signin.php'),
         body: {
           'studentno': studentNo,
-          'password': password, // Sending sanitized input
+          'password': password,
         },
       );
 
@@ -116,17 +98,17 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
       if (data['status'] == 'success') {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('studentno', studentNo);
-        await prefs.setString('role', data['role']); // Save the role to SharedPreferences
+        await prefs.setString('role', data['role']);
 
         if (data['role'] == 'Voter') {
           Navigator.pushReplacement(
-            context, 
-            MaterialPageRoute(builder: (context) => const AnnouncementPage())
+            context,
+            MaterialPageRoute(builder: (context) => const AnnouncementPage()),
           );
         } else if (data['role'] == 'Admin') {
           Navigator.pushReplacement(
-            context, 
-            MaterialPageRoute(builder: (context) => DashboardPage2())
+            context,
+            MaterialPageRoute(builder: (context) => DashboardPage2()),
           );
         }
       } else {
@@ -141,127 +123,109 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
     }
   }
 
-  // Function to sanitize input
   String _sanitizeInput(String input) {
-    // Trim leading and trailing spaces and remove any unwanted characters
     return input.trim().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Column(
+      body: Center(
+        child: SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            width: 400,
+
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Logo
-                const SizedBox(height: 80),
                 Image.asset(
                   'assets/bcp_logo.png',
                   width: 100,
                 ),
-                const SizedBox(height: 80),
+                const SizedBox(height: 30),
+                const Text(
+                  'Login your Account',
+                  style: TextStyle(
+                    fontSize: 23,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 20),
                 Form(
                   key: _formKey,
                   child: Column(
-                    children: <Widget>[
-                      const Text('Login your Account',
-                        style: TextStyle(
-                          fontSize: 23,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 340,
-                        child: TextFormField(
-                          keyboardType: TextInputType.number,
-                          controller: _studentNoController,
-                          decoration: const InputDecoration(
-                            labelText: 'Student Number',
-                            prefixIcon: Icon(Icons.person),
-                            contentPadding: EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your student number';
-                            }
-                            if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
-                              return 'Student number must be numeric';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      SizedBox(
-                        width: 340,
-                        child: TextFormField(
-                          keyboardType: TextInputType.text,
-                          controller: _passwordController,
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            prefixIcon: const Icon(Icons.lock),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscureText ? Icons.visibility : Icons.visibility_off,
-                              ),
-                              onPressed: _togglePasswordVisibility,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          obscureText: _obscureText,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 340,
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: const EdgeInsets.all(14.0),
-                            backgroundColor: const Color(0xFF1E3A8A),
-                          ),
-                          onPressed: _login,
-                          child: const Text('Sign in', 
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
+                    children: [
+                      TextFormField(
+                        controller: _studentNoController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Student Number',
+                          prefixIcon: const Icon(Icons.person),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your student number';
+                          }
+                          if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                            return 'Student number must be numeric';
+                          }
+                          return null;
+                        },
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscureText,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          prefixIcon: const Icon(Icons.lock),
+                          suffixIcon: IconButton(
+                            icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off),
+                            onPressed: _togglePasswordVisibility,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 50),
+                          backgroundColor: Color(0xFF313131),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        onPressed: _login,
+                        child: const Text('Login', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                      ),
+                      const SizedBox(height: 10),
                       TextButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const SignUpPage()),
-                          );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(builder: (context) => const SignUpPage()),
+                          // );
                         },
-                        child: const Text('Click here to Sign up',
-                          style: TextStyle(
-                            color: Color(0xFF1E3A8A),
-                          ),
-                        ),
+                        child: const Text('Forgot Password', style: TextStyle(color: Colors.black)),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
