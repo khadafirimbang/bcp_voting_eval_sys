@@ -130,7 +130,7 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
                         if (announcement['image_url'] != null && announcement['image_url'].isNotEmpty)
                           Image.network(
                             announcement['image_url'],
-                            width: 1500,
+                            width: 1000,
                             fit: BoxFit.cover,
                           )
                         else
