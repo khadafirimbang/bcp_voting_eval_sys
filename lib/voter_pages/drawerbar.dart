@@ -114,7 +114,7 @@ class _AppDrawerState extends State<AppDrawer> {
             title: const Text('Evaluation', style: TextStyle(color: Colors.black)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const EvaluationPage()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => EvaluationPage()));
             },
           ),
           const SizedBox(height: 10,),

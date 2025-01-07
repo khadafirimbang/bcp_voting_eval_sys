@@ -22,6 +22,8 @@ class _EvaluationPageState extends State<EvaluationPage> {
   String selectedType = 'All'; // Default to 'All' for search
   int _currentPage = 1;
   final int _rowsPerPage = 10;
+  Map<int, bool> selectedItems = {};
+  bool selectAll = false;
 
   @override
   void initState() {
@@ -30,6 +32,131 @@ class _EvaluationPageState extends State<EvaluationPage> {
     searchController.addListener(() {
       filterEvaluations(searchController.text);
     });
+  }
+
+  void toggleSelectAll() {
+    setState(() {
+      selectAll = !selectAll;
+      for (var eval in evaluations) {
+        selectedItems[eval['id']] = selectAll;
+      }
+    });
+  }
+
+  Future<void> deleteSelectedEvaluations() async {
+    List<int> selectedIds = selectedItems.entries
+        .where((entry) => entry.value)
+        .map((entry) => entry.key)
+        .toList();
+
+    if (selectedIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No items selected'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final response = await http.post(
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/delete_selected_evaluations.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'ids': selectedIds}),
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        selectedItems.clear();
+        selectAll = false;
+      });
+      fetchEvaluations();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selected items deleted successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to delete selected items'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> resetEvaluationStatus() async {
+    final response = await http.post(
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/reset_evaluation_status.php'),
+    );
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Evaluation status reset successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to reset evaluation status'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+  
+  void showDeleteSelectedConfirmation() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Confirmation'),
+          content: const Text('Are you sure you want to delete all selected evaluations?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                deleteSelectedEvaluations();
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showResetConfirmation() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Reset Confirmation'),
+          content: const Text('Are you sure you want to reset all evaluation status?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                resetEvaluationStatus();
+              },
+              child: const Text('Reset'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> fetchEvaluations() async {
@@ -587,6 +714,44 @@ class _EvaluationPageState extends State<EvaluationPage> {
                 ),
               ),
               const SizedBox(height: 16.0),
+
+            Row(                                                                      
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Checkbox(
+                      value: selectAll,
+                      onChanged: (bool? value) => toggleSelectAll(),
+                    ),
+                    const Text('Select All'),
+                  ],
+                ),
+                Row(
+                  children: [
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.delete),
+                      label: const Text('Delete Selected'),
+                      onPressed: showDeleteSelectedConfirmation,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Reset Evaluation'),
+                      onPressed: showResetConfirmation,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
             Expanded(
               child: ListView.builder(
                 itemCount: _paginatedEvaluations.length,
@@ -598,6 +763,17 @@ class _EvaluationPageState extends State<EvaluationPage> {
                         color: Colors.white,
                         elevation: 2,
                         child: ListTile(
+                          leading: Checkbox(
+                            value: selectedItems[eval['id']] ?? false,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                selectedItems[eval['id']] = value ?? false;
+                                if (!(value ?? false)) {
+                                  selectAll = false;
+                                }
+                              });
+                            },
+                          ),
                           contentPadding: const EdgeInsets.all(8.0),
                           title: Text(eval['question']),
                           subtitle: Text(eval['type']),
