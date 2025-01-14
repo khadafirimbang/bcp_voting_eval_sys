@@ -71,6 +71,56 @@ class _ElectionPredictionPageState extends State<ElectionPredictionPage> {
     }
   }
 
+  Future<void> resetPredictions() async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/reset_predictions.php'),
+      );
+
+      final result = json.decode(response.body);
+
+      if (result['success']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'])),
+        );
+        setState(() {
+          candidatesByPosition = fetchCandidates(); // Refresh candidates data
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${result['message']}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: ${e.toString()}')),
+      );
+    }
+  }
+
+  void showResetConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Reset Prediction'),
+        content: Text('Are you sure you want to reset the election prediction? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              resetPredictions();
+            },
+            child: Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -82,6 +132,27 @@ class _ElectionPredictionPageState extends State<ElectionPredictionPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Election Prediction'),
+        actions: [
+          SizedBox(
+          child: TextButton(
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.all(14.0),
+              backgroundColor: Colors.red,
+            ),
+            onPressed: showResetConfirmationDialog,
+            child: const Text(
+              'Reset Prediction',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+        ],
       ),
       body: FutureBuilder<Map<String, List<Candidate>>>(  // Fetch candidates data
         future: candidatesByPosition,
