@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:for_testing/election_survey_pages/election_survey_candidates.dart';
 import 'package:for_testing/main.dart';
-import 'package:for_testing/results_pages/result_auditor.dart';
-import 'package:for_testing/results_pages/result_pres.dart';
-import 'package:for_testing/results_pages/result_sec.dart';
-import 'package:for_testing/results_pages/result_treasurer.dart';
-import 'package:for_testing/results_pages/result_vicepres.dart';
 import 'package:for_testing/results_pages/results.dart';
 import 'package:for_testing/voter_pages/announcement.dart';
-import 'package:for_testing/voter_pages/chatbot.dart';
 import 'package:for_testing/voter_pages/evaluation.dart';
 import 'package:for_testing/voter_pages/profile.dart';
 import 'package:for_testing/voter_pages/vote.dart';

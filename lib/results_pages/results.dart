@@ -99,8 +99,34 @@ class _ResultsPageState extends State<ResultsPage> {
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            SizedBox(
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.all(10.0),
+                  backgroundColor: Colors.black,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ElectionHistory()),
+                  );
+                },
+                child: const Text(
+                  'Election History',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
             Text(
               'Total Voters: $totalVoters - 100%',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -113,32 +139,7 @@ class _ResultsPageState extends State<ResultsPage> {
               'Total Not Voted Yet: $totalNotVoted - ${notVotedPercentage.toStringAsFixed(1)}%',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(
-              width: 340,
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  padding: const EdgeInsets.all(14.0),
-                  backgroundColor: const Color(0xFF1E3A8A),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ElectionHistory()),
-                  );
-                },
-                child: const Text(
-                  'Election History',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
+            
             SizedBox(height: 20),
             Expanded(
               child: ListView(
@@ -151,69 +152,75 @@ class _ResultsPageState extends State<ResultsPage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 10),
-                      Text(
-                        entry.key, // Position name (e.g., President, Vice President)
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 10),
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          crossAxisSpacing: 8.0,
-                          mainAxisSpacing: 8.0,
-                        ),
-                        itemCount: entry.value.length,
-                        itemBuilder: (context, index) {
-                          var candidate = entry.value[index];
-
-                          // Calculate the percentage of votes for this candidate based on total voters
-                          double percentage = totalVoters > 0
-                              ? (candidate['total_votes'] / totalVoters) * 100
-                              : 0;
-
-                          return Card(
-                            elevation: 5,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min, // Ensure the Column height fits the content
-                              children: [
-                                ClipOval(
-                                  child: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
-                                      ? Image.network(
-                                          candidate['image_url'],
-                                          height: 155,
-                                          width: 155,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : Image.asset(
-                                          'assets/images/bcp_logo.png',
-                                          height: 155,
-                                          width: 155,
-                                          fit: BoxFit.cover,
-                                        ),
+                      ExpansionTile(
+                        collapsedShape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.zero,
                                 ),
-                                SizedBox(height: 8),
-                                Text(
-                                  '${candidate['lastname']}, ${candidate['firstname']}',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.zero,
                                 ),
-                                Text('Position: ${candidate['position']}'),
-                                Text('${candidate['total_votes']} votes'),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: LinearProgressIndicator(
-                                    value: percentage / 100,
-                                    backgroundColor: Colors.grey[300],
-                                    color: Colors.blue,
+                                title: Text(entry.key),
+                        children: [
+                          GridView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount,
+                            crossAxisSpacing: 8.0,
+                            mainAxisSpacing: 8.0,
+                          ),
+                          itemCount: entry.value.length,
+                          itemBuilder: (context, index) {
+                            var candidate = entry.value[index];
+                        
+                            // Calculate the percentage of votes for this candidate based on total voters
+                            double percentage = totalVoters > 0
+                                ? (candidate['total_votes'] / totalVoters) * 100
+                                : 0;
+                        
+                            return Card(
+                              elevation: 5,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min, // Ensure the Column height fits the content
+                                children: [
+                                  ClipOval(
+                                    child: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
+                                        ? Image.network(
+                                            candidate['image_url'],
+                                            height: 155,
+                                            width: 155,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Image.asset(
+                                            'assets/images/bcp_logo.png',
+                                            height: 155,
+                                            width: 155,
+                                            fit: BoxFit.cover,
+                                          ),
                                   ),
-                                ),
-                                Text('${percentage.toStringAsFixed(2)}%'), // Display the percentage with two decimal places
-                              ],
-                            ),
-                          );
-                        },
+                                  SizedBox(height: 8),
+                                  Text(
+                                    '${candidate['lastname']}, ${candidate['firstname']}',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text('Position: ${candidate['position']}'),
+                                  Text('${candidate['total_votes']} votes'),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: LinearProgressIndicator(
+                                      value: percentage / 100,
+                                      backgroundColor: Colors.grey[300],
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                  Text('${percentage.toStringAsFixed(2)}%'), // Display the percentage with two decimal places
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        ],
                       ),
                     ],
                   );

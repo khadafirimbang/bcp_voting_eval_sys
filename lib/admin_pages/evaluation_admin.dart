@@ -380,7 +380,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
               actions: [
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E3A8A), // Background color
+                    backgroundColor: Colors.black, // Background color
                   ),
                   onPressed: () {
                     if (formKey.currentState!.validate()) {
@@ -523,7 +523,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
               actions: [
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E3A8A), // Background color
+                    backgroundColor: Colors.black, // Background color
                   ),
                   onPressed: () {
                     if (formKey.currentState!.validate()) {
@@ -669,6 +669,22 @@ class _EvaluationPageState extends State<EvaluationPage> {
                   });
                 },
               ),
+              DropdownButton<String>(
+                      hint: const Text('Select Type'),
+                      value: selectedType,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedType = value!;
+                          filterEvaluations(searchController.text); // Filter based on both search query and selected type
+                        });
+                      },
+                      items: ['All', ...types].map((String type) {
+                        return DropdownMenuItem<String>(
+                          value: type,
+                          child: Text(type),
+                        );
+                      }).toList(),
+                    ),
             ],
           ),
         ),
@@ -693,30 +709,12 @@ class _EvaluationPageState extends State<EvaluationPage> {
                         onChanged: (value) => filterEvaluations(value),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    DropdownButton<String>(
-                      hint: const Text('Select Type'),
-                      value: selectedType,
-                      onChanged: (value) {
-                        setState(() {
-                          selectedType = value!;
-                          filterEvaluations(searchController.text); // Filter based on both search query and selected type
-                        });
-                      },
-                      items: ['All', ...types].map((String type) {
-                        return DropdownMenuItem<String>(
-                          value: type,
-                          child: Text(type),
-                        );
-                      }).toList(),
-                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 16.0),
 
             Row(                                                                      
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
@@ -727,25 +725,46 @@ class _EvaluationPageState extends State<EvaluationPage> {
                     const Text('Select All'),
                   ],
                 ),
+                SizedBox(width: 10,),
                 Row(
                   children: [
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.delete),
-                      label: const Text('Delete Selected'),
-                      onPressed: showDeleteSelectedConfirmation,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
+                    SizedBox(
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.all(10.0),
+                          backgroundColor: Colors.black,
+                        ),
+                        onPressed: showDeleteSelectedConfirmation,
+                        child: const Text(
+                          'Delete Selected',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Reset Evaluation'),
-                      onPressed: showResetConfirmation,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.all(10.0),
+                          backgroundColor: Colors.black,
+                        ),
+                        onPressed: showResetConfirmation,
+                        child: const Text(
+                          'Reset Evaluation',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -820,7 +839,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: Colors.black,
         onPressed: showAddEvaluationForm,
         child: const Icon(Icons.add, color: Colors.white),
       ),

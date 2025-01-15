@@ -12,9 +12,7 @@ class CandidateDetailPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
-        title: const Text('Candidate Information', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text('Candidate Information'),
       ),
       body: Center(
         child: Padding(

@@ -399,8 +399,8 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
                       shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                padding: const EdgeInsets.all(14.0),
-                                backgroundColor: const Color(0xFF1E3A8A),
+                                padding: const EdgeInsets.all(10.0),
+                                backgroundColor: Colors.black,
                               ),
                               onPressed: () {
                                 Navigator.push(

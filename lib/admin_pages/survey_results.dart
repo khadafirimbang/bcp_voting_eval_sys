@@ -57,7 +57,7 @@ class SurveyResponseGraph extends StatelessWidget {
                       barRods: [
                         BarChartRodData(
                           toY: entry.value.toDouble(),
-                          color: Colors.blue,
+                          color: Colors.black,
                           width: 25,
                           borderRadius: BorderRadius.circular(4),
                         ),

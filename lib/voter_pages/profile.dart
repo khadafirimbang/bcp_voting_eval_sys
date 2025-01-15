@@ -406,6 +406,8 @@ class _ProfileInfoState extends State<ProfileInfo> {
         ),
       ),
     floatingActionButton: FloatingActionButton(
+      backgroundColor: Colors.black,
+      foregroundColor: Colors.white,
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()),
           );

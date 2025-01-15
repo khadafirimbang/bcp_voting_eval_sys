@@ -144,6 +144,8 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
               ),
             ),
         floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()),
           );

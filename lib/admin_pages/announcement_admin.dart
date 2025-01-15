@@ -297,8 +297,11 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
                                         : 'No image selected'),
                                 const SizedBox(width: 16),
                                 ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black
+                                  ),
                                   onPressed: _pickImage,
-                                  child: const Text('Upload Image'),
+                                  child: const Text('Upload Image', style: TextStyle(color: Colors.white),),
                                 ),
                               ],
                             ),
@@ -310,8 +313,8 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(20)
                                         ),
-                                        padding: const EdgeInsets.all(14.0),
-                                        backgroundColor: const Color(0xFF1E3A8A),
+                                        padding: const EdgeInsets.all(10.0),
+                                        backgroundColor: Colors.black,
                                         
                                       ),
                                       onPressed: _uploadAnnouncement,

@@ -139,8 +139,8 @@ class _ElectionPredictionPageState extends State<ElectionPredictionPage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              padding: const EdgeInsets.all(14.0),
-              backgroundColor: Colors.red,
+              padding: const EdgeInsets.all(10.0),
+              backgroundColor: Colors.black,
             ),
             onPressed: showResetConfirmationDialog,
             child: const Text(

@@ -230,8 +230,8 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  padding: const EdgeInsets.all(14.0),
-                  backgroundColor: const Color(0xFF1E3A8A),
+                  padding: const EdgeInsets.all(10.0),
+                  backgroundColor: Colors.black,
                 ),
                 onPressed: () {
                   Navigator.push(
@@ -242,7 +242,7 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
                 child: const Text(
                   'Election History',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
@@ -316,7 +316,7 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addSchedule,
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: Colors.black,
         child: Icon(Icons.add, color: Colors.white),
       ),
     );

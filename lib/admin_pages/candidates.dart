@@ -589,8 +589,8 @@ class _CandidatesPageState extends State<CandidatesPage> {
                       shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                padding: const EdgeInsets.all(14.0),
-                                backgroundColor: const Color(0xFF1E3A8A),
+                                padding: const EdgeInsets.all(10.0),
+                                backgroundColor: Colors.black,
                               ),
                               onPressed: () {
                                 Navigator.push(
@@ -613,8 +613,8 @@ class _CandidatesPageState extends State<CandidatesPage> {
                       shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                padding: const EdgeInsets.all(14.0),
-                                backgroundColor: const Color(0xFF1E3A8A),
+                                padding: const EdgeInsets.all(10.0),
+                                backgroundColor: Colors.black,
                               ),
                               onPressed: () {
                                 Navigator.push(
@@ -649,15 +649,15 @@ class _CandidatesPageState extends State<CandidatesPage> {
           },
         ),
         const Text('Select All'),
-        SizedBox(width: 20,),
+        SizedBox(width: 10,),
         SizedBox(
           child: TextButton(
             style: TextButton.styleFrom(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              padding: const EdgeInsets.all(14.0),
-              backgroundColor: Colors.red,
+              padding: const EdgeInsets.all(10.0),
+              backgroundColor: Colors.black,
             ),
             onPressed: _showDeleteSelectedConfirmation,
             child: const Text(
@@ -676,8 +676,8 @@ class _CandidatesPageState extends State<CandidatesPage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              padding: const EdgeInsets.all(14.0),
-              backgroundColor: const Color(0xFF1E3A8A),
+              padding: const EdgeInsets.all(10.0),
+              backgroundColor: Colors.black,
             ),
             onPressed: _showResetVotesConfirmation,
             child: const Text(
@@ -804,7 +804,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
                 MaterialPageRoute(builder: (context) => NewCandidatePage()),
               );
         },
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: Colors.black,
         child: Icon(Icons.add, color: Colors.white),
       ),
     );

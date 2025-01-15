@@ -347,7 +347,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 padding: const EdgeInsets.all(14.0),
-                                backgroundColor: const Color(0xFF1E3A8A),
+                                backgroundColor: Colors.black,
                               ),
                               onPressed: _isSubmitted ? null : _submitEvaluation,
                               child: const Text('Submit', 
@@ -369,6 +369,8 @@ class _EvaluationPageState extends State<EvaluationPage> {
         ),
       ),
     floatingActionButton: FloatingActionButton(
+      backgroundColor: Colors.black,
+      foregroundColor: Colors.white,
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()),
           );

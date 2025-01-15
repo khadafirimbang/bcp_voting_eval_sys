@@ -33,7 +33,7 @@ class _VotePageState extends State<VotePage> {
     fetchElectionSchedule();
 
     // Check election status every minute
-    _scheduleCheckTimer = Timer.periodic(Duration(minutes: 1), (_) {
+    _scheduleCheckTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       fetchElectionSchedule();
     });
   }
@@ -132,7 +132,7 @@ class _VotePageState extends State<VotePage> {
 
   void startCountdown(DateTime endDate) {
     _countdownTimer?.cancel();
-    _countdownTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final now = DateTime.now();
       if (now.isAfter(endDate)) {
         timer.cancel();
@@ -172,7 +172,7 @@ class _VotePageState extends State<VotePage> {
 
   void debounceSearch(String value) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(Duration(milliseconds: 300), () {
+    _debounce = Timer(const Duration(milliseconds: 300), () {
       setState(() {
         searchQuery = value.toLowerCase();
       });
@@ -182,7 +182,7 @@ class _VotePageState extends State<VotePage> {
   void _voteForCandidate(dynamic candidate) async {
     if (electionSchedule?['status'] != 'ongoing') {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Voting is not currently available.')),
+        const SnackBar(content: Text('Voting is not currently available.')),
       );
       return;
     }
@@ -191,16 +191,16 @@ class _VotePageState extends State<VotePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Confirm Vote"),
+          title: const Text("Confirm Vote"),
           content: Text("Are you sure you want to vote for ${candidate['firstname']} ${candidate['lastname']}?"),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text("Cancel"),
+              child: const Text("Cancel"),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text("Confirm"),
+              child: const Text("Confirm"),
             ),
           ],
         );
@@ -259,21 +259,21 @@ class _VotePageState extends State<VotePage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Scaffold(
+      return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (electionSchedule == null) {
       return Scaffold(
-        appBar: AppBar(title: Text('Elections')),
-        body: Center(child: Text('No active election scheduled.')),
+        appBar: AppBar(title: const Text('Elections')),
+        body: const Center(child: Text('No active election scheduled.')),
       );
     }
 
     if (electionSchedule!['status'] == 'ended') {
       return Scaffold(
-        appBar: AppBar(title: Text('Election Ended')),
+        appBar: AppBar(title: const Text('Election Ended')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -282,7 +282,7 @@ class _VotePageState extends State<VotePage> {
                 'Election Ended',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               SizedBox(
                         width: 340,
                         child: TextButton(
@@ -373,7 +373,7 @@ class _VotePageState extends State<VotePage> {
                   });
                 },
                 items: [
-                  DropdownMenuItem<String>(value: 'All', child: Text('All')),
+                  const DropdownMenuItem<String>(value: 'All', child: Text('All')),
                   ...positions.map<DropdownMenuItem<String>>((position) {
                     return DropdownMenuItem<String>(
                       value: position['name'] as String,
@@ -386,7 +386,7 @@ class _VotePageState extends State<VotePage> {
           ),
         ),
       ),
-      drawer: AppDrawer(),
+      drawer: const AppDrawer(),
       body: Column(
         children: [
           Padding(
@@ -425,7 +425,7 @@ class _VotePageState extends State<VotePage> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             contentPadding:
-                                EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                                const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                           ),
                           onChanged: debounceSearch,
                         ),
@@ -435,11 +435,25 @@ class _VotePageState extends State<VotePage> {
                             children: positions.map((position) {
                               var filteredCandidates =
                                   _filterCandidates(position['name']);
-                              return _buildCandidateGrid(
-                                position,
-                                filteredCandidates,
-                                candidatesPerRow,
-                                cardHeight
+                              return ExpansionTile(
+                                collapsedShape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.zero,
+                                ),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.zero,
+                                ),
+                                title: Text(
+                                  position['name'],
+                                  style: const TextStyle(fontSize: 16.0,),
+                                ),
+                                children: [
+                                  _buildCandidateGrid(
+                                  position,
+                                  filteredCandidates,
+                                  candidatesPerRow,
+                                  cardHeight
+                                ),
+                                ],
                               );
                             }).toList(),
                           )
@@ -451,11 +465,11 @@ class _VotePageState extends State<VotePage> {
                               var filteredCandidates =
                                   _filterCandidates(position['name']);
                               return _buildCandidateGrid(
-                                position,
-                                filteredCandidates,
-                                candidatesPerRow,
-                                cardHeight
-                              );
+                              position,
+                              filteredCandidates,
+                              candidatesPerRow,
+                              cardHeight
+                                                              );
                             }).toList(),
                           ),
                   ],
@@ -466,20 +480,22 @@ class _VotePageState extends State<VotePage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => ChatbotScreen()),
           );
         },
-        child: Icon(Icons.chat_outlined),
+        child: const Icon(Icons.chat_outlined),
       ),
     );
   }
 
   Widget _buildCandidateGrid(dynamic position, List<dynamic> filteredCandidates,
       int candidatesPerRow, double cardHeight) {
-    if (filteredCandidates.isEmpty) return SizedBox.shrink();
+    if (filteredCandidates.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -488,12 +504,12 @@ class _VotePageState extends State<VotePage> {
           padding: const EdgeInsets.all(8.0),
           child: Text(
             position['name'],
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
         GridView.builder(
           shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: candidatesPerRow,
             crossAxisSpacing: 8.0,
@@ -512,57 +528,63 @@ class _VotePageState extends State<VotePage> {
                   ),
                 );
               },
-              child: Card(
-                elevation: 2.0,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          ClipOval(
-                                  child: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
-                                      ? Image.network(
-                                          candidate['image_url'],
-                                          height: 155,
-                                          width: 155,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : Image.asset(
-                                          'assets/images/bcp_logo.png',
-                                          height: 155,
-                                          width: 155,
-                                          fit: BoxFit.cover,
-                                        ),
-                                ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              '${candidate['firstname']} ${candidate['lastname']} | ${candidate['position']}',
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: Card(
+                  elevation: 2.0,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            ClipOval(
+                                    child: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
+                                        ? Image.network(
+                                            candidate['image_url'],
+                                            height: 155,
+                                            width: 155,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Image.asset(
+                                            'assets/images/bcp_logo.png',
+                                            height: 155,
+                                            width: 155,
+                                            fit: BoxFit.cover,
+                                          ),
+                                  ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                '${candidate['firstname']} ${candidate['lastname']} | ${candidate['position']}',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Text(
+                              candidate['slogan'] ?? '',
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(fontStyle: FontStyle.italic),
                             ),
-                          ),
-                          Text(
-                            candidate['slogan'] ?? '',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontStyle: FontStyle.italic),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: ElevatedButton(
-                              onPressed: () {
-                                _voteForCandidate(candidate);
-                              },
-                              child: Text('Vote'),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black
+                                ),
+                                onPressed: () {
+                                  _voteForCandidate(candidate);
+                                },
+                                child: const Text('Vote', style: TextStyle(color: Colors.white),),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
