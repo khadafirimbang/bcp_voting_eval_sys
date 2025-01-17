@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/chatbot_question_type.dart';
+import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -15,6 +16,7 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
   bool isLoading = true;
   bool isSearching = false;
   TextEditingController searchController = TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   
   @override
   void initState() {
@@ -330,12 +332,44 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Chatbot Questions'),
-        actions: [
-          Row(
+      key: _scaffoldKey,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+        child: Container(
+          height: 56,
+          alignment: Alignment.center, // Align the AppBar in the center
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+          decoration: BoxDecoration(
+            color: Colors.white, 
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3), // Shadow color
+                blurRadius: 8, // Blur intensity
+                spreadRadius: 1, // Spread radius
+                offset: const Offset(0, 4), // Vertical shadow position
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(
+              Row(
+                children: [
+                  IconButton(
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+                icon: const Icon(Icons.menu, color: Colors.black45),
+              ),
+              const Text(
+                'Chatbot Management',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+                ],
+              ),
+              Row(
+                children: [
+                  IconButton(
                 icon: Icon(isSearching ? Icons.close : Icons.search),
                 onPressed: () {
                   setState(() {
@@ -347,23 +381,20 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
                 },
               ),
               // Position filter dropdown
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: DropdownButton<String>(
-                  hint: Text('Filter by Type'),
-                  value: selectedQuestionType,
-                  items: [null, ...questionTypes].map((type) {
-                    return DropdownMenuItem<String>(
-                      value: type,
-                      child: Text(type ?? 'All'),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedQuestionType = value;
-                    });
-                  },
-                ),
+              DropdownButton<String>(
+                hint: Text('Filter by Type'),
+                value: selectedQuestionType,
+                items: [null, ...questionTypes].map((type) {
+                  return DropdownMenuItem<String>(
+                    value: type,
+                    child: Text(type ?? 'All'),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedQuestionType = value;
+                  });
+                },
               ),
               IconButton(onPressed: (){
                 Navigator.push(
@@ -371,10 +402,13 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
                                   MaterialPageRoute(builder: (context) => ChatbotAdminPage()),
                                 );
               }, icon: const Icon(Icons.refresh))
+                ],
+              )
             ],
-          ),
-        ],
+          )
+        ),
       ),
+      drawer: const AppDrawerAdmin(),
       body: Column(
         children: [
           if (isSearching)
@@ -393,6 +427,7 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
                 },
               ),
             ),
+            SizedBox(height: 10,),
             SizedBox(
                   child: TextButton(
                     style: TextButton.styleFrom(

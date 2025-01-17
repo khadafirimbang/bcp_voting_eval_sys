@@ -19,6 +19,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
   Map<int, String> surveyResponses = {};
   String? studentno;
   bool _isSubmitted = false; // Track submission status
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -85,52 +86,47 @@ class _EvaluationPageState extends State<EvaluationPage> {
     }
   }
 
-  // Function to sanitize input
-  String _sanitizeInput(String input) {
-    // Trim leading and trailing spaces and remove any unwanted characters
-    return input.trim().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
+      key: _scaffoldKey,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
+        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
         child: Container(
+          height: 56,
           alignment: Alignment.center, // Align the AppBar in the center
-            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-            decoration: BoxDecoration(
-              color: Colors.white, 
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3), // Shadow color
-                  blurRadius: 8, // Blur intensity
-                  spreadRadius: 1, // Spread radius
-                  offset: const Offset(0, 4), // Vertical shadow position
-                ),
-              ],
-            ),
-          child: AppBar(
-            titleSpacing: -5,
-                        backgroundColor: Colors.transparent, // Make inner AppBar transparent
-                        elevation: 0, // Remove shadow
-                        title: const Text(
-                          'Evaluation',
-                          style: TextStyle(fontSize: 18, color: Colors.black54),
-                        ),
-                        iconTheme: const IconThemeData(color: Colors.black45),
-          leading: Builder(
-              builder: (BuildContext context) {
-                return IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer(); // Use this context
-                },
-                      );
-              }
-            ),
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+          decoration: BoxDecoration(
+            color: Colors.white, 
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3), // Shadow color
+                blurRadius: 8, // Blur intensity
+                spreadRadius: 1, // Spread radius
+                offset: const Offset(0, 4), // Vertical shadow position
+              ),
+            ],
           ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+                icon: const Icon(Icons.menu, color: Colors.black45),
+              ),
+              const Text(
+                'Evaluation',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+                ],
+              ),
+            ],
+          )
         ),
       ),
       drawer: const AppDrawer(),
@@ -388,8 +384,8 @@ class _EvaluationPageState extends State<EvaluationPage> {
     }
 
     // Convert responses to JSON
-    String feedbackResponsesJson = _sanitizeInput(json.encode(feedbackResponses.map((key, value) => MapEntry(key.toString(), value))));
-    String surveyResponsesJson = _sanitizeInput(json.encode(surveyResponses.map((key, value) => MapEntry(key.toString(), value))));
+    String feedbackResponsesJson = json.encode(feedbackResponses.map((key, value) => MapEntry(key.toString(), value)));
+    String surveyResponsesJson = json.encode(surveyResponses.map((key, value) => MapEntry(key.toString(), value)));
 
     // Send data to the backend
     var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/submit_evaluation.php');

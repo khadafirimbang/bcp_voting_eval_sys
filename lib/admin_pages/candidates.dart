@@ -35,6 +35,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
   final int rowsPerPage = 10; // Changed to 10 rows per page
   List<String> selectedCandidates = [];
   bool selectAll = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -485,10 +486,11 @@ class _CandidatesPageState extends State<CandidatesPage> {
     );
 
     return Scaffold(
-      
+      key: _scaffoldKey,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
+        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
         child: Container(
+          height: 56,
           alignment: Alignment.center, // Align the AppBar in the center
           margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
           decoration: BoxDecoration(
@@ -502,27 +504,26 @@ class _CandidatesPageState extends State<CandidatesPage> {
               ),
             ],
           ),
-          child: AppBar(
-            titleSpacing: -5,
-            backgroundColor: Colors.transparent, // Make inner AppBar transparent
-            elevation: 0, // Remove shadow
-            title: const Text(
-              'Candidates',
-              style: TextStyle(fontSize: 18, color: Colors.black54),
-            ),
-            iconTheme: const IconThemeData(color: Colors.black45),
-            leading: Builder(
-              builder: (BuildContext context) {
-                return IconButton(
-                  icon: const Icon(Icons.menu),
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer();
-                  },
-                );
-              },
-            ),
-            actions: [
-              IconButton(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+                icon: const Icon(Icons.menu, color: Colors.black45),
+              ),
+              const Text(
+                'Candidates',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+                ],
+              ),
+              Row(
+                children: [
+                  IconButton(
                 icon: Icon(_isSearchVisible ? Icons.close : Icons.search),
                 onPressed: () {
                   setState(() {
@@ -562,8 +563,10 @@ class _CandidatesPageState extends State<CandidatesPage> {
                                   MaterialPageRoute(builder: (context) => const CandidatesPage()),
                                 );
               }, icon: const Icon(Icons.refresh))
+                ],
+              )
             ],
-          ),
+          )
         ),
       ),
       drawer: const AppDrawerAdmin(),

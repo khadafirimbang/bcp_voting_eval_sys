@@ -197,15 +197,6 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
           ),
           const SizedBox(height: 10,),
           ListTile(
-            leading: const Icon(Icons.announcement, color: Colors.black,),
-            title: const Text('Accounts', style: TextStyle(color: Colors.black)),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => AccountsPage()));
-            },
-          ),
-          const SizedBox(height: 10,),
-          ListTile(
             leading: const Icon(Icons.logout, color: Colors.black,),
             title: const Text('Logout', style: TextStyle(color: Colors.black)),
             onTap: () {

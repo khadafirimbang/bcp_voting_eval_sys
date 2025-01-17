@@ -24,6 +24,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
   final int _rowsPerPage = 10;
   Map<int, bool> selectedItems = {};
   bool selectAll = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -95,14 +96,14 @@ class _EvaluationPageState extends State<EvaluationPage> {
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Evaluation status reset successfully'),
+          content: Text('Evaluation reset successfully'),
           backgroundColor: Colors.green,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Failed to reset evaluation status'),
+          content: Text('Failed to reset evaluation'),
           backgroundColor: Colors.red,
         ),
       );
@@ -140,7 +141,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Reset Confirmation'),
-          content: const Text('Are you sure you want to reset all evaluation status?'),
+          content: const Text('Are you sure you want to reset the evaluation? All of the evaluation records will be deleted!'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -625,43 +626,44 @@ class _EvaluationPageState extends State<EvaluationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
+        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
         child: Container(
+          height: 56,
           alignment: Alignment.center, // Align the AppBar in the center
-            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-            decoration: BoxDecoration(
-              color: Colors.white, 
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3), // Shadow color
-                  blurRadius: 8, // Blur intensity
-                  spreadRadius: 1, // Spread radius
-                  offset: const Offset(0, 4), // Vertical shadow position
-                ),
-              ],
-            ),
-          child: AppBar(
-            titleSpacing: -5,
-                    backgroundColor: Colors.transparent, // Make inner AppBar transparent
-                    elevation: 0, // Remove shadow
-                    title: const Text(
-                      'Evaluation',
-                      style: TextStyle(fontSize: 18, color: Colors.black54),
-                    ),
-                    iconTheme: const IconThemeData(color: Colors.black45),
-            leading: Builder(
-              builder: (BuildContext context) {
-                return IconButton(
-                icon: const Icon(Icons.menu),
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+          decoration: BoxDecoration(
+            color: Colors.white, 
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3), // Shadow color
+                blurRadius: 8, // Blur intensity
+                spreadRadius: 1, // Spread radius
+                offset: const Offset(0, 4), // Vertical shadow position
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
                 onPressed: () {
-                  Scaffold.of(context).openDrawer(); // Use this context
+                  _scaffoldKey.currentState?.openDrawer();
                 },
-                      );
-              }
-            ),
-            actions: [
-              IconButton(
+                icon: const Icon(Icons.menu, color: Colors.black45),
+              ),
+              const Text(
+                'Evaluation',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+                ],
+              ),
+              Row(
+                children: [
+                  IconButton(
                 icon: const Icon(Icons.search),
                 onPressed: () {
                   setState(() {
@@ -685,8 +687,13 @@ class _EvaluationPageState extends State<EvaluationPage> {
                         );
                       }).toList(),
                     ),
+                    IconButton(onPressed: (){
+                      fetchEvaluations();
+                    }, icon: const Icon(Icons.refresh))
+                ],
+              )
             ],
-          ),
+          )
         ),
       ),
       drawer: const AppDrawerAdmin(),
@@ -714,20 +721,11 @@ class _EvaluationPageState extends State<EvaluationPage> {
               ),
               const SizedBox(height: 16.0),
 
-            Row(                                                                      
+            Column(                                                                      
               children: [
                 Row(
                   children: [
-                    Checkbox(
-                      value: selectAll,
-                      onChanged: (bool? value) => toggleSelectAll(),
-                    ),
-                    const Text('Select All'),
-                  ],
-                ),
-                SizedBox(width: 10,),
-                Row(
-                  children: [
+                    
                     SizedBox(
                       child: TextButton(
                         style: TextButton.styleFrom(
@@ -767,6 +765,16 @@ class _EvaluationPageState extends State<EvaluationPage> {
                         ),
                       ),
                     ),
+                  ],
+                ),
+                SizedBox(height: 5,),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: selectAll,
+                      onChanged: (bool? value) => toggleSelectAll(),
+                    ),
+                    const Text('Select All'),
                   ],
                 ),
               ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:for_testing/voter_pages/drawerbar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +14,7 @@ class _ElectionSurveyCandidatesState extends State<ElectionSurveyCandidates> {
   Map<String, List<String>> selectedCandidates = {};
   Map<String, int> votesQty = {};
   bool isLoading = true;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -108,7 +110,46 @@ class _ElectionSurveyCandidatesState extends State<ElectionSurveyCandidates> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text('Election Survey')),
+      key: _scaffoldKey,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+        child: Container(
+          height: 56,
+          alignment: Alignment.center, // Align the AppBar in the center
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+          decoration: BoxDecoration(
+            color: Colors.white, 
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3), // Shadow color
+                blurRadius: 8, // Blur intensity
+                spreadRadius: 1, // Spread radius
+                offset: const Offset(0, 4), // Vertical shadow position
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+                icon: const Icon(Icons.menu, color: Colors.black45),
+              ),
+              const Text(
+                'Election Survey',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+                ],
+              ),
+            ],
+          )
+        ),
+      ),
+      drawer: const AppDrawer(),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : ListView(
@@ -281,13 +322,53 @@ class _ElectionSurveyPartylistState extends State<ElectionSurveyPartylist> {
 
 class ParticipationMessage extends StatelessWidget {
   final String message;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   ParticipationMessage({required this.message});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Survey Status')),
+      key: _scaffoldKey,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+        child: Container(
+          height: 56,
+          alignment: Alignment.center, // Align the AppBar in the center
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+          decoration: BoxDecoration(
+            color: Colors.white, 
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3), // Shadow color
+                blurRadius: 8, // Blur intensity
+                spreadRadius: 1, // Spread radius
+                offset: const Offset(0, 4), // Vertical shadow position
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+                icon: const Icon(Icons.menu, color: Colors.black45),
+              ),
+              const Text(
+                'Election Survey',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+                ],
+              ),
+            ],
+          )
+        ),
+      ),
+      drawer: const AppDrawer(),
       body: Center(
         child: Text(message, style: TextStyle(fontSize: 20)),
       ),

@@ -23,6 +23,7 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
   bool _isLoading = false;
   List<dynamic> _announcements = [];
   int? _editingId;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -202,9 +203,11 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
+        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
         child: Container(
+          height: 56,
           alignment: Alignment.center, // Align the AppBar in the center
           margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
           decoration: BoxDecoration(
@@ -218,34 +221,32 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
               ),
             ],
           ),
-          child: AppBar(
-                titleSpacing: -5,
-                backgroundColor: Colors.transparent, // Make inner AppBar transparent
-                elevation: 0, // Remove shadow
-                title: const Text(
-                  'Announcement',
-                  style: TextStyle(fontSize: 18, color: Colors.black54),
-                ),
-                iconTheme: const IconThemeData(color: Colors.black45),
-            leading: Builder(
-              builder: (BuildContext context) {
-                return IconButton(
-                icon: const Icon(Icons.menu),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
                 onPressed: () {
-                  Scaffold.of(context).openDrawer(); // Use this context
+                  _scaffoldKey.currentState?.openDrawer();
                 },
-                      );
-              }
-            ),
-            actions: [
-              IconButton(onPressed: (){
-                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => AnnouncementAdminPage()),
-                                );
-              }, icon: const Icon(Icons.refresh))
+                icon: const Icon(Icons.menu, color: Colors.black45),
+              ),
+              const Text(
+                'Announcement',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+                ],
+              ),
+              Row(
+                children: [
+                  IconButton(onPressed: (){
+                    _fetchAnnouncements();
+                  }, icon: const Icon(Icons.refresh))
+                ],
+              )
             ],
-          ),
+          )
         ),
       ),
       drawer: const AppDrawerAdmin(),

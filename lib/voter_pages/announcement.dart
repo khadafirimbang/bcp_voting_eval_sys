@@ -14,6 +14,7 @@ class AnnouncementPage extends StatefulWidget {
 class _AnnouncementPageState extends State<AnnouncementPage> {
   List<dynamic> _announcements = [];
   bool _isLoading = true;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -46,42 +47,43 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
+        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
         child: Container(
+          height: 56,
           alignment: Alignment.center, // Align the AppBar in the center
-            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-            decoration: BoxDecoration(
-              color: Colors.white, 
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3), // Shadow color
-                  blurRadius: 8, // Blur intensity
-                  spreadRadius: 1, // Spread radius
-                  offset: const Offset(0, 4), // Vertical shadow position
-                ),
-              ],
-            ),
-          child: AppBar(
-            titleSpacing: -5,
-                        backgroundColor: Colors.transparent, // Make inner AppBar transparent
-                        elevation: 0, // Remove shadow
-                        title: const Text(
-                          'Announcement',
-                          style: TextStyle(fontSize: 18, color: Colors.black54),
-                        ),
-                        iconTheme: const IconThemeData(color: Colors.black45),
-            leading: Builder(
-              builder: (BuildContext context) {
-                return IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer(); // Use this context
-                },
-                      );
-              }
-            ),
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+          decoration: BoxDecoration(
+            color: Colors.white, 
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3), // Shadow color
+                blurRadius: 8, // Blur intensity
+                spreadRadius: 1, // Spread radius
+                offset: const Offset(0, 4), // Vertical shadow position
+              ),
+            ],
           ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+                icon: const Icon(Icons.menu, color: Colors.black45),
+              ),
+              const Text(
+                'Announcement',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+                ],
+              ),
+            ],
+          )
         ),
       ),
       drawer: const AppDrawer(),

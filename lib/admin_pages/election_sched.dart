@@ -30,6 +30,7 @@ class ElectionScheduler extends StatefulWidget {
 class _ElectionSchedulerState extends State<ElectionScheduler> {
   final ApiService _apiService = ApiService('https://studentcouncil.bcp-sms1.com/php');
   List<ElectionSchedule> _schedules = [];
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();            
 
   @override
   void initState() {
@@ -206,9 +207,11 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
+        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
         child: Container(
+          height: 56,
           alignment: Alignment.center, // Align the AppBar in the center
           margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
           decoration: BoxDecoration(
@@ -222,56 +225,57 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
               ),
             ],
           ),
-          child: AppBar(
-            actions: [
-              SizedBox(
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  padding: const EdgeInsets.all(10.0),
-                  backgroundColor: Colors.black,
-                ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ElectionHistory()),
-                  );
+                  _scaffoldKey.currentState?.openDrawer();
                 },
-                child: const Text(
-                  'Election History',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                icon: const Icon(Icons.menu, color: Colors.black45),
               ),
-            ),
-            IconButton(onPressed: (){
-                _fetchSchedules();
-              }, icon: const Icon(Icons.refresh))
-            ],
-            titleSpacing: -5,
-            backgroundColor: Colors.transparent, // Make inner AppBar transparent
-            elevation: 0, // Remove shadow
-                    title: const Text(
-                      'Election Schedule',
-                      style: TextStyle(fontSize: 18, color: Colors.black54),
+              const Text(
+                'Chatbot Management',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+                ],
+              ),
+              Row(
+                children: [
+                  SizedBox(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: const EdgeInsets.all(10.0),
+                        backgroundColor: Colors.black,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ElectionHistory()),
+                        );
+                      },
+                      child: const Text(
+                        'Election History',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                    iconTheme: const IconThemeData(color: Colors.black45),
-            leading: Builder(
-              builder: (BuildContext context) {
-                return IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer(); // Use this context
-                },
-                      );
-              }
-            ),
-          ),
+                  ),
+                  IconButton(onPressed: (){
+                    _fetchSchedules();
+                  }, icon: const Icon(Icons.refresh))
+                ],
+              )
+            ],
+          )
         ),
       ),
       drawer: const AppDrawerAdmin(),

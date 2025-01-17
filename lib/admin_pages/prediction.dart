@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
@@ -46,6 +47,7 @@ class ElectionPredictionPage extends StatefulWidget {
 
 class _ElectionPredictionPageState extends State<ElectionPredictionPage> {
   late Future<Map<String, List<Candidate>>> candidatesByPosition;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<Map<String, List<Candidate>>> fetchCandidates() async {
     final response = await http.get(
@@ -130,30 +132,69 @@ class _ElectionPredictionPageState extends State<ElectionPredictionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Election Prediction'),
-        actions: [
-          SizedBox(
-          child: TextButton(
-            style: TextButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+      key: _scaffoldKey,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+        child: Container(
+          height: 56,
+          alignment: Alignment.center, // Align the AppBar in the center
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+          decoration: BoxDecoration(
+            color: Colors.white, 
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3), // Shadow color
+                blurRadius: 8, // Blur intensity
+                spreadRadius: 1, // Spread radius
+                offset: const Offset(0, 4), // Vertical shadow position
               ),
-              padding: const EdgeInsets.all(10.0),
-              backgroundColor: Colors.black,
-            ),
-            onPressed: showResetConfirmationDialog,
-            child: const Text(
-              'Reset Prediction',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white,
-              ),
-            ),
+            ],
           ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+                icon: const Icon(Icons.menu, color: Colors.black45),
+              ),
+              const Text(
+                'Election Prediction',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+                ],
+              ),
+              Row(
+                children: [
+                  SizedBox(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: const EdgeInsets.all(10.0),
+                        backgroundColor: Colors.black,
+                      ),
+                      onPressed: showResetConfirmationDialog,
+                      child: const Text(
+                        'Reset Prediction',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          )
         ),
-        ],
       ),
+      drawer: const AppDrawerAdmin(),
       body: FutureBuilder<Map<String, List<Candidate>>>(  // Fetch candidates data
         future: candidatesByPosition,
         builder: (context, snapshot) {

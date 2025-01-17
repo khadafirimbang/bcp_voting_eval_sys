@@ -21,6 +21,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
   int totalAnnouncements = 0;
   List<Map<String, dynamic>> presidentData = [];
   List<Map<String, dynamic>> vicePresidentData = [];
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -240,9 +241,11 @@ class _DashboardPage2State extends State<DashboardPage2> {
     }
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56), // Set height of the AppBar
         child: Container(
+          height: 56,
           alignment: Alignment.center, // Align the AppBar in the center
           margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
           decoration: BoxDecoration(
@@ -256,16 +259,20 @@ class _DashboardPage2State extends State<DashboardPage2> {
               ),
             ],
           ),
-          child: AppBar(
-            titleSpacing: -5,
-            backgroundColor: Colors.transparent, // Make inner AppBar transparent
-            elevation: 0, // Remove shadow
-            title: const Text(
-              'Dashboard',
-              style: TextStyle(fontSize: 18, color: Colors.black54),
-            ),
-            iconTheme: const IconThemeData(color: Colors.black45),
-          ),
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+                icon: const Icon(Icons.menu, color: Colors.black45),
+              ),
+              const Text(
+                'Dashboard',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+            ],
+          )
         ),
       ),
       drawer: const AppDrawerAdmin(),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:for_testing/voter_pages/drawerbar.dart';
 import 'package:for_testing/voter_pages/election_history.dart';
 import 'package:http/http.dart' as http;
 
@@ -14,6 +15,7 @@ class _ResultsPageState extends State<ResultsPage> {
   int totalVoted = 0;
   int totalNotVoted = 0;
   String selectedPosition = 'All'; // Default position filter
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Fetch data from the PHP backend
   Future<void> fetchResults() async {
@@ -77,25 +79,64 @@ class _ResultsPageState extends State<ResultsPage> {
     double notVotedPercentage = totalVoters > 0 ? (totalNotVoted / totalVoters) * 100 : 0;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Election Results'),
-        actions: [
-          DropdownButton<String>(
-            value: selectedPosition,
-            onChanged: (String? newValue) {
-              setState(() {
-                selectedPosition = newValue!;
-              });
-            },
-            items: positions.map<DropdownMenuItem<String>>((String position) {
-              return DropdownMenuItem<String>(
-                value: position,
-                child: Text(position),
-              );
-            }).toList(),
+      key: _scaffoldKey,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+        child: Container(
+          height: 56,
+          alignment: Alignment.center, // Align the AppBar in the center
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+          decoration: BoxDecoration(
+            color: Colors.white, 
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3), // Shadow color
+                blurRadius: 8, // Blur intensity
+                spreadRadius: 1, // Spread radius
+                offset: const Offset(0, 4), // Vertical shadow position
+              ),
+            ],
           ),
-        ],
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+                icon: const Icon(Icons.menu, color: Colors.black45),
+              ),
+              const Text(
+                'Election Results',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+                ],
+              ),
+              Row(
+                children: [
+                  DropdownButton<String>(
+                    value: selectedPosition,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedPosition = newValue!;
+                      });
+                    },
+                    items: positions.map<DropdownMenuItem<String>>((String position) {
+                      return DropdownMenuItem<String>(
+                        value: position,
+                        child: Text(position),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              )
+            ],
+          )
+        ),
       ),
+      drawer: const AppDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(

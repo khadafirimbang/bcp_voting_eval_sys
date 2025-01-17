@@ -26,6 +26,7 @@ class _VotePageState extends State<VotePage> {
   String searchQuery = '';
   Map<String, List<String>> userVotes = {};
   Timer? _scheduleCheckTimer;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -328,62 +329,75 @@ class _VotePageState extends State<VotePage> {
             : 1;
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
+        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
         child: Container(
-          alignment: Alignment.center,
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          height: 56,
+          alignment: Alignment.center, // Align the AppBar in the center
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.white, 
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 8,
-                spreadRadius: 1,
-                offset: const Offset(0, 4),
+                color: Colors.black.withOpacity(0.3), // Shadow color
+                blurRadius: 8, // Blur intensity
+                spreadRadius: 1, // Spread radius
+                offset: const Offset(0, 4), // Vertical shadow position
               ),
             ],
           ),
-          child: AppBar(
-            titleSpacing: -5,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: const Text(
-              'Vote',
-              style: TextStyle(fontSize: 18, color: Colors.black54),
-            ),
-            iconTheme: const IconThemeData(color: Colors.black45),
-            actions: [
-              IconButton(
-                icon: Icon(showSearchField ? Icons.close : Icons.search),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
                 onPressed: () {
-                  setState(() {
-                    showSearchField = !showSearchField;
-                    if (!showSearchField) {
-                      searchQuery = '';
-                    }
-                  });
+                  _scaffoldKey.currentState?.openDrawer();
                 },
+                icon: const Icon(Icons.menu, color: Colors.black45),
               ),
-              DropdownButton<String>(
-                value: selectedPosition,
-                onChanged: (value) {
-                  setState(() {
-                    selectedPosition = value!;
-                  });
-                },
-                items: [
-                  const DropdownMenuItem<String>(value: 'All', child: Text('All')),
-                  ...positions.map<DropdownMenuItem<String>>((position) {
-                    return DropdownMenuItem<String>(
-                      value: position['name'] as String,
-                      child: Text(position['name'] as String),
-                    );
-                  }).toList(),
+              const Text(
+                'Vote Here',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
                 ],
               ),
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(showSearchField ? Icons.close : Icons.search),
+                    onPressed: () {
+                      setState(() {
+                        showSearchField = !showSearchField;
+                        if (!showSearchField) {
+                          searchQuery = '';
+                        }
+                      });
+                    },
+                  ),
+                  DropdownButton<String>(
+                    value: selectedPosition,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedPosition = value!;
+                      });
+                    },
+                    items: [
+                      const DropdownMenuItem<String>(value: 'All', child: Text('All')),
+                      ...positions.map<DropdownMenuItem<String>>((position) {
+                        return DropdownMenuItem<String>(
+                          value: position['name'] as String,
+                          child: Text(position['name'] as String),
+                        );
+                      }).toList(),
+                    ],
+                  ),
+                ],
+              )
             ],
-          ),
+          )
         ),
       ),
       drawer: const AppDrawer(),
