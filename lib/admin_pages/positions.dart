@@ -20,23 +20,28 @@ class _PositionsPageState extends State<PositionsPage> {
   }
 
   Future<List<dynamic>> _fetchPositions() async {
-    try {
-      final response = await http.get(Uri.parse(
-          'https://studentcouncil.bcp-sms1.com/php/fetch_positions.php'));
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        if (jsonResponse['status'] == 'success') {
-          return jsonResponse['data'];
-        } else {
-          throw Exception(jsonResponse['message']);
-        }
+  try {
+    final response = await http.get(Uri.parse(
+        'https://studentcouncil.bcp-sms1.com/php/fetch_positions.php')); // Replace with your URL
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+
+      // Check if the response is a list
+      if (jsonResponse is List) {
+        return jsonResponse; // Return the entire list if it's an array
       } else {
-        throw Exception('Failed to load positions');
+        // Handle case where response is not a list
+        throw Exception('Expected a list but got ${jsonResponse.runtimeType}');
       }
-    } catch (e) {
-      throw Exception(e.toString());
+    } else {
+      throw Exception('Failed to load party lists');
     }
+  } catch (e) {
+    rethrow;
   }
+}
+
 
   Future<void> _editPosition(String positionId, String newName, String votesQty) async {
     try {
@@ -224,12 +229,10 @@ class _PositionsPageState extends State<PositionsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
-        title: const Text('Positions', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Positions'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 50),
         child: FutureBuilder<List<dynamic>>(
           future: _positions,
           builder: (context, snapshot) {
@@ -250,32 +253,34 @@ class _PositionsPageState extends State<PositionsPage> {
                 itemCount: positions.length,
                 itemBuilder: (context, index) {
                   final position = positions[index];
-                  return Card(
-                    color: Colors.white,
-                    elevation: 2,
-                    child: ListTile(
-                      title: Text(position['name']),
-                      subtitle: Text('Votes Quantity: ${position['votes_qty']}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () {
-                              _showPositionDialog(
-                                  positionId: position['id'].toString(),
-                                  initialName: position['name'],
-                                  initialVotesQty:
-                                      position['votes_qty'].toString());
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              _showDeleteDialog(position['id'].toString());
-                            },
-                          ),
-                        ],
+                  return SingleChildScrollView(
+                    child: Card(
+                      color: Colors.white,
+                      elevation: 2,
+                      child: ListTile(
+                        title: Text(position['name']),
+                        subtitle: Text('Votes Quantity: ${position['votes_qty']}'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                _showPositionDialog(
+                                    positionId: position['id'].toString(),
+                                    initialName: position['name'],
+                                    initialVotesQty:
+                                        position['votes_qty'].toString());
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                _showDeleteDialog(position['id'].toString());
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -286,7 +291,7 @@ class _PositionsPageState extends State<PositionsPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: Colors.black,
         onPressed: () => _showPositionDialog(),
         child: const Icon(Icons.add, color: Colors.white),
       ),

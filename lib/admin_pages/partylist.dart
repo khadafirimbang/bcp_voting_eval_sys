@@ -22,20 +22,24 @@ class _PartyListPageState extends State<PartyListPage> {
     try {
       final response = await http.get(Uri.parse(
           'https://studentcouncil.bcp-sms1.com/php/fetch_partylist.php')); // Replace with your URL
+
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
-        if (jsonResponse['status'] == 'success') {
-          return jsonResponse['data']; // Only return the 'data' without 'id'
+
+        // Check if the response is a list
+        if (jsonResponse is List) {
+          return jsonResponse; // Return the entire list if it's an array
         } else {
-          throw Exception(jsonResponse['message']);
+          // Handle case where response is not a list
+          throw Exception('Expected a list but got ${jsonResponse.runtimeType}');
         }
       } else {
         throw Exception('Failed to load party lists');
       }
     } catch (e) {
-      throw Exception(e.toString());
+      rethrow;
     }
-  }
+}
 
   Future<void> _editPartyList(String partyListId, String newName) async {
     try {
@@ -175,12 +179,10 @@ class _PartyListPageState extends State<PartyListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
-        title: const Text('Partylists', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Partylists'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 50),
         child: FutureBuilder<List<dynamic>>(
           future: _partyLists,
           builder: (context, snapshot) {
@@ -201,29 +203,31 @@ class _PartyListPageState extends State<PartyListPage> {
                 itemCount: partyLists.length,
                 itemBuilder: (context, index) {
                   final partyList = partyLists[index];
-                  return Card(
-                    color: Colors.white,
-                    elevation: 2,
-                    child: ListTile(
-                      title: Text(partyList['name']),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () {
-                              _showPartyListDialog(
-                                  partyListId: partyList['id'].toString(),
-                                  initialName: partyList['name']);
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              _confirmDelete(partyList['id'].toString());
-                            },
-                          ),
-                        ],
+                  return SingleChildScrollView(
+                    child: Card(
+                      color: Colors.white,
+                      elevation: 2,
+                      child: ListTile(
+                        title: Text(partyList['name']),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                _showPartyListDialog(
+                                    partyListId: partyList['id'].toString(),
+                                    initialName: partyList['name']);
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                _confirmDelete(partyList['id'].toString());
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -234,7 +238,7 @@ class _PartyListPageState extends State<PartyListPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: Colors.black,
         onPressed: () => _showPartyListDialog(),
         child: const Icon(Icons.add, color: Colors.white,),
       ),
