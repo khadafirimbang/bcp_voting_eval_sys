@@ -409,14 +409,14 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
         ),
       ),
       drawer: const AppDrawerAdmin(),
-      body: Column(
-        children: [
-          if (isSearching)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            if (isSearching)
+              TextField(
                 controller: searchController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Search Questions',
                   border: OutlineInputBorder(),
                 ),
@@ -426,60 +426,64 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
                   });
                 },
               ),
-            ),
-            SizedBox(height: 10,),
-            SizedBox(
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+              const SizedBox(height: 16.0),
+              SizedBox(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  padding: const EdgeInsets.all(10.0),
+                                  backgroundColor: Colors.black,
                                 ),
-                                padding: const EdgeInsets.all(10.0),
-                                backgroundColor: Colors.black,
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => ChatbotQuestionTypePage()),
-                                );
-                              },
-                              child: const Text('View Types', 
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white,
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => ChatbotQuestionTypePage()),
+                                  );
+                                },
+                                child: const Text('View Types', 
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
+                            ),
+                  const SizedBox(width: 10.0),
+            Expanded(
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      itemCount: getFilteredQuestions().length,
+                      itemBuilder: (context, index) {
+                        final questionData = getFilteredQuestions()[index];
+                        return Card(
+                          color: Colors.white,
+                          elevation: 2,
+                          child: ListTile(
+                            title: Text(questionData['question']),
+                            subtitle: Text(questionData['answer']),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.edit),
+                                  onPressed: () => showEditQuestionDialog(questionData),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.delete),
+                                  onPressed: () => showDeleteConfirmationDialog(questionData['id'].toString()),
+                                ),
+                              ],
                             ),
                           ),
-                const SizedBox(width: 10.0),
-          Expanded(
-            child: isLoading
-                ? Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    itemCount: getFilteredQuestions().length,
-                    itemBuilder: (context, index) {
-                      final questionData = getFilteredQuestions()[index];
-                      return ListTile(
-                        title: Text(questionData['question']),
-                        subtitle: Text(questionData['answer']),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.edit),
-                              onPressed: () => showEditQuestionDialog(questionData),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.delete),
-                              onPressed: () => showDeleteConfirmationDialog(questionData['id'].toString()),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: showAddQuestionDialog,

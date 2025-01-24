@@ -237,14 +237,29 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
                 icon: const Icon(Icons.menu, color: Colors.black45),
               ),
               const Text(
-                'Chatbot Management',
+                'Election Schedule',
                 style: TextStyle(fontSize: 18, color: Colors.black54),
               ),
                 ],
               ),
               Row(
                 children: [
-                  SizedBox(
+                  IconButton(onPressed: (){
+                    _fetchSchedules();
+                  }, icon: const Icon(Icons.refresh))
+                ],
+              )
+            ],
+          )
+        ),
+      ),
+      drawer: const AppDrawerAdmin(),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            const SizedBox(height: 16.0),
+            SizedBox(
                     child: TextButton(
                       style: TextButton.styleFrom(
                         shape: RoundedRectangleBorder(
@@ -264,58 +279,49 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ),
-                  IconButton(onPressed: (){
-                    _fetchSchedules();
-                  }, icon: const Icon(Icons.refresh))
-                ],
-              )
-            ],
-          )
-        ),
-      ),
-      drawer: const AppDrawerAdmin(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView.builder(
-          itemCount: _schedules.length,
-          itemBuilder: (context, index) {
-            final schedule = _schedules[index];
-            final formatter = DateFormat('MMM dd, yyyy h:mm a');
-            final startDateFormatted = formatter.format(schedule.startDate);
-            final endDateFormatted = formatter.format(schedule.endDate);
-
-            return Column(
-              children: [
-                const SizedBox(height: 16.0),
-                Card(
-                  color: Colors.white,
-                  elevation: 2,
-                  child: ListTile(
-                    title: Text(schedule.electionName),
-                    subtitle: Text('From $startDateFormatted to $endDateFormatted'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () => _editSchedule(schedule),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _schedules.length,
+                itemBuilder: (context, index) {
+                  final schedule = _schedules[index];
+                  final formatter = DateFormat('MMM dd, yyyy h:mm a');
+                  final startDateFormatted = formatter.format(schedule.startDate);
+                  final endDateFormatted = formatter.format(schedule.endDate);
+              
+                  return Column(
+                    children: [
+                      const SizedBox(height: 16.0),
+                      Card(
+                        color: Colors.white,
+                        elevation: 2,
+                        child: ListTile(
+                          title: Text(schedule.electionName),
+                          subtitle: Text('From $startDateFormatted to $endDateFormatted'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () => _editSchedule(schedule),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => _deleteSchedule(schedule.id),
+                              ),
+                            ],
+                          ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => _deleteSchedule(schedule.id),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(

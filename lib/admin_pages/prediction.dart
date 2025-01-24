@@ -167,9 +167,17 @@ class _ElectionPredictionPageState extends State<ElectionPredictionPage> {
               ),
                 ],
               ),
-              Row(
-                children: [
-                  SizedBox(
+            ],
+          )
+        ),
+      ),
+      drawer: const AppDrawerAdmin(),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            const SizedBox(height: 16.0),
+            SizedBox(
                     child: TextButton(
                       style: TextButton.styleFrom(
                         shape: RoundedRectangleBorder(
@@ -188,65 +196,63 @@ class _ElectionPredictionPageState extends State<ElectionPredictionPage> {
                       ),
                     ),
                   ),
-                ],
-              )
-            ],
-          )
-        ),
-      ),
-      drawer: const AppDrawerAdmin(),
-      body: FutureBuilder<Map<String, List<Candidate>>>(  // Fetch candidates data
-        future: candidatesByPosition,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No candidates available.'));
-          } else {
-            final candidatesByPosition = snapshot.data!;
-
-            return ListView.builder(
-              itemCount: candidatesByPosition.keys.length,
-              itemBuilder: (context, index) {
-                String position = candidatesByPosition.keys.elementAt(index);
-                List<Candidate> candidates = candidatesByPosition[position]!;
-
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ExpansionTile(
-                    title: Text('$position'),
-                    children: candidates.map((candidate) {
-                      return ListTile(
-                        leading: CircleAvatar(
-                          child: Text(
-                            candidate.name.isNotEmpty ? candidate.name[0] : '?',
+            Expanded(
+              child: FutureBuilder<Map<String, List<Candidate>>>(  // Fetch candidates data
+                future: candidatesByPosition,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(child: Text('No candidates available.'));
+                  } else {
+                    final candidatesByPosition = snapshot.data!;
+              
+                    return ListView.builder(
+                      itemCount: candidatesByPosition.keys.length,
+                      itemBuilder: (context, index) {
+                        String position = candidatesByPosition.keys.elementAt(index);
+                        List<Candidate> candidates = candidatesByPosition[position]!;
+              
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ExpansionTile(
+                            title: Text('$position'),
+                            children: candidates.map((candidate) {
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  child: Text(
+                                    candidate.name.isNotEmpty ? candidate.name[0] : '?',
+                                  ),
+                                ),
+                                title: Text(candidate.name),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Predicted Votes: ${candidate.predictedVotes.toStringAsFixed(2)}%'),
+                                    SizedBox(height: 8),
+                                    // Horizontal bar graph
+                                    LinearProgressIndicator(
+                                      value: candidate.predictedVotes / 100, // Normalize to 0-1 range
+                                      minHeight: 8, // Height of the bar
+                                      color: Colors.blue, // Bar color
+                                      backgroundColor: Colors.grey[300], // Background color
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
                           ),
-                        ),
-                        title: Text(candidate.name),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Predicted Votes: ${candidate.predictedVotes.toStringAsFixed(2)}%'),
-                            SizedBox(height: 8),
-                            // Horizontal bar graph
-                            LinearProgressIndicator(
-                              value: candidate.predictedVotes / 100, // Normalize to 0-1 range
-                              minHeight: 8, // Height of the bar
-                              color: Colors.blue, // Bar color
-                              backgroundColor: Colors.grey[300], // Background color
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                );
-              },
-            );
-          }
-        },
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

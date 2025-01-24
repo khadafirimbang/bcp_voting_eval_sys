@@ -601,7 +601,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
                                   MaterialPageRoute(builder: (context) => const PositionsPage()),
                                 );
                               },
-                              child: const Text('View Positions', 
+                              child: const Text('Positions', 
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.white,
@@ -625,7 +625,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
                                   MaterialPageRoute(builder: (context) => const PartyListPage()),
                                 );
                               },
-                              child: const Text('View Partylists', 
+                              child: const Text('Partylists', 
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.white,

@@ -335,52 +335,54 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
               ),
               const SizedBox(height: 20),
               // Make the ListView scrollable
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.7, // Adjust height as needed
-                child: ListView.builder(
-                  itemCount: _announcements.length,
-                  itemBuilder: (context, index) {
-                    final announcement = _announcements[index];
-                    return Card(
-                      color: Colors.white,
-                      elevation: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: ListTile(
-                          title: Text('Title: ${announcement['title']}'),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Description: ${announcement['description']}'),
-                              const SizedBox(height: 8),
-                              // Check if the image URL exists and display the image or "No image"
-                              if (announcement['image_url'] != null && announcement['image_url'].isNotEmpty)
-                                Image.network(
-                                  announcement['image_url'],
-                                  height: 100,
-                                  width: 100,
-                                  fit: BoxFit.cover,
-                                )
-                              else
-                                const Text('No image'),
-                            ],
-                          ),
-                          trailing: Wrap(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () => _editAnnouncement(announcement),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () => _deleteAnnouncement(announcement['id']),
-                              ),
-                            ],
+              SingleChildScrollView(
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.7, // Adjust height as needed
+                  child: ListView.builder(
+                    itemCount: _announcements.length,
+                    itemBuilder: (context, index) {
+                      final announcement = _announcements[index];
+                      return Card(
+                        color: Colors.white,
+                        elevation: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: ListTile(
+                            title: Text('Title: ${announcement['title']}'),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Description: ${announcement['description']}'),
+                                const SizedBox(height: 8),
+                                // Check if the image URL exists and display the image or "No image"
+                                if (announcement['image_url'] != null && announcement['image_url'].isNotEmpty)
+                                  Image.network(
+                                    announcement['image_url'],
+                                    height: 100,
+                                    width: 100,
+                                    fit: BoxFit.cover,
+                                  )
+                                else
+                                  const Text('No image'),
+                              ],
+                            ),
+                            trailing: Wrap(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () => _editAnnouncement(announcement),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () => _deleteAnnouncement(announcement['id']),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
 
