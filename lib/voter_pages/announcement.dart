@@ -49,19 +49,19 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+        preferredSize: const Size.fromHeight(56),
         child: Container(
           height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+          alignment: Alignment.center,
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
           decoration: BoxDecoration(
-            color: Colors.white, 
+            color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 8,
+                spreadRadius: 1,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -71,27 +71,27 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
               Row(
                 children: [
                   IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Announcement',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
+                    onPressed: () {
+                      _scaffoldKey.currentState?.openDrawer();
+                    },
+                    icon: const Icon(Icons.menu, color: Colors.black45),
+                  ),
+                  const Text(
+                    'Announcement',
+                    style: TextStyle(fontSize: 18, color: Colors.black54),
+                  ),
                 ],
               ),
             ],
-          )
+          ),
         ),
       ),
       drawer: const AppDrawer(),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Container(
-              margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 20), // Margin around the container
-              padding: const EdgeInsets.all(10.0), // Padding inside the container
+              margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              padding: const EdgeInsets.all(10.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8.0),
@@ -100,7 +100,7 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
                     color: Colors.grey.withOpacity(0.5),
                     spreadRadius: 2,
                     blurRadius: 5,
-                    offset: const Offset(0, 3), // Changes position of shadow
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
@@ -109,50 +109,99 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
                 itemBuilder: (context, index) {
                   final announcement = _announcements[index];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0), // Padding for individual announcements
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center, // Center alignment for content
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
                           announcement['title'],
                           textAlign: TextAlign.center,
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                         ),
-                        const SizedBox(height: 10), // Space between title and description
+                        const SizedBox(height: 10),
                         Text(
                           announcement['description'],
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 10,),
+                        const SizedBox(height: 10),
                         Text(
                           announcement['created_at'],
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 8.0), // Space between description and image
+                        const SizedBox(height: 8.0),
                         if (announcement['image_url'] != null && announcement['image_url'].isNotEmpty)
-                          Image.network(
-                            announcement['image_url'],
-                            width: 1000,
-                            fit: BoxFit.cover,
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FullScreenImage(imageUrl: announcement['image_url']),
+                                  ),
+                                );
+                              },
+                              child: Image.network(
+                                announcement['image_url'],
+                                width: 800,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           )
                         else
                           const Text('', textAlign: TextAlign.center),
-                        const SizedBox(height: 30,),
-                        const Divider()
+                        const SizedBox(height: 30),
+                        const Divider(),
                       ],
                     ),
                   );
                 },
               ),
             ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.black,
-          foregroundColor: Colors.white,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()));
         },
         child: Icon(Icons.chat_outlined),
+      ),
+    );
+  }
+}
+
+class FullScreenImage extends StatelessWidget {
+  final String imageUrl;
+
+  const FullScreenImage({Key? key, required this.imageUrl}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          Center(
+            child: InteractiveViewer(
+              minScale: 0.1,
+              maxScale: 5.0,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 40,
+            right: 20,
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the full-screen image
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

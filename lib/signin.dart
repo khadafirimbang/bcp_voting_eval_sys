@@ -57,6 +57,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
   final TextEditingController _passwordController = TextEditingController();
   bool _obscureText = true;
   bool isConnectedToInternet = false;
+  bool _isLoading = false; // Add this variable
   StreamSubscription? _internetConnectionStreamSubcription;
 
   void _togglePasswordVisibility() {
@@ -83,6 +84,10 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true; // Start loading
+      });
+
       String studentNo = _sanitizeInput(_studentNoController.text);
       String password = _sanitizeInput(_passwordController.text);
 
@@ -95,6 +100,10 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
       );
 
       final data = jsonDecode(response.body);
+
+      setState(() {
+        _isLoading = false; // Stop loading
+      });
 
       if (data['status'] == 'success') {
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -136,7 +145,6 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
           child: Container(
             padding: const EdgeInsets.all(16.0),
             width: 400,
-
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -200,17 +208,24 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
                         },
                       ),
                       const SizedBox(height: 10),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 50),
-                          backgroundColor: Color(0xFF313131),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
+                      // Show loading indicator if _isLoading is true
+                      if (_isLoading)
+                        const CircularProgressIndicator()
+                      else
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 50),
+                            backgroundColor: Color(0xFF313131),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                          onPressed: _login,
+                          child: const Text(
+                            'Login',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                           ),
                         ),
-                        onPressed: _login,
-                        child: const Text('Login', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-                      ),
                       const SizedBox(height: 10),
                       // TextButton(
                       //   onPressed: () {
@@ -232,3 +247,4 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
     );
   }
 }
+
