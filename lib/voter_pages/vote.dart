@@ -48,58 +48,62 @@ class _VotePageState extends State<VotePage> {
   }
 
   Future<void> fetchElectionSchedule() async {
-    try {
-      final response = await http.get(
-        Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_election_schedule.php')
-      );
+  try {
+    final response = await http.get(
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_election_schedule.php')
+    );
 
-      if (response.statusCode == 200) {
-        final schedule = json.decode(response.body);
-        
-        if (mounted) {
-          setState(() {
-            electionSchedule = schedule;
-            
-            if (schedule != null) {
-              // Parse end date in Philippines timezone
-              final endDate = DateTime.parse(schedule['end_date']).toLocal();
-              
-              if (schedule['status'] == 'ongoing') {
-                // Check if the election has ended
-                if (isCurrentDateMatchEndDate(endDate)) {
-                  updateElectionStatus('ended');
-                } else {
-                  startCountdown(endDate);
-                  fetchCandidatesAndPositions();
-                }
-              }
-            }
-            
-            isLoading = false;
-          });
-        }
-      }
-    } catch (e) {
+    if (response.statusCode == 200) {
+      final schedule = json.decode(response.body);
+      
       if (mounted) {
         setState(() {
+          electionSchedule = schedule;
+          
+          if (schedule != null) {
+            // Parse end date in UTC and adjust for Philippines timezone
+            final endDate = DateTime.parse(schedule['end_date']).toUtc();
+            
+            // Log the end date for debugging
+            print('End Date: $endDate');
+            
+            if (schedule['status'] == 'ongoing') {
+              // Check if the election has ended
+              if (isCurrentDateMatchEndDate(endDate)) {
+                updateElectionStatus('ended');
+              } else {
+                startCountdown(endDate);
+                fetchCandidatesAndPositions();
+              }
+            }
+          }
+          
           isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading election schedule: $e')),
-        );
       }
     }
+  } catch (e) {
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading election schedule: $e')),
+      );
+    }
   }
+}
 
   bool isCurrentDateMatchEndDate(DateTime endDate) {
-    // Get current date in Philippines timezone
-    final now = DateTime.now();
-    
-    // Compare year, month, and day
-    return now.year == endDate.year &&
-           now.month == endDate.month &&
-           now.day == endDate.day;
-  }
+  // Get current date in UTC and adjust for Philippines timezone
+  final now = DateTime.now().toUtc();
+  
+  // Log current time for debugging
+  print('Current Time: $now');
+  
+  return now.isAfter(endDate);
+}
+
 
   Future<void> fetchCandidatesAndPositions() async {
     try {

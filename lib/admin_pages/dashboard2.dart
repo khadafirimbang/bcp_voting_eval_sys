@@ -102,126 +102,123 @@ class _DashboardPage2State extends State<DashboardPage2> {
   }
 
   Widget buildBarGraph(String title, List<Map<String, dynamic>> data, VoidCallback onTap) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Card(
-          elevation: 2,
-          color: Colors.white, // Set Card color to white
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        elevation: 2,
+        color: Colors.white, // Set Card color to white
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Current Election Ranking',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.black54,
                 ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Current Election Ranking',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black54,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Container(
-                  height: 200,
-                  child: BarChart(
-                    BarChartData(
-                      backgroundColor: Colors.white, // Set background color to white
-                      alignment: BarChartAlignment.spaceAround,
-                      maxY: data.isEmpty
-                          ? 100
-                          : (data.map((e) => (e['total_votes'] as num).toDouble()).reduce(
-                                  (a, b) => a > b ? a : b) *
-                              1.2),
-                      barTouchData: BarTouchData(
-                        enabled: true,
-                        touchTooltipData: BarTouchTooltipData(
-                          tooltipBgColor: Colors.blueGrey,
-                          getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                            return BarTooltipItem(
-                              '${data[groupIndex]['lastname']}\n',
-                              const TextStyle(color: Colors.white),
-                              children: <TextSpan>[
-                                TextSpan(
-                                  text: '${data[groupIndex]['total_votes']} votes',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                height: 200,
+                child: BarChart(
+                  BarChartData(
+                    backgroundColor: Colors.white, // Set background color to white
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: data.isEmpty
+                        ? 100
+                        : (data.map((e) => (e['total_votes'] as num).toDouble()).reduce(
+                                (a, b) => a > b ? a : b) *
+                            1.2),
+                    barTouchData: BarTouchData(
+                      enabled: true,
+                      touchTooltipData: BarTouchTooltipData(
+                        tooltipBgColor: Colors.blueGrey,
+                        getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                          return BarTooltipItem(
+                            '${data[groupIndex]['lastname']}\n',
+                            const TextStyle(color: Colors.white),
+                            children: <TextSpan>[
+                              TextSpan(
+                                text: '${data[groupIndex]['total_votes']} votes',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
-                            );
-                          },
-                        ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
-                      titlesData: FlTitlesData(
-                        show: true,
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            getTitlesWidget: (double value, TitleMeta meta) {
-                              int index = value.toInt();
-                              if (index >= 0 && index < data.length) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(top: 8.0),
-                                  child: Transform.rotate(
-                                    angle: 45 * 3.1415927 / 180,
-                                    child: Text(
-                                      data[index]['lastname'].toString(),
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                    ),
+                    titlesData: FlTitlesData(
+                      show: true,
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (double value, TitleMeta meta) {
+                            int index = value.toInt();
+                            if (index >= 0 && index < data.length) {
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Transform.rotate(
+                                  angle: 45 * 3.1415927 / 180,
+                                  child: Text(
+                                    data[index]['lastname'].toString(),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                );
-                              }
-                              return const Text('');
-                            },
-                            reservedSize: 42,
-                          ),
-                        ),
-                        leftTitles: const AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 40,
-                          ),
-                        ),
-                        topTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        rightTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
+                                ),
+                              );
+                            }
+                            return const Text('');
+                          },
+                          reservedSize: 42,
                         ),
                       ),
-                      borderData: FlBorderData(show: false),
-                      barGroups: List.generate(
-                        data.length,
-                        (index) => BarChartGroupData(
-                          x: index,
-                          barRods: [
-                            BarChartRodData(
-                              toY: (data[index]['total_votes'] as num).toDouble(),
-                              color: Colors.black,
-                              width: 20,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ],
+                      leftTitles: const AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 40,
                         ),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                    ),
+                    borderData: FlBorderData(show: false),
+                    barGroups: List.generate(
+                      data.length,
+                      (index) => BarChartGroupData(
+                        x: index,
+                        barRods: [
+                          BarChartRodData(
+                            toY: (data[index]['total_votes'] as num).toDouble(),
+                            color: Colors.black,
+                            width: 20,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
