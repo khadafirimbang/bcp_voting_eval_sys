@@ -155,31 +155,34 @@ class _QuestionsListPageState extends State<QuestionsListPage> {
                 )
               : questions.isEmpty
                   ? const Center(child: Text('No questions available'))
-                  : ListView.builder(
-                      itemCount: questions.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          child: ListTile(
-                            title: Text(questions[index]),
-                            trailing: const Icon(Icons.arrow_forward_ios),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ResponsesPage(
-                                    question: questions[index],
+                  : Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: ListView.builder(
+                        itemCount: questions.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            child: ListTile(
+                              title: Text(questions[index]),
+                              trailing: const Icon(Icons.arrow_forward_ios),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ResponsesPage(
+                                      question: questions[index],
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                    ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                  ),
     );
   }
 }

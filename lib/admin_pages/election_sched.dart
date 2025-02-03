@@ -260,7 +260,9 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
               ),
             ),
             Expanded(
-              child: ListView.builder(
+              child: _schedules.isEmpty
+                ? const Center(child: Text("No schedules available."))
+                : ListView.builder(
                 itemCount: _schedules.length,
                 itemBuilder: (context, index) {
                   final schedule = _schedules[index];

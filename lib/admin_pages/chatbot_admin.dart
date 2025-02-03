@@ -380,22 +380,7 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
                   }
                 },
               ),
-              // Position filter dropdown
-              DropdownButton<String>(
-                hint: Text('Filter by Type'),
-                value: selectedQuestionType,
-                items: [null, ...questionTypes].map((type) {
-                  return DropdownMenuItem<String>(
-                    value: type,
-                    child: Text(type ?? 'All'),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedQuestionType = value;
-                  });
-                },
-              ),
+              
               IconButton(onPressed: (){
                 Navigator.push(
                                   context,
@@ -414,17 +399,40 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
         child: Column(
           children: [
             if (isSearching)
-              TextField(
-                controller: searchController,
-                decoration: const InputDecoration(
-                  labelText: 'Search Questions',
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    // Automatically filtered by the getFilteredQuestions method
-                  });
-                },
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: searchController,
+                      decoration: const InputDecoration(
+                        labelText: 'Search Questions',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          // Automatically filtered by the getFilteredQuestions method
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10.0),
+                  // Position filter dropdown
+                  DropdownButton<String>(
+                    hint: Text('Filter by Type'),
+                    value: selectedQuestionType,
+                    items: [null, ...questionTypes].map((type) {
+                      return DropdownMenuItem<String>(
+                        value: type,
+                        child: Text(type ?? 'All'),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedQuestionType = value;
+                      });
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 16.0),
               SizedBox(

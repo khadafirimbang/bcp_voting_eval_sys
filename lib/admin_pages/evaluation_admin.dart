@@ -671,22 +671,6 @@ class _EvaluationPageState extends State<EvaluationPage> {
                   });
                 },
               ),
-              DropdownButton<String>(
-                      hint: const Text('Select Type'),
-                      value: selectedType,
-                      onChanged: (value) {
-                        setState(() {
-                          selectedType = value!;
-                          filterEvaluations(searchController.text); // Filter based on both search query and selected type
-                        });
-                      },
-                      items: ['All', ...types].map((String type) {
-                        return DropdownMenuItem<String>(
-                          value: type,
-                          child: Text(type),
-                        );
-                      }).toList(),
-                    ),
                     IconButton(onPressed: (){
                       fetchEvaluations();
                     }, icon: const Icon(Icons.refresh))
@@ -715,6 +699,23 @@ class _EvaluationPageState extends State<EvaluationPage> {
                         ),
                         onChanged: (value) => filterEvaluations(value),
                       ),
+                    ),
+                    const SizedBox(width: 10,),
+                    DropdownButton<String>(
+                      hint: const Text('Select Type'),
+                      value: selectedType,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedType = value!;
+                          filterEvaluations(searchController.text); // Filter based on both search query and selected type
+                        });
+                      },
+                      items: ['All', ...types].map((String type) {
+                        return DropdownMenuItem<String>(
+                          value: type,
+                          child: Text(type),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),

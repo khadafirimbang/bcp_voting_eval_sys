@@ -535,27 +535,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
                   });
                 },
               ),
-              const SizedBox(width: 10),
-              DropdownButton<String>(
-                icon: const Icon(Icons.filter_list, color: Colors.black54),
-                hint: const Text('All', style: TextStyle(color: Colors.black54)),
-                value: selectedPosition,
-                items: <String>['All', ...positions]
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedPosition = newValue;
-                    _filterCandidates();
-                  });
-                },
-                // dropdownColor: const Color(0xFF1E3A8A),
-                style: const TextStyle(color: Colors.black),
-              ),
+              
               // const SizedBox(width: 10),
               IconButton(onPressed: (){
                 Navigator.push(
@@ -575,12 +555,39 @@ class _CandidatesPageState extends State<CandidatesPage> {
         child: Column(
           children: [
             if (_isSearchVisible)
-              TextField(
-                controller: _searchController,
-                decoration: const InputDecoration(
-                  hintText: 'Search by student number or name',
-                  border: OutlineInputBorder(),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: const InputDecoration(
+                        hintText: 'Search by student number or name',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  DropdownButton<String>(
+                    icon: const Icon(Icons.filter_list, color: Colors.black54),
+                    hint: const Text('All', style: TextStyle(color: Colors.black54)),
+                    value: selectedPosition,
+                    items: <String>['All', ...positions]
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedPosition = newValue;
+                        _filterCandidates();
+                      });
+                    },
+                    // dropdownColor: const Color(0xFF1E3A8A),
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ],
               ),
             const SizedBox(height: 16.0),
             Row(
@@ -652,7 +659,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
           },
         ),
         const Text('Select All'),
-        SizedBox(width: 10,),
+        SizedBox(width: 5,),
         SizedBox(
           child: TextButton(
             style: TextButton.styleFrom(
@@ -672,7 +679,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
             ),
           ),
         ),
-        SizedBox(width: 10,),
+        SizedBox(width: 5,),
         SizedBox(
           child: TextButton(
             style: TextButton.styleFrom(
