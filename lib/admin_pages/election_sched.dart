@@ -38,12 +38,6 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
     _fetchSchedules();
   }
 
-  @override
-  void dispose() {
-    // Cancel any ongoing tasks here
-    super.dispose();
-  }
-
   Future<void> _fetchSchedules() async {
     try {
       final schedules = await _apiService.getSchedules();
@@ -71,44 +65,52 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
           schedule.endDate.isAfter(DateTime.now()));
 
       if (ongoingElection) {
-        _showSnackbar(
-            'You can only add an election schedule if there is no ongoing election.');
+        _showSnackbar('You can only add an election schedule if there is no ongoing election.');
         return;
       }
 
-      _showSnackbar(
-          'You can only add 1 election schedule. Delete or edit the current election schedule if you want to add.');
+      _showSnackbar('You can only add 1 election schedule. Delete or edit the current election schedule if you want to add.');
       return;
     }
 
-    final schedule = await showDialog<ElectionSchedule>(
-      context: context,
-      builder: (context) => _buildScheduleDialog(),
-    );
+    final schedule = await _showScheduleDialog();
 
     if (schedule != null) {
       try {
         await _apiService.createSchedule(schedule);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.green,
+          content: Text('Added successfully!'),
+        ));
         _fetchSchedules();
       } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text('Failed to add schedule!'),
+        ));
         print('Failed to add schedule: $e');
       }
     }
   }
 
   Future<void> _editSchedule(ElectionSchedule schedule) async {
-    final updatedSchedule = await showDialog<ElectionSchedule>(
-      context: context,
-      builder: (context) => _buildScheduleDialog(schedule: schedule),
-    );
+    final updatedSchedule = await _showScheduleDialog(schedule: schedule);
 
     if (updatedSchedule != null) {
       bool confirmed = await _showConfirmationDialog();
       if (confirmed) {
         try {
           await _apiService.updateSchedule(updatedSchedule);
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            backgroundColor: Colors.green,
+            content: Text('Updated successfully!'),
+          ));
           _fetchSchedules();
         } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Failed to update schedule!'),
+          ));
           print('Failed to update schedule: $e');
         }
       }
@@ -120,8 +122,16 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
     if (confirmed) {
       try {
         await _apiService.deleteSchedule(id);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.green,
+          content: Text('Deleted successfully!'),
+        ));
         _fetchSchedules();
       } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text('Failed to delete schedule!'),
+        ));
         print('Failed to delete schedule: $e');
       }
     }
@@ -147,60 +157,65 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
     ).then((result) => result ?? false);
   }
 
-  Widget _buildScheduleDialog({ElectionSchedule? schedule}) {
+  Future<ElectionSchedule?> _showScheduleDialog({ElectionSchedule? schedule}) {
     final TextEditingController nameController = TextEditingController(text: schedule?.electionName ?? '');
     DateTime? startDate = schedule?.startDate;
     DateTime? endDate = schedule?.endDate;
 
-    return AlertDialog(
-      title: Text(schedule == null ? 'Add Schedule' : 'Edit Schedule'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: nameController,
-            decoration: const InputDecoration(labelText: 'Election Name'),
+    return showDialog<ElectionSchedule>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(schedule == null ? 'Add Schedule' : 'Edit Schedule'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Election Name'),
+              ),
+              DateTimeField(
+                label: 'Start Date',
+                selectedDate: startDate,
+                onDateSelected: (date) {
+                  startDate = date; // Update local state
+                },
+              ),
+              DateTimeField(
+                label: 'End Date',
+                selectedDate: endDate,
+                onDateSelected: (date) {
+                  endDate = date; // Update local state
+                },
+              ),
+            ],
           ),
-          DateTimeField(
-            label: 'Start Date',
-            selectedDate: startDate,
-            onDateSelected: (date) {
-              setState(() {
-                startDate = date; // Update local state
-              });
-            },
-          ),
-          DateTimeField(
-            label: 'End Date',
-            selectedDate: endDate,
-            onDateSelected: (date) {
-              setState(() {
-                endDate = date; // Update local state
-              });
-            },
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            final updatedSchedule = ElectionSchedule(
-              id: schedule?.id ?? 0,
-              electionName: nameController.text,
-              startDate: startDate ?? DateTime.now(),
-              endDate: endDate ?? DateTime.now(),
-            );
-            Navigator.of(context).pop(updatedSchedule);
-          },
-          child: const Text('Save'),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text('Cancel'),
-        ),
-      ],
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (nameController.text.isNotEmpty && startDate != null && endDate != null) {
+                  final updatedSchedule = ElectionSchedule(
+                    id: schedule?.id ?? 0,
+                    electionName: nameController.text,
+                    startDate: startDate!,
+                    endDate: endDate!,
+                  );
+                  Navigator.of(context).pop(updatedSchedule);
+                } else {
+                  _showSnackbar('Please fill all fields correctly.');
+                }
+              },
+              child: const Text('Save'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -208,50 +223,14 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
-              ),
-            ],
+      appBar: AppBar(
+        title: const Text('Election Schedule'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _fetchSchedules,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Election Schedule',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-                ],
-              ),
-              Row(
-                children: [
-                  IconButton(onPressed: (){
-                    _fetchSchedules();
-                  }, icon: const Icon(Icons.refresh))
-                ],
-              )
-            ],
-          )
-        ),
+        ],
       ),
       drawer: const AppDrawerAdmin(),
       body: Padding(
@@ -260,29 +239,26 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
           children: [
             const SizedBox(height: 16.0),
             SizedBox(
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.all(10.0),
-                        backgroundColor: Colors.black,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ElectionHistory()),
-                        );
-                      },
-                      child: const Text(
-                        'Election History',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
+                  padding: const EdgeInsets.all(10.0),
+                  backgroundColor: Colors.black,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ElectionHistory()),
+                  );
+                },
+                child: const Text(
+                  'Election History',
+                  style: TextStyle(fontSize: 14, color: Colors.white),
+                ),
+              ),
+            ),
             Expanded(
               child: ListView.builder(
                 itemCount: _schedules.length,
@@ -327,7 +303,7 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
       floatingActionButton: FloatingActionButton(
         onPressed: _addSchedule,
         backgroundColor: Colors.black,
-        child: Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -348,7 +324,7 @@ class ElectionSchedule {
 
   factory ElectionSchedule.fromJson(Map<String, dynamic> json) {
     return ElectionSchedule(
-      id: int.parse(json['id'].toString()), // Ensure id is parsed as int
+      id: int.parse(json['id'].toString()),
       electionName: json['election_name'],
       startDate: DateTime.parse(json['start_date']),
       endDate: DateTime.parse(json['end_date']),
@@ -388,9 +364,6 @@ class ApiService {
       headers: {"Content-Type": "application/json"},
     );
 
-    print('Create response status: ${response.statusCode}');
-    print('Create response body: ${response.body}');
-
     if (response.statusCode != 200) {
       throw Exception('Failed to create schedule');
     }
@@ -403,9 +376,6 @@ class ApiService {
       headers: {"Content-Type": "application/json"},
     );
 
-    print('Update response status: ${response.statusCode}');
-    print('Update response body: ${response.body}');
-
     if (response.statusCode != 200) {
       throw Exception('Failed to update schedule');
     }
@@ -417,9 +387,6 @@ class ApiService {
       body: json.encode({'id': id}),
       headers: {"Content-Type": "application/json"},
     );
-
-    print('Delete response status: ${response.statusCode}');
-    print('Delete response body: ${response.body}');
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete schedule');

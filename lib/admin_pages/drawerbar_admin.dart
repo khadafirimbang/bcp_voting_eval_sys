@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:for_testing/admin_pages/accounts.dart';
 import 'package:for_testing/admin_pages/announcement_admin.dart';
 import 'package:for_testing/admin_pages/candidates.dart';
 import 'package:for_testing/admin_pages/chatbot_admin.dart';
@@ -12,11 +11,8 @@ import 'package:for_testing/admin_pages/prediction.dart';
 import 'package:for_testing/admin_pages/survey_results.dart';
 import 'package:for_testing/admin_pages/resultAdmin.dart';
 import 'package:for_testing/admin_pages/voters.dart';
-import 'package:for_testing/election_survey_pages/election_survey_candidates.dart';
-import 'package:for_testing/signin.dart';
+import 'package:for_testing/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-
 class AppDrawerAdmin extends StatefulWidget {
   const AppDrawerAdmin({super.key});
 
@@ -41,15 +37,22 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
     });
   }
 
-  Future<void> _logout(BuildContext context) async {
+  void _logout(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('studentno');
+    await prefs.clear();
 
     // Optionally call your server to end the session
-    await http.post(Uri.parse('https://studentcouncil.bcp-sms1.com/php/logout.php'));
+    // await http.post(Uri.parse('http://192.168.1.6/for_testing/logout.php'));
+    // await http.post(Uri.parse('https://studentcouncil.bcp-sms1.com/php/logout.php'));
 
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => const LoginPage()));
+    if (!context.mounted) return; // Ensure the widget is still mounted
+
+    // Use pushAndRemoveUntil to clear the navigation stack
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoadingScreen()), // Replace with your login page
+      (Route<dynamic> route) => false, // Remove all previous routes
+    );
   }
 
 
