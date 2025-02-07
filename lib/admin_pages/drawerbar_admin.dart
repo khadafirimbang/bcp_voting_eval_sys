@@ -141,7 +141,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
           const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.file_copy, color: Colors.black,),
-            title: const Text('Result', style: TextStyle(color: Colors.black)),
+            title: const Text('Election Results', style: TextStyle(color: Colors.black)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()));
