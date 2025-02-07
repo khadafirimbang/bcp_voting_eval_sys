@@ -227,73 +227,75 @@ class _PositionsPageState extends State<PositionsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Positions'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 50),
-        child: FutureBuilder<List<dynamic>>(
-          future: _positions,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  'Error: ${snapshot.error}',
-                  style: const TextStyle(color: Colors.red),
-                ),
-              );
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No positions found.'));
-            } else {
-              final positions = snapshot.data!;
-              return ListView.builder(
-                itemCount: positions.length,
-                itemBuilder: (context, index) {
-                  final position = positions[index];
-                  return SingleChildScrollView(
-                    child: Card(
-                      color: Colors.white,
-                      elevation: 2,
-                      child: ListTile(
-                        title: Text(position['name']),
-                        subtitle: Text('Votes Quantity: ${position['votes_qty']}'),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () {
-                                _showPositionDialog(
-                                    positionId: position['id'].toString(),
-                                    initialName: position['name'],
-                                    initialVotesQty:
-                                        position['votes_qty'].toString());
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () {
-                                _showDeleteDialog(position['id'].toString());
-                              },
-                            ),
-                          ],
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Positions'),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 50),
+          child: FutureBuilder<List<dynamic>>(
+            future: _positions,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    'Error: ${snapshot.error}',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('No positions found.'));
+              } else {
+                final positions = snapshot.data!;
+                return ListView.builder(
+                  itemCount: positions.length,
+                  itemBuilder: (context, index) {
+                    final position = positions[index];
+                    return SingleChildScrollView(
+                      child: Card(
+                        color: Colors.white,
+                        elevation: 2,
+                        child: ListTile(
+                          title: Text(position['name']),
+                          subtitle: Text('Votes Quantity: ${position['votes_qty']}'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () {
+                                  _showPositionDialog(
+                                      positionId: position['id'].toString(),
+                                      initialName: position['name'],
+                                      initialVotesQty:
+                                          position['votes_qty'].toString());
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () {
+                                  _showDeleteDialog(position['id'].toString());
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              );
-            }
-          },
+                    );
+                  },
+                );
+              }
+            },
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.black,
-        onPressed: () => _showPositionDialog(),
-        child: const Icon(Icons.add, color: Colors.white),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.black,
+          onPressed: () => _showPositionDialog(),
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }

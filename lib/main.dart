@@ -114,16 +114,18 @@ class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // const SizedBox(height: 80),
-            Image.asset('assets/bcp_logo.png', width: 100),
-            const SizedBox(height: 50),
-            const CircularProgressIndicator(),
-          ],
+    return SafeArea(
+      child: Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // const SizedBox(height: 80),
+              Image.asset('assets/bcp_logo.png', width: 100),
+              const SizedBox(height: 50),
+              const CircularProgressIndicator(),
+            ],
+          ),
         ),
       ),
     );

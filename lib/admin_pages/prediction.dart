@@ -131,127 +131,129 @@ class _ElectionPredictionPageState extends State<ElectionPredictionPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
-              ),
-            ],
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Election Prediction',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+                  ],
+                ),
+              ],
+            )
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Election Prediction',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-                ],
-              ),
-            ],
-          )
         ),
-      ),
-      drawer: const AppDrawerAdmin(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 16.0),
-            SizedBox(
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+        drawer: const AppDrawerAdmin(),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 16.0),
+              SizedBox(
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.all(10.0),
+                          backgroundColor: Colors.black,
                         ),
-                        padding: const EdgeInsets.all(10.0),
-                        backgroundColor: Colors.black,
-                      ),
-                      onPressed: showResetConfirmationDialog,
-                      child: const Text(
-                        'Reset Prediction',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white,
+                        onPressed: showResetConfirmationDialog,
+                        child: const Text(
+                          'Reset Prediction',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-            Expanded(
-              child: FutureBuilder<Map<String, List<Candidate>>>(  // Fetch candidates data
-                future: candidatesByPosition,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Center(child: Text('No candidates available.'));
-                  } else {
-                    final candidatesByPosition = snapshot.data!;
-              
-                    return ListView.builder(
-                      itemCount: candidatesByPosition.keys.length,
-                      itemBuilder: (context, index) {
-                        String position = candidatesByPosition.keys.elementAt(index);
-                        List<Candidate> candidates = candidatesByPosition[position]!;
-              
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ExpansionTile(
-                            title: Text('$position'),
-                            children: candidates.map((candidate) {
-                              return ListTile(
-                                leading: CircleAvatar(
-                                  child: Text(
-                                    candidate.name.isNotEmpty ? candidate.name[0] : '?',
-                                  ),
-                                ),
-                                title: Text(candidate.name),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Predicted Votes: ${candidate.predictedVotes.toStringAsFixed(2)}%'),
-                                    SizedBox(height: 8),
-                                    // Horizontal bar graph
-                                    LinearProgressIndicator(
-                                      value: candidate.predictedVotes / 100, // Normalize to 0-1 range
-                                      minHeight: 8, // Height of the bar
-                                      color: Colors.blue, // Bar color
-                                      backgroundColor: Colors.grey[300], // Background color
+              Expanded(
+                child: FutureBuilder<Map<String, List<Candidate>>>(  // Fetch candidates data
+                  future: candidatesByPosition,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(child: Text('No candidates available.'));
+                    } else {
+                      final candidatesByPosition = snapshot.data!;
+                
+                      return ListView.builder(
+                        itemCount: candidatesByPosition.keys.length,
+                        itemBuilder: (context, index) {
+                          String position = candidatesByPosition.keys.elementAt(index);
+                          List<Candidate> candidates = candidatesByPosition[position]!;
+                
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ExpansionTile(
+                              title: Text('$position'),
+                              children: candidates.map((candidate) {
+                                return ListTile(
+                                  leading: CircleAvatar(
+                                    child: Text(
+                                      candidate.name.isNotEmpty ? candidate.name[0] : '?',
                                     ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        );
-                      },
-                    );
-                  }
-                },
+                                  ),
+                                  title: Text(candidate.name),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Predicted Votes: ${candidate.predictedVotes.toStringAsFixed(2)}%'),
+                                      SizedBox(height: 8),
+                                      // Horizontal bar graph
+                                      LinearProgressIndicator(
+                                        value: candidate.predictedVotes / 100, // Normalize to 0-1 range
+                                        minHeight: 8, // Height of the bar
+                                        color: Colors.blue, // Bar color
+                                        backgroundColor: Colors.grey[300], // Background color
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          );
+                        },
+                      );
+                    }
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

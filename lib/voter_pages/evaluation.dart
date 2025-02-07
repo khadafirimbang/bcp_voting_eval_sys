@@ -88,290 +88,292 @@ class _EvaluationPageState extends State<EvaluationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
-      key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
-              ),
-            ],
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF1F5F9),
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Evaluation',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+                  ],
+                ),
+              ],
+            )
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Evaluation',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-                ],
-              ),
-            ],
-          )
         ),
-      ),
-      drawer: const AppDrawer(),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                double cardWidth;
-                double screenWidth = MediaQuery.of(context).size.width;
-
-                // Adjust card width based on screen width
-                if (screenWidth > 1200) {
-                  cardWidth = 1200; // Large screens (Desktop)
-                } else if (screenWidth > 800) {
-                  cardWidth = 600; // Medium screens (Tablet)
-                } else {
-                  cardWidth = screenWidth * 0.9; // Small screens (Mobile)
-                }
-
-                return Card(
-                  color: Colors.white,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: cardWidth, // Set the width dynamically
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const SizedBox(height: 20),
-                              if (_isSubmitted)
-                              Container(
-                                decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.green, width: 1),
-                                    ),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text(
-                                    'You already answered the evaluation.',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              // Rating scale with responsive design
-                              Wrap(
-                                alignment: WrapAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 200,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.black, width: 1),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                                      child: Text('5 - Outstanding', style: TextStyle(fontSize: screenWidth > 600 ? 16 : 14)),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 200,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.black, width: 1),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                                      child: Text('4 - Very Satisfactory', style: TextStyle(fontSize: screenWidth > 600 ? 16 : 14)),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 200,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.black, width: 1),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                                      child: Text('3 - Satisfactory', style: TextStyle(fontSize: screenWidth > 600 ? 16 : 14)),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 200,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.black, width: 1),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                                      child: Text('2 - Fairly Satisfactory', style: TextStyle(fontSize: screenWidth > 600 ? 16 : 14)),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 200,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.black, width: 1),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                                      child: Text('1 - Unsatisfactory', style: TextStyle(fontSize: screenWidth > 600 ? 16 : 14)),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              const Text(
-                                'Survey Questions',
-                                style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 10),
-                              // Survey Questions List
-                              ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxHeight: constraints.maxHeight - 200, // Adjust height as needed
-                                ),
-                                child: ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: const ClampingScrollPhysics(), // Avoid conflicts with ConstrainedBox
-                                  itemCount: surveyQuestions.length,
-                                  itemBuilder: (context, index) {
-                                    var question = surveyQuestions[index];
-                                    return Column(
-                                      children: [
-                                        ListTile(
-                                          title: Text(question['question']),
-                                          trailing: DropdownButton<String>(
-                                            value: _isSubmitted ? null : surveyResponses[question['id']],
-                                            items: ['1', '2', '3', '4', '5'].map((String value) {
-                                              return DropdownMenuItem<String>(
-                                                value: value,
-                                                child: Text(value),
-                                              );
-                                            }).toList(),
-                                            onChanged: _isSubmitted ? null : (value) {
-                                              setState(() {
-                                                surveyResponses[question['id']] = value ?? '';
-                                              });
-                                            },
-                                            hint: const Text('Rate (1-5)'),
-                                          ),
-                                        ),
-                                        const Divider(), // Divider added here
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                        
-                      const SizedBox(height: 20),
-                        
-                      // Feedback Questions
-                      SizedBox(
-                        width: cardWidth, // Set the width dynamically
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Feedback Questions',
-                                style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 10),
-                              // Feedback Questions List
-                              ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxHeight: constraints.maxHeight - 200, // Adjust height as needed
-                                ),
-                                child: ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: const ClampingScrollPhysics(), // Avoid conflicts with ConstrainedBox
-                                  itemCount: feedbackQuestions.length,
-                                  itemBuilder: (context, index) {
-                                    var question = feedbackQuestions[index];
-                                    return ListTile(
-                                      title: Text(question['question']),
-                                      subtitle: TextField(
-                                        maxLines: 3,
-                                        onChanged: _isSubmitted ? null : (value) {
-                                          feedbackResponses[question['id']] = value;
-                                        },
-                                        decoration: const InputDecoration(
-                                          hintText: 'Enter your feedback (up to 3 sentences)',
-                                          border: OutlineInputBorder(),
-                                        ),
-                                        enabled: !_isSubmitted, // Disable field if submitted
+        drawer: const AppDrawer(),
+        body: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  double cardWidth;
+                  double screenWidth = MediaQuery.of(context).size.width;
+      
+                  // Adjust card width based on screen width
+                  if (screenWidth > 1200) {
+                    cardWidth = 1200; // Large screens (Desktop)
+                  } else if (screenWidth > 800) {
+                    cardWidth = 600; // Medium screens (Tablet)
+                  } else {
+                    cardWidth = screenWidth * 0.9; // Small screens (Mobile)
+                  }
+      
+                  return Card(
+                    color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: cardWidth, // Set the width dynamically
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const SizedBox(height: 20),
+                                if (_isSubmitted)
+                                Container(
+                                  decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.green, width: 1),
                                       ),
-                                    );
-                                  },
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(
+                                      'You already answered the evaluation.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 20),
+                                // Rating scale with responsive design
+                                Wrap(
+                                  alignment: WrapAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: 200,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.black, width: 1),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                        child: Text('5 - Outstanding', style: TextStyle(fontSize: screenWidth > 600 ? 16 : 14)),
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 200,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.black, width: 1),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                        child: Text('4 - Very Satisfactory', style: TextStyle(fontSize: screenWidth > 600 ? 16 : 14)),
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 200,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.black, width: 1),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                        child: Text('3 - Satisfactory', style: TextStyle(fontSize: screenWidth > 600 ? 16 : 14)),
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 200,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.black, width: 1),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                        child: Text('2 - Fairly Satisfactory', style: TextStyle(fontSize: screenWidth > 600 ? 16 : 14)),
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 200,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.black, width: 1),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                        child: Text('1 - Unsatisfactory', style: TextStyle(fontSize: screenWidth > 600 ? 16 : 14)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                const Text(
+                                  'Survey Questions',
+                                  style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 10),
+                                // Survey Questions List
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxHeight: constraints.maxHeight - 200, // Adjust height as needed
+                                  ),
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const ClampingScrollPhysics(), // Avoid conflicts with ConstrainedBox
+                                    itemCount: surveyQuestions.length,
+                                    itemBuilder: (context, index) {
+                                      var question = surveyQuestions[index];
+                                      return Column(
+                                        children: [
+                                          ListTile(
+                                            title: Text(question['question']),
+                                            trailing: DropdownButton<String>(
+                                              value: _isSubmitted ? null : surveyResponses[question['id']],
+                                              items: ['1', '2', '3', '4', '5'].map((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: _isSubmitted ? null : (value) {
+                                                setState(() {
+                                                  surveyResponses[question['id']] = value ?? '';
+                                                });
+                                              },
+                                              hint: const Text('Rate (1-5)'),
+                                            ),
+                                          ),
+                                          const Divider(), // Divider added here
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                        
-                      const SizedBox(height: 20),
-                        
-                      // Submit button
-                      SizedBox(
-                        width: 340,
-                        child: TextButton(
-                              style: TextButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                          
+                        const SizedBox(height: 20),
+                          
+                        // Feedback Questions
+                        SizedBox(
+                          width: cardWidth, // Set the width dynamically
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'Feedback Questions',
+                                  style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
                                 ),
-                                padding: const EdgeInsets.all(14.0),
-                                backgroundColor: Colors.black,
-                              ),
-                              onPressed: _isSubmitted ? null : _submitEvaluation,
-                              child: const Text('Submit', 
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
+                                const SizedBox(height: 10),
+                                // Feedback Questions List
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxHeight: constraints.maxHeight - 200, // Adjust height as needed
+                                  ),
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const ClampingScrollPhysics(), // Avoid conflicts with ConstrainedBox
+                                    itemCount: feedbackQuestions.length,
+                                    itemBuilder: (context, index) {
+                                      var question = feedbackQuestions[index];
+                                      return ListTile(
+                                        title: Text(question['question']),
+                                        subtitle: TextField(
+                                          maxLines: 3,
+                                          onChanged: _isSubmitted ? null : (value) {
+                                            feedbackResponses[question['id']] = value;
+                                          },
+                                          decoration: const InputDecoration(
+                                            hintText: 'Enter your feedback (up to 3 sentences)',
+                                            border: OutlineInputBorder(),
+                                          ),
+                                          enabled: !_isSubmitted, // Disable field if submitted
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                );
-              },
+                          ),
+                        ),
+                          
+                        const SizedBox(height: 20),
+                          
+                        // Submit button
+                        SizedBox(
+                          width: 340,
+                          child: TextButton(
+                                style: TextButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  padding: const EdgeInsets.all(14.0),
+                                  backgroundColor: Colors.black,
+                                ),
+                                onPressed: _isSubmitted ? null : _submitEvaluation,
+                                child: const Text('Submit', 
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ),
-      ),
-    floatingActionButton: FloatingActionButton(
-      backgroundColor: Colors.black,
-      foregroundColor: Colors.white,
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()),
-          );
-        },
-        child: Icon(Icons.chat_outlined),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()),
+            );
+          },
+          child: Icon(Icons.chat_outlined),
+        ),
       ),
     );
   }

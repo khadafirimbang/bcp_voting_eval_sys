@@ -239,49 +239,51 @@ class _ChatbotQuestionTypePageState extends State<ChatbotQuestionTypePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Chatbot Question Types'),
-
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                ElevatedButton(
-                  onPressed: showAddDialog,
-                  child: Text('Add New Type'),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _types.length,
-                    itemBuilder: (context, index) {
-                      final type = _types[index];
-                      return ListTile(
-                        title: Text(type['type_name']),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.edit),
-                              onPressed: () {
-                                showEditDialog(type['id'], type['type_name']);
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.delete),
-                              onPressed: () {
-                                showDeleteDialog(type['id']);
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Chatbot Question Types'),
+      
+        ),
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: showAddDialog,
+                    child: Text('Add New Type'),
                   ),
-                ),
-              ],
-            ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _types.length,
+                      itemBuilder: (context, index) {
+                        final type = _types[index];
+                        return ListTile(
+                          title: Text(type['type_name']),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit),
+                                onPressed: () {
+                                  showEditDialog(type['id'], type['type_name']);
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete),
+                                onPressed: () {
+                                  showDeleteDialog(type['id']);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }

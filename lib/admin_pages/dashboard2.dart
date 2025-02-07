@@ -237,138 +237,140 @@ class _DashboardPage2State extends State<DashboardPage2> {
       cardsPerRow = 1;
     }
 
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Dashboard',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-            ],
-          )
-        ),
-      ),
-      drawer: const AppDrawerAdmin(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: cardsPerRow,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 2.5,
-              children: [
-                buildCard(
-                  "Total Voters",
-                  totalVoters.toString(),
-                  Icons.people,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const VotersPage()),
-                    );
-                  },
-                ),
-                buildCard(
-                  "Total Candidates",
-                  totalCandidates.toString(),
-                  Icons.group,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const CandidatesPage()),
-                    );
-                  },
-                ),
-                buildCard(
-                  "Total Evaluation",
-                  totalEvaluations.toString(),
-                  Icons.assessment,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const EvaluationPage()),
-                    );
-                  },
-                ),
-                buildCard(
-                  "Total Announcement",
-                  totalAnnouncements.toString(),
-                  Icons.announcement,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AnnouncementAdminPage()),
-                    );
-                  },
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            screenWidth >= 800
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: buildBarGraph("President", presidentData,
-                        () { Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAdminPage()),
-                      ); 
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Dashboard',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+              ],
+            )
+          ),
+        ),
+        drawer: const AppDrawerAdmin(),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: cardsPerRow,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 2.5,
+                children: [
+                  buildCard(
+                    "Total Voters",
+                    totalVoters.toString(),
+                    Icons.people,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const VotersPage()),
+                      );
                     },
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: buildBarGraph("Vice President", vicePresidentData,
-                        () { Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAdminPage()),
-                      ); 
-                    },
-                    ),
-                      ),
-                    ],
-                  )
-                : Column(
-                    children: [
-                      buildBarGraph("President", presidentData,
-                      () { Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAdminPage()),
-                      ); 
-                    },
-                      ),
-                      const SizedBox(height: 20),
-                      buildBarGraph("Vice President", vicePresidentData,
-                      () { Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAdminPage()),
-                      ); 
-                    },
-                      ),
-                    ],
                   ),
-          ],
+                  buildCard(
+                    "Total Candidates",
+                    totalCandidates.toString(),
+                    Icons.group,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CandidatesPage()),
+                      );
+                    },
+                  ),
+                  buildCard(
+                    "Total Evaluation",
+                    totalEvaluations.toString(),
+                    Icons.assessment,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const EvaluationPage()),
+                      );
+                    },
+                  ),
+                  buildCard(
+                    "Total Announcement",
+                    totalAnnouncements.toString(),
+                    Icons.announcement,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const AnnouncementAdminPage()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              screenWidth >= 800
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: buildBarGraph("President", presidentData,
+                          () { Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAdminPage()),
+                        ); 
+                      },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: buildBarGraph("Vice President", vicePresidentData,
+                          () { Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAdminPage()),
+                        ); 
+                      },
+                      ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        buildBarGraph("President", presidentData,
+                        () { Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAdminPage()),
+                        ); 
+                      },
+                        ),
+                        const SizedBox(height: 20),
+                        buildBarGraph("Vice President", vicePresidentData,
+                        () { Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAdminPage()),
+                        ); 
+                      },
+                        ),
+                      ],
+                    ),
+            ],
+          ),
         ),
       ),
     );

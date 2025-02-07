@@ -182,116 +182,118 @@ class _SurveyResultsPageState extends State<SurveyResultsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Survey Results',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-                ],
-              ),
-              Row(
-                children: [
-                  IconButton(onPressed: (){
-                    fetchSurveyData();
-                  }, icon: const Icon(Icons.refresh))
-                ],
-              )
-            ],
-          )
-        ),
-      ),
-      drawer: const AppDrawerAdmin(),
-      body: isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : error != null
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    error!,
-                    style: const TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: fetchSurveyData,
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            )
-          : LayoutBuilder(
-              builder: (context, constraints) {
-                final crossAxisCount = constraints.maxWidth > 600 ? 2 : 1;
-                
-                // Group responses by question
-                Map<String, List<Map<String, dynamic>>> groupedResponses = {};
-                for (var response in surveyData) {
-                  String question = response['question'];
-                  if (!groupedResponses.containsKey(question)) {
-                    groupedResponses[question] = [];
-                  }
-                  groupedResponses[question]!.add(response);
-                }
-
-                if (groupedResponses.isEmpty) {
-                  return const Center(
-                    child: Text('No survey responses available'),
-                  );
-                }
-
-                return RefreshIndicator(
-                  onRefresh: fetchSurveyData,
-                  child: GridView.builder(
-                    padding: const EdgeInsets.all(8),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      childAspectRatio: 1.2,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
-                    ),
-                    itemCount: groupedResponses.length,
-                    itemBuilder: (context, index) {
-                      String question = groupedResponses.keys.elementAt(index);
-                      return SurveyResponseGraph(
-                        question: question,
-                        responses: groupedResponses[question]!,
-                      );
-                    },
-                  ),
-                );
-              },
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
             ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Survey Results',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(onPressed: (){
+                      fetchSurveyData();
+                    }, icon: const Icon(Icons.refresh))
+                  ],
+                )
+              ],
+            )
+          ),
+        ),
+        drawer: const AppDrawerAdmin(),
+        body: isLoading 
+          ? const Center(child: CircularProgressIndicator())
+          : error != null
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      error!,
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: fetchSurveyData,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              )
+            : LayoutBuilder(
+                builder: (context, constraints) {
+                  final crossAxisCount = constraints.maxWidth > 600 ? 2 : 1;
+                  
+                  // Group responses by question
+                  Map<String, List<Map<String, dynamic>>> groupedResponses = {};
+                  for (var response in surveyData) {
+                    String question = response['question'];
+                    if (!groupedResponses.containsKey(question)) {
+                      groupedResponses[question] = [];
+                    }
+                    groupedResponses[question]!.add(response);
+                  }
+      
+                  if (groupedResponses.isEmpty) {
+                    return const Center(
+                      child: Text('No survey responses available'),
+                    );
+                  }
+      
+                  return RefreshIndicator(
+                    onRefresh: fetchSurveyData,
+                    child: GridView.builder(
+                      padding: const EdgeInsets.all(8),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        childAspectRatio: 1.2,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                      ),
+                      itemCount: groupedResponses.length,
+                      itemBuilder: (context, index) {
+                        String question = groupedResponses.keys.elementAt(index);
+                        return SurveyResponseGraph(
+                          question: question,
+                          responses: groupedResponses[question]!,
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }

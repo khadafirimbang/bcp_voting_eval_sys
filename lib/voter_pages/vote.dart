@@ -332,181 +332,183 @@ class _VotePageState extends State<VotePage> {
             ? 3
             : 1;
 
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Vote Here',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-                ],
-              ),
-              Row(
-                children: [
-                  IconButton(
-                    icon: Icon(showSearchField ? Icons.close : Icons.search),
-                    onPressed: () {
-                      setState(() {
-                        showSearchField = !showSearchField;
-                        if (!showSearchField) {
-                          searchQuery = '';
-                        }
-                      });
-                    },
-                  ),
-                  DropdownButton<String>(
-                    value: selectedPosition,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedPosition = value!;
-                      });
-                    },
-                    items: [
-                      const DropdownMenuItem<String>(value: 'All', child: Text('All')),
-                      ...positions.map<DropdownMenuItem<String>>((position) {
-                        return DropdownMenuItem<String>(
-                          value: position['name'] as String,
-                          child: Text(position['name'] as String),
-                        );
-                      }).toList(),
-                    ],
-                  ),
-                ],
-              )
-            ],
-          )
-        ),
-      ),
-      drawer: const AppDrawer(),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 16, 0, 6),
-            child: Text(electionSchedule!['election_name'],
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 21)
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
             ),
-          ),
-          if (electionSchedule!['status'] == 'ongoing')
-            Container(
-              padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Time Remaining: ',
-                    style: TextStyle(fontWeight: FontWeight.bold)
-                  ),
-                  Text(formatDuration(timeRemaining)),
-                ],
-              ),
-            ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: SingleChildScrollView(
-                child: Column(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
                   children: [
-                    if (showSearchField)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Search...',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            contentPadding:
-                                const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                          ),
-                          onChanged: debounceSearch,
-                        ),
-                      ),
-                    selectedPosition == 'All'
-                        ? Column(
-                            children: positions.map((position) {
-                              var filteredCandidates =
-                                  _filterCandidates(position['name']);
-                              return ExpansionTile(
-                                collapsedShape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.zero,
-                                ),
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.zero,
-                                ),
-                                title: Text(
-                                  position['name'],
-                                  style: const TextStyle(fontSize: 16.0,),
-                                ),
-                                children: [
-                                  _buildCandidateGrid(
-                                  position,
-                                  filteredCandidates,
-                                  candidatesPerRow,
-                                  cardHeight
-                                ),
-                                ],
-                              );
-                            }).toList(),
-                          )
-                        : Column(
-                            children: positions
-                                .where((position) =>
-                                    position['name'] == selectedPosition)
-                                .map((position) {
-                              var filteredCandidates =
-                                  _filterCandidates(position['name']);
-                              return _buildCandidateGrid(
-                              position,
-                              filteredCandidates,
-                              candidatesPerRow,
-                              cardHeight
-                                                              );
-                            }).toList(),
-                          ),
+                    IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Vote Here',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(showSearchField ? Icons.close : Icons.search),
+                      onPressed: () {
+                        setState(() {
+                          showSearchField = !showSearchField;
+                          if (!showSearchField) {
+                            searchQuery = '';
+                          }
+                        });
+                      },
+                    ),
+                    DropdownButton<String>(
+                      value: selectedPosition,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedPosition = value!;
+                        });
+                      },
+                      items: [
+                        const DropdownMenuItem<String>(value: 'All', child: Text('All')),
+                        ...positions.map<DropdownMenuItem<String>>((position) {
+                          return DropdownMenuItem<String>(
+                            value: position['name'] as String,
+                            child: Text(position['name'] as String),
+                          );
+                        }).toList(),
+                      ],
+                    ),
+                  ],
+                )
+              ],
+            )
+          ),
+        ),
+        drawer: const AppDrawer(),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 16, 0, 6),
+              child: Text(electionSchedule!['election_name'],
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 21)
+              ),
+            ),
+            if (electionSchedule!['status'] == 'ongoing')
+              Container(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Time Remaining: ',
+                      style: TextStyle(fontWeight: FontWeight.bold)
+                    ),
+                    Text(formatDuration(timeRemaining)),
                   ],
                 ),
               ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      if (showSearchField)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Search...',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                            ),
+                            onChanged: debounceSearch,
+                          ),
+                        ),
+                      selectedPosition == 'All'
+                          ? Column(
+                              children: positions.map((position) {
+                                var filteredCandidates =
+                                    _filterCandidates(position['name']);
+                                return ExpansionTile(
+                                  collapsedShape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.zero,
+                                  ),
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.zero,
+                                  ),
+                                  title: Text(
+                                    position['name'],
+                                    style: const TextStyle(fontSize: 16.0,),
+                                  ),
+                                  children: [
+                                    _buildCandidateGrid(
+                                    position,
+                                    filteredCandidates,
+                                    candidatesPerRow,
+                                    cardHeight
+                                  ),
+                                  ],
+                                );
+                              }).toList(),
+                            )
+                          : Column(
+                              children: positions
+                                  .where((position) =>
+                                      position['name'] == selectedPosition)
+                                  .map((position) {
+                                var filteredCandidates =
+                                    _filterCandidates(position['name']);
+                                return _buildCandidateGrid(
+                                position,
+                                filteredCandidates,
+                                candidatesPerRow,
+                                cardHeight
+                                                                );
+                              }).toList(),
+                            ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ChatbotScreen()),
-          );
-        },
-        child: const Icon(Icons.chat_outlined),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ChatbotScreen()),
+            );
+          },
+          child: const Icon(Icons.chat_outlined),
+        ),
       ),
     );
   }

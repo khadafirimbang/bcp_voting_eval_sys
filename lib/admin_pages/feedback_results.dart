@@ -248,70 +248,72 @@ class _ResponsesPageState extends State<ResponsesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Responses'),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              widget.question,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Responses'),
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                widget.question,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : error != null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              error!,
-                              style: const TextStyle(color: Colors.red),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  isLoading = true;
-                                  error = null;
-                                });
-                                fetchResponses();
-                              },
-                              child: const Text('Retry'),
-                            ),
-                          ],
-                        ),
-                      )
-                    : responses.isEmpty
-                        ? const Center(child: Text('No responses available'))
-                        : ListView.builder(
-                            itemCount: responses.length,
-                            itemBuilder: (context, index) {
-                              final response = responses[index];
-                              return Card(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                child: ListTile(
-                                  title: Text(response['response']),
-                                  subtitle: Text('Student No: ${response['studentno']}'),
-                                ),
-                              );
-                            },
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : error != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                error!,
+                                style: const TextStyle(color: Colors.red),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    isLoading = true;
+                                    error = null;
+                                  });
+                                  fetchResponses();
+                                },
+                                child: const Text('Retry'),
+                              ),
+                            ],
                           ),
-          ),
-        ],
+                        )
+                      : responses.isEmpty
+                          ? const Center(child: Text('No responses available'))
+                          : ListView.builder(
+                              itemCount: responses.length,
+                              itemBuilder: (context, index) {
+                                final response = responses[index];
+                                return Card(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  child: ListTile(
+                                    title: Text(response['response']),
+                                    subtitle: Text('Student No: ${response['studentno']}'),
+                                  ),
+                                );
+                              },
+                            ),
+            ),
+          ],
+        ),
       ),
     );
   }

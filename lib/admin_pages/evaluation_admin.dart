@@ -625,232 +625,234 @@ class _EvaluationPageState extends State<EvaluationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Evaluation',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-                ],
-              ),
-              Row(
-                children: [
-                  IconButton(
-                icon: const Icon(Icons.search),
-                onPressed: () {
-                  setState(() {
-                    isSearching = !isSearching;
-                  });
-                },
-              ),
-                    IconButton(onPressed: (){
-                      fetchEvaluations();
-                    }, icon: const Icon(Icons.refresh))
-                ],
-              )
-            ],
-          )
-        ),
-      ),
-      drawer: const AppDrawerAdmin(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            if (isSearching)
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: searchController,
-                        decoration: const InputDecoration(
-                          hintText: 'Search evaluations',
-                          border: OutlineInputBorder(),
-                        ),
-                        onChanged: (value) => filterEvaluations(value),
-                      ),
-                    ),
-                    const SizedBox(width: 10,),
-                    DropdownButton<String>(
-                      hint: const Text('Select Type'),
-                      value: selectedType,
-                      onChanged: (value) {
-                        setState(() {
-                          selectedType = value!;
-                          filterEvaluations(searchController.text); // Filter based on both search query and selected type
-                        });
-                      },
-                      items: ['All', ...types].map((String type) {
-                        return DropdownMenuItem<String>(
-                          value: type,
-                          child: Text(type),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16.0),
-
-            Column(                                                                      
-              children: [
-                Row(
-                  children: [
-                    
-                    SizedBox(
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          padding: const EdgeInsets.all(10.0),
-                          backgroundColor: Colors.black,
-                        ),
-                        onPressed: showDeleteSelectedConfirmation,
-                        child: const Text(
-                          'Delete Selected',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    SizedBox(
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          padding: const EdgeInsets.all(10.0),
-                          backgroundColor: Colors.black,
-                        ),
-                        onPressed: showResetConfirmation,
-                        child: const Text(
-                          'Reset Evaluation',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 5,),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: selectAll,
-                      onChanged: (bool? value) => toggleSelectAll(),
-                    ),
-                    const Text('Select All'),
-                  ],
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
                 ),
               ],
             ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _paginatedEvaluations.length,
-                itemBuilder: (context, index) {
-                  final eval = _paginatedEvaluations[index];
-                  return Column(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Evaluation',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    setState(() {
+                      isSearching = !isSearching;
+                    });
+                  },
+                ),
+                      IconButton(onPressed: (){
+                        fetchEvaluations();
+                      }, icon: const Icon(Icons.refresh))
+                  ],
+                )
+              ],
+            )
+          ),
+        ),
+        drawer: const AppDrawerAdmin(),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              if (isSearching)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
                     children: [
-                      Card(
-                        color: Colors.white,
-                        elevation: 2,
-                        child: ListTile(
-                          leading: Checkbox(
-                            value: selectedItems[eval['id']] ?? false,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                selectedItems[eval['id']] = value ?? false;
-                                if (!(value ?? false)) {
-                                  selectAll = false;
-                                }
-                              });
-                            },
+                      Expanded(
+                        child: TextField(
+                          controller: searchController,
+                          decoration: const InputDecoration(
+                            hintText: 'Search evaluations',
+                            border: OutlineInputBorder(),
                           ),
-                          contentPadding: const EdgeInsets.all(8.0),
-                          title: Text(eval['question']),
-                          subtitle: Text(eval['type']),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () {
-                                  showUpdateEvaluationForm(eval['id'], eval['question'], eval['type']);
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () {
-                                  showDeleteConfirmation(eval['id']);
-                                },
-                              ),
-                            ],
+                          onChanged: (value) => filterEvaluations(value),
+                        ),
+                      ),
+                      const SizedBox(width: 10,),
+                      DropdownButton<String>(
+                        hint: const Text('Select Type'),
+                        value: selectedType,
+                        onChanged: (value) {
+                          setState(() {
+                            selectedType = value!;
+                            filterEvaluations(searchController.text); // Filter based on both search query and selected type
+                          });
+                        },
+                        items: ['All', ...types].map((String type) {
+                          return DropdownMenuItem<String>(
+                            value: type,
+                            child: Text(type),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+      
+              Column(                                                                      
+                children: [
+                  Row(
+                    children: [
+                      
+                      SizedBox(
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            padding: const EdgeInsets.all(10.0),
+                            backgroundColor: Colors.black,
+                          ),
+                          onPressed: showDeleteSelectedConfirmation,
+                          child: const Text(
+                            'Delete Selected',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            padding: const EdgeInsets.all(10.0),
+                            backgroundColor: Colors.black,
+                          ),
+                          onPressed: showResetConfirmation,
+                          child: const Text(
+                            'Reset Evaluation',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
                     ],
-                  );
-                },
+                  ),
+                  SizedBox(height: 5,),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: selectAll,
+                        onChanged: (bool? value) => toggleSelectAll(),
+                      ),
+                      const Text('Select All'),
+                    ],
+                  ),
+                ],
               ),
-            ),
-            // Pagination Controls
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.black),
-                    onPressed: _previousPage,
-                  ),
-                Text('Page $_currentPage of ${(filteredEvaluations.length / _rowsPerPage).ceil()}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                IconButton(
-                    icon: const Icon(Icons.arrow_forward, color: Colors.black),
-                    onPressed: _nextPage,
-                  ),
-              ],
-            ),
-          ],
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _paginatedEvaluations.length,
+                  itemBuilder: (context, index) {
+                    final eval = _paginatedEvaluations[index];
+                    return Column(
+                      children: [
+                        Card(
+                          color: Colors.white,
+                          elevation: 2,
+                          child: ListTile(
+                            leading: Checkbox(
+                              value: selectedItems[eval['id']] ?? false,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  selectedItems[eval['id']] = value ?? false;
+                                  if (!(value ?? false)) {
+                                    selectAll = false;
+                                  }
+                                });
+                              },
+                            ),
+                            contentPadding: const EdgeInsets.all(8.0),
+                            title: Text(eval['question']),
+                            subtitle: Text(eval['type']),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () {
+                                    showUpdateEvaluationForm(eval['id'], eval['question'], eval['type']);
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () {
+                                    showDeleteConfirmation(eval['id']);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              // Pagination Controls
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.black),
+                      onPressed: _previousPage,
+                    ),
+                  Text('Page $_currentPage of ${(filteredEvaluations.length / _rowsPerPage).ceil()}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  IconButton(
+                      icon: const Icon(Icons.arrow_forward, color: Colors.black),
+                      onPressed: _nextPage,
+                    ),
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.black,
-        onPressed: showAddEvaluationForm,
-        child: const Icon(Icons.add, color: Colors.white),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.black,
+          onPressed: showAddEvaluationForm,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }

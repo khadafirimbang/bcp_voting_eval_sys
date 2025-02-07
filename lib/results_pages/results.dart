@@ -78,197 +78,199 @@ class _ResultsPageState extends State<ResultsPage> {
     double votedPercentage = totalVoters > 0 ? (totalVoted / totalVoters) * 100 : 0;
     double notVotedPercentage = totalVoters > 0 ? (totalNotVoted / totalVoters) * 100 : 0;
 
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Election Results',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    DropdownButton<String>(
+                      value: selectedPosition,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedPosition = newValue!;
+                        });
+                      },
+                      items: positions.map<DropdownMenuItem<String>>((String position) {
+                        return DropdownMenuItem<String>(
+                          value: position,
+                          child: Text(position),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                )
+              ],
+            )
+          ),
+        ),
+        drawer: const AppDrawer(),
+        body: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.all(10.0),
+                    backgroundColor: Colors.black,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ElectionHistory()),
+                    );
+                  },
+                  child: const Text(
+                    'Election History',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Total Voters: $totalVoters - 100%',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                'Total Voted: $totalVoted - ${votedPercentage.toStringAsFixed(1)}%',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                'Total Not Voted Yet: $totalNotVoted - ${notVotedPercentage.toStringAsFixed(1)}%',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              
+              SizedBox(height: 20),
+              Expanded(
+                child: ListView(
+                  children: groupedCandidates.entries.map((entry) {
+                    // Calculate total votes for this position
+                    int totalPositionVotes = entry.value.fold<int>(0, (sum, candidate) {
+                      return sum + (candidate['total_votes'] as int);
+                    });
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 10),
+                        ExpansionTile(
+                          collapsedShape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.zero,
+                                  ),
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.zero,
+                                  ),
+                                  title: Text(entry.key),
+                          children: [
+                            GridView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossAxisCount,
+                              crossAxisSpacing: 8.0,
+                              mainAxisSpacing: 8.0,
+                            ),
+                            itemCount: entry.value.length,
+                            itemBuilder: (context, index) {
+                              var candidate = entry.value[index];
+                          
+                              // Calculate the percentage of votes for this candidate based on total voters
+                              double percentage = totalVoters > 0
+                                  ? (candidate['total_votes'] / totalVoters) * 100
+                                  : 0;
+                          
+                              return Card(
+                                elevation: 5,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min, // Ensure the Column height fits the content
+                                  children: [
+                                    ClipOval(
+                                      child: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
+                                          ? Image.network(
+                                              candidate['image_url'],
+                                              height: 155,
+                                              width: 155,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Image.asset(
+                                              'assets/images/bcp_logo.png',
+                                              height: 155,
+                                              width: 155,
+                                              fit: BoxFit.cover,
+                                            ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '${candidate['lastname']}, ${candidate['firstname']}',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    Text('Position: ${candidate['position']}'),
+                                    Text('${candidate['total_votes']} votes'),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: LinearProgressIndicator(
+                                        value: percentage / 100,
+                                        backgroundColor: Colors.grey[300],
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                    Text('${percentage.toStringAsFixed(2)}%'), // Display the percentage with two decimal places
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                          ],
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
               ),
             ],
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Election Results',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-                ],
-              ),
-              Row(
-                children: [
-                  DropdownButton<String>(
-                    value: selectedPosition,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedPosition = newValue!;
-                      });
-                    },
-                    items: positions.map<DropdownMenuItem<String>>((String position) {
-                      return DropdownMenuItem<String>(
-                        value: position,
-                        child: Text(position),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              )
-            ],
-          )
-        ),
-      ),
-      drawer: const AppDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  padding: const EdgeInsets.all(10.0),
-                  backgroundColor: Colors.black,
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ElectionHistory()),
-                  );
-                },
-                child: const Text(
-                  'Election History',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Total Voters: $totalVoters - 100%',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              'Total Voted: $totalVoted - ${votedPercentage.toStringAsFixed(1)}%',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              'Total Not Voted Yet: $totalNotVoted - ${notVotedPercentage.toStringAsFixed(1)}%',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            
-            SizedBox(height: 20),
-            Expanded(
-              child: ListView(
-                children: groupedCandidates.entries.map((entry) {
-                  // Calculate total votes for this position
-                  int totalPositionVotes = entry.value.fold<int>(0, (sum, candidate) {
-                    return sum + (candidate['total_votes'] as int);
-                  });
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 10),
-                      ExpansionTile(
-                        collapsedShape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.zero,
-                                ),
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.zero,
-                                ),
-                                title: Text(entry.key),
-                        children: [
-                          GridView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: crossAxisCount,
-                            crossAxisSpacing: 8.0,
-                            mainAxisSpacing: 8.0,
-                          ),
-                          itemCount: entry.value.length,
-                          itemBuilder: (context, index) {
-                            var candidate = entry.value[index];
-                        
-                            // Calculate the percentage of votes for this candidate based on total voters
-                            double percentage = totalVoters > 0
-                                ? (candidate['total_votes'] / totalVoters) * 100
-                                : 0;
-                        
-                            return Card(
-                              elevation: 5,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min, // Ensure the Column height fits the content
-                                children: [
-                                  ClipOval(
-                                    child: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
-                                        ? Image.network(
-                                            candidate['image_url'],
-                                            height: 155,
-                                            width: 155,
-                                            fit: BoxFit.cover,
-                                          )
-                                        : Image.asset(
-                                            'assets/images/bcp_logo.png',
-                                            height: 155,
-                                            width: 155,
-                                            fit: BoxFit.cover,
-                                          ),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    '${candidate['lastname']}, ${candidate['firstname']}',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  Text('Position: ${candidate['position']}'),
-                                  Text('${candidate['total_votes']} votes'),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: LinearProgressIndicator(
-                                      value: percentage / 100,
-                                      backgroundColor: Colors.grey[300],
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                  Text('${percentage.toStringAsFixed(2)}%'), // Display the percentage with two decimal places
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                        ],
-                      ),
-                    ],
-                  );
-                }).toList(),
-              ),
-            ),
-          ],
         ),
       ),
     );

@@ -331,171 +331,173 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
-              ),
-            ],
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Chatbot Management',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                  icon: Icon(isSearching ? Icons.close : Icons.search),
+                  onPressed: () {
+                    setState(() {
+                      isSearching = !isSearching;
+                    });
+                    if (!isSearching) {
+                      searchController.clear();
+                    }
+                  },
+                ),
+                
+                IconButton(onPressed: (){
+                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => ChatbotAdminPage()),
+                                  );
+                }, icon: const Icon(Icons.refresh))
+                  ],
+                )
+              ],
+            )
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Chatbot Management',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-                ],
-              ),
-              Row(
-                children: [
-                  IconButton(
-                icon: Icon(isSearching ? Icons.close : Icons.search),
-                onPressed: () {
-                  setState(() {
-                    isSearching = !isSearching;
-                  });
-                  if (!isSearching) {
-                    searchController.clear();
-                  }
-                },
-              ),
-              
-              IconButton(onPressed: (){
-                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => ChatbotAdminPage()),
-                                );
-              }, icon: const Icon(Icons.refresh))
-                ],
-              )
-            ],
-          )
         ),
-      ),
-      drawer: const AppDrawerAdmin(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            if (isSearching)
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: searchController,
-                      decoration: const InputDecoration(
-                        labelText: 'Search Questions',
-                        border: OutlineInputBorder(),
+        drawer: const AppDrawerAdmin(),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              if (isSearching)
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: searchController,
+                        decoration: const InputDecoration(
+                          labelText: 'Search Questions',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            // Automatically filtered by the getFilteredQuestions method
+                          });
+                        },
                       ),
+                    ),
+                    const SizedBox(width: 10.0),
+                    // Position filter dropdown
+                    DropdownButton<String>(
+                      hint: Text('Filter by Type'),
+                      value: selectedQuestionType,
+                      items: [null, ...questionTypes].map((type) {
+                        return DropdownMenuItem<String>(
+                          value: type,
+                          child: Text(type ?? 'All'),
+                        );
+                      }).toList(),
                       onChanged: (value) {
                         setState(() {
-                          // Automatically filtered by the getFilteredQuestions method
+                          selectedQuestionType = value;
                         });
                       },
                     ),
-                  ),
-                  const SizedBox(width: 10.0),
-                  // Position filter dropdown
-                  DropdownButton<String>(
-                    hint: Text('Filter by Type'),
-                    value: selectedQuestionType,
-                    items: [null, ...questionTypes].map((type) {
-                      return DropdownMenuItem<String>(
-                        value: type,
-                        child: Text(type ?? 'All'),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedQuestionType = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16.0),
-              SizedBox(
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
+                  ],
+                ),
+                const SizedBox(height: 16.0),
+                SizedBox(
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    padding: const EdgeInsets.all(10.0),
+                                    backgroundColor: Colors.black,
                                   ),
-                                  padding: const EdgeInsets.all(10.0),
-                                  backgroundColor: Colors.black,
-                                ),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => ChatbotQuestionTypePage()),
-                                  );
-                                },
-                                child: const Text('View Types', 
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white,
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => ChatbotQuestionTypePage()),
+                                    );
+                                  },
+                                  child: const Text('View Types', 
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
+                    const SizedBox(width: 10.0),
+              Expanded(
+                child: isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        itemCount: getFilteredQuestions().length,
+                        itemBuilder: (context, index) {
+                          final questionData = getFilteredQuestions()[index];
+                          return Card(
+                            color: Colors.white,
+                            elevation: 2,
+                            child: ListTile(
+                              title: Text(questionData['question']),
+                              subtitle: Text(questionData['answer']),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.edit),
+                                    onPressed: () => showEditQuestionDialog(questionData),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.delete),
+                                    onPressed: () => showDeleteConfirmationDialog(questionData['id'].toString()),
+                                  ),
+                                ],
+                              ),
                             ),
-                  const SizedBox(width: 10.0),
-            Expanded(
-              child: isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : ListView.builder(
-                      itemCount: getFilteredQuestions().length,
-                      itemBuilder: (context, index) {
-                        final questionData = getFilteredQuestions()[index];
-                        return Card(
-                          color: Colors.white,
-                          elevation: 2,
-                          child: ListTile(
-                            title: Text(questionData['question']),
-                            subtitle: Text(questionData['answer']),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.edit),
-                                  onPressed: () => showEditQuestionDialog(questionData),
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.delete),
-                                  onPressed: () => showDeleteConfirmationDialog(questionData['id'].toString()),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: showAddQuestionDialog,
-        child: Icon(Icons.add),
+        floatingActionButton: FloatingActionButton(
+          onPressed: showAddQuestionDialog,
+          child: Icon(Icons.add),
+        ),
       ),
     );
   }

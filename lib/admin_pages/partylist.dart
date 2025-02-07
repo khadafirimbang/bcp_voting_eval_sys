@@ -177,70 +177,72 @@ class _PartyListPageState extends State<PartyListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Partylists'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 50),
-        child: FutureBuilder<List<dynamic>>(
-          future: _partyLists,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  'Error: ${snapshot.error}',
-                  style: const TextStyle(color: Colors.red),
-                ),
-              );
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No party lists found.'));
-            } else {
-              final partyLists = snapshot.data!;
-              return ListView.builder(
-                itemCount: partyLists.length,
-                itemBuilder: (context, index) {
-                  final partyList = partyLists[index];
-                  return SingleChildScrollView(
-                    child: Card(
-                      color: Colors.white,
-                      elevation: 2,
-                      child: ListTile(
-                        title: Text(partyList['name']),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () {
-                                _showPartyListDialog(
-                                    partyListId: partyList['id'].toString(),
-                                    initialName: partyList['name']);
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () {
-                                _confirmDelete(partyList['id'].toString());
-                              },
-                            ),
-                          ],
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Partylists'),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 50),
+          child: FutureBuilder<List<dynamic>>(
+            future: _partyLists,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    'Error: ${snapshot.error}',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('No party lists found.'));
+              } else {
+                final partyLists = snapshot.data!;
+                return ListView.builder(
+                  itemCount: partyLists.length,
+                  itemBuilder: (context, index) {
+                    final partyList = partyLists[index];
+                    return SingleChildScrollView(
+                      child: Card(
+                        color: Colors.white,
+                        elevation: 2,
+                        child: ListTile(
+                          title: Text(partyList['name']),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () {
+                                  _showPartyListDialog(
+                                      partyListId: partyList['id'].toString(),
+                                      initialName: partyList['name']);
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () {
+                                  _confirmDelete(partyList['id'].toString());
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              );
-            }
-          },
+                    );
+                  },
+                );
+              }
+            },
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.black,
-        onPressed: () => _showPartyListDialog(),
-        child: const Icon(Icons.add, color: Colors.white,),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.black,
+          onPressed: () => _showPartyListDialog(),
+          child: const Icon(Icons.add, color: Colors.white,),
+        ),
       ),
     );
   }

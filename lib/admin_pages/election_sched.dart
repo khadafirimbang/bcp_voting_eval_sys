@@ -221,91 +221,93 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: const Text('Election Schedule'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _fetchSchedules,
-          ),
-        ],
-      ),
-      drawer: const AppDrawerAdmin(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 16.0),
-            SizedBox(
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  padding: const EdgeInsets.all(10.0),
-                  backgroundColor: Colors.black,
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ElectionHistory()),
-                  );
-                },
-                child: const Text(
-                  'Election History',
-                  style: TextStyle(fontSize: 14, color: Colors.white),
-                ),
-              ),
-            ),
-            Expanded(
-              child: _schedules.isEmpty
-                ? const Center(child: Text("No schedules available."))
-                : ListView.builder(
-                itemCount: _schedules.length,
-                itemBuilder: (context, index) {
-                  final schedule = _schedules[index];
-                  final formatter = DateFormat('MMM dd, yyyy h:mm a');
-                  final startDateFormatted = formatter.format(schedule.startDate);
-                  final endDateFormatted = formatter.format(schedule.endDate);
-              
-                  return Column(
-                    children: [
-                      const SizedBox(height: 16.0),
-                      Card(
-                        color: Colors.white,
-                        elevation: 2,
-                        child: ListTile(
-                          title: Text(schedule.electionName),
-                          subtitle: Text('From $startDateFormatted to $endDateFormatted'),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () => _editSchedule(schedule),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () => _deleteSchedule(schedule.id),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: AppBar(
+          title: const Text('Election Schedule'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _fetchSchedules,
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addSchedule,
-        backgroundColor: Colors.black,
-        child: const Icon(Icons.add, color: Colors.white),
+        drawer: const AppDrawerAdmin(),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 16.0),
+              SizedBox(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.all(10.0),
+                    backgroundColor: Colors.black,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ElectionHistory()),
+                    );
+                  },
+                  child: const Text(
+                    'Election History',
+                    style: TextStyle(fontSize: 14, color: Colors.white),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: _schedules.isEmpty
+                  ? const Center(child: Text("No schedules available."))
+                  : ListView.builder(
+                  itemCount: _schedules.length,
+                  itemBuilder: (context, index) {
+                    final schedule = _schedules[index];
+                    final formatter = DateFormat('MMM dd, yyyy h:mm a');
+                    final startDateFormatted = formatter.format(schedule.startDate);
+                    final endDateFormatted = formatter.format(schedule.endDate);
+                
+                    return Column(
+                      children: [
+                        const SizedBox(height: 16.0),
+                        Card(
+                          color: Colors.white,
+                          elevation: 2,
+                          child: ListTile(
+                            title: Text(schedule.electionName),
+                            subtitle: Text('From $startDateFormatted to $endDateFormatted'),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () => _editSchedule(schedule),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () => _deleteSchedule(schedule.id),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _addSchedule,
+          backgroundColor: Colors.black,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }

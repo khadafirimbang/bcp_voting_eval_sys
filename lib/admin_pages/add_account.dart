@@ -113,147 +113,149 @@ class _AddAccountPageState extends State<AddAccountPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
-        title: const Text('Add Account', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-        leading: Builder(
-          builder: (BuildContext context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
-        ),
-      ),
-      drawer: const AppDrawerAdmin(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white, // Background color of the container
-            borderRadius: BorderRadius.circular(10.0), // Rounded corners
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2), // Shadow color
-                spreadRadius: 3, // Spread radius of shadow
-                blurRadius: 5, // Blur radius of shadow
-                offset: const Offset(0, 3), // Offset for shadow
-              ),
-            ],
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF1E3A8A),
+          title: const Text('Add Account', style: TextStyle(color: Colors.white)),
+          iconTheme: const IconThemeData(color: Colors.white),
+          leading: Builder(
+            builder: (BuildContext context) {
+              return IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              );
+            },
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(30.0), // Inner padding for the container
-            child: Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: studentnoController,
-                      decoration: const InputDecoration(labelText: 'Student Number'),
-                      validator: (value) {
-                        if (value!.isEmpty) return 'Enter student number';
-                        return null;
-                      },
-                    ),
-                    if (studentNoError != null) // Display error message if exists
-                      Text(
-                        studentNoError!,
-                        style: const TextStyle(color: Colors.red),
+        ),
+        drawer: const AppDrawerAdmin(),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white, // Background color of the container
+              borderRadius: BorderRadius.circular(10.0), // Rounded corners
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2), // Shadow color
+                  spreadRadius: 3, // Spread radius of shadow
+                  blurRadius: 5, // Blur radius of shadow
+                  offset: const Offset(0, 3), // Offset for shadow
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(30.0), // Inner padding for the container
+              child: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: studentnoController,
+                        decoration: const InputDecoration(labelText: 'Student Number'),
+                        validator: (value) {
+                          if (value!.isEmpty) return 'Enter student number';
+                          return null;
+                        },
                       ),
-                    TextFormField(
-                      controller: firstnameController,
-                      decoration: const InputDecoration(labelText: 'First Name'),
-                      validator: (value) {
-                        if (value!.isEmpty) return 'Enter first name';
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      controller: middlenameController,
-                      decoration: const InputDecoration(labelText: 'Middle Name'),
-                      validator: (value) {
-                        if (value!.isEmpty) return 'Enter middle name';
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      controller: lastnameController,
-                      decoration: const InputDecoration(labelText: 'Last Name'),
-                      validator: (value) {
-                        if (value!.isEmpty) return 'Enter last name';
-                        return null;
-                      },
-                    ),
-                    DropdownButtonFormField<String>(
-                      value: role,
-                      items: ['Voter', 'Admin'].map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (newValue) {
-                        setState(() {
-                          role = newValue!;
-                        });
-                      },
-                      decoration: const InputDecoration(labelText: 'Role'),
-                    ),
-                    TextFormField(
-                      controller: passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(labelText: 'Password'),
-                      validator: (value) {
-                        if (value!.isEmpty) return 'Enter password';
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      controller: confirmPasswordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(labelText: 'Confirm Password'),
-                      validator: (value) {
-                        if (value!.isEmpty) return 'Confirm your password';
-                        if (value != passwordController.text) return 'Passwords do not match';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    Column(
-                      children: [
-                        SizedBox(
-                          width: 100,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1E3A8A),
-                              padding: const EdgeInsets.symmetric(vertical: 15),
-                            ),
-                            onPressed: saveAccount,
-                            child: const Text('Save', style: TextStyle(color: Colors.white)),
-                          ),
+                      if (studentNoError != null) // Display error message if exists
+                        Text(
+                          studentNoError!,
+                          style: const TextStyle(color: Colors.red),
                         ),
-                        const SizedBox(height: 10),
-                        SizedBox(
-                          width: 100,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              padding: const EdgeInsets.symmetric(vertical: 15),
+                      TextFormField(
+                        controller: firstnameController,
+                        decoration: const InputDecoration(labelText: 'First Name'),
+                        validator: (value) {
+                          if (value!.isEmpty) return 'Enter first name';
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        controller: middlenameController,
+                        decoration: const InputDecoration(labelText: 'Middle Name'),
+                        validator: (value) {
+                          if (value!.isEmpty) return 'Enter middle name';
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        controller: lastnameController,
+                        decoration: const InputDecoration(labelText: 'Last Name'),
+                        validator: (value) {
+                          if (value!.isEmpty) return 'Enter last name';
+                          return null;
+                        },
+                      ),
+                      DropdownButtonFormField<String>(
+                        value: role,
+                        items: ['Voter', 'Admin'].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            role = newValue!;
+                          });
+                        },
+                        decoration: const InputDecoration(labelText: 'Role'),
+                      ),
+                      TextFormField(
+                        controller: passwordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(labelText: 'Password'),
+                        validator: (value) {
+                          if (value!.isEmpty) return 'Enter password';
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        controller: confirmPasswordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(labelText: 'Confirm Password'),
+                        validator: (value) {
+                          if (value!.isEmpty) return 'Confirm your password';
+                          if (value != passwordController.text) return 'Passwords do not match';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      Column(
+                        children: [
+                          SizedBox(
+                            width: 100,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF1E3A8A),
+                                padding: const EdgeInsets.symmetric(vertical: 15),
+                              ),
+                              onPressed: saveAccount,
+                              child: const Text('Save', style: TextStyle(color: Colors.white)),
                             ),
-                            onPressed: () {
-                              Navigator.of(context).pop(); // Go back to AccountsPage
-                            },
-                            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: 100,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                padding: const EdgeInsets.symmetric(vertical: 15),
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).pop(); // Go back to AccountsPage
+                              },
+                              child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

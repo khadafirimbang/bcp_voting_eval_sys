@@ -29,41 +29,43 @@ class _ElectionHistoryState extends State<ElectionHistory> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Election History')),
-      body: FutureBuilder<List<dynamic>>(
-        future: _electionList,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No ended elections found.'));
-          }
-
-          final elections = snapshot.data!;
-          return ListView.builder(
-            itemCount: elections.length,
-            itemBuilder: (context, index) {
-              final election = elections[index];
-              return ListTile(
-                title: Text(election['election_name']),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ElectionResultsPage(
-                        electionId: election['id'].toString(),
-                        electionName: election['election_name'],
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(title: Text('Election History')),
+        body: FutureBuilder<List<dynamic>>(
+          future: _electionList,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text('No ended elections found.'));
+            }
+      
+            final elections = snapshot.data!;
+            return ListView.builder(
+              itemCount: elections.length,
+              itemBuilder: (context, index) {
+                final election = elections[index];
+                return ListTile(
+                  title: Text(election['election_name']),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ElectionResultsPage(
+                          electionId: election['id'].toString(),
+                          electionName: election['election_name'],
+                        ),
                       ),
-                    ),
-                  );
-                },
-              );
-            },
-          );
-        },
+                    );
+                  },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

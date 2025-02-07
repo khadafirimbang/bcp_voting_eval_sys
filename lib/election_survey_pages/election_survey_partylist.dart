@@ -117,46 +117,50 @@ class _ElectionSurveyPartylistState extends State<ElectionSurveyPartylist> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return SafeArea(
+        child: Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Select Partylist'),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: partylists.length,
-              itemBuilder: (context, index) {
-                final partylist = partylists[index];
-                return Card(
-                  color: selectedPartylist == partylist
-                      ? Colors.blue.shade100
-                      : null,
-                  child: ListTile(
-                    title: Text(partylist['name']),
-                    onTap: () {
-                      setState(() {
-                        selectedPartylist = partylist;
-                      });
-                    },
-                  ),
-                );
-              },
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Select Partylist'),
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: partylists.length,
+                itemBuilder: (context, index) {
+                  final partylist = partylists[index];
+                  return Card(
+                    color: selectedPartylist == partylist
+                        ? Colors.blue.shade100
+                        : null,
+                    child: ListTile(
+                      title: Text(partylist['name']),
+                      onTap: () {
+                        setState(() {
+                          selectedPartylist = partylist;
+                        });
+                      },
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: submitSurvey,
-              child: Text('Submit'),
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: submitSurvey,
+                child: Text('Submit'),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

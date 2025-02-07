@@ -109,79 +109,84 @@ class _ElectionSurveyCandidatesState extends State<ElectionSurveyCandidates> {
       candidatesByPosition[position]!.add(candidate);
     }
 
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
-              ),
-            ],
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Election Survey',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+                  ],
+                ),
+              ],
+            )
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Election Survey',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-                ],
-              ),
-            ],
-          )
         ),
-      ),
-      drawer: const AppDrawer(),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : ListView(
-              children: candidatesByPosition.entries.map((entry) {
-                String position = entry.key;
-                List<dynamic> positionCandidates = entry.value;
-
-                return ExpansionTile(
-                  title: Text(position),
-                  children: positionCandidates.map((candidate) {
-                    String candidateId = candidate['studentno'].toString();
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(candidate['image_url'] ?? ''),
-                        child: candidate['image_url'] == null ? Icon(Icons.person) : null,
-                      ),
-                      title: Text('${candidate['firstname']} ${candidate['lastname']}'),
-                      subtitle: Text('Party: ${candidate['partylist']}'),
-                      trailing: Checkbox(
-                        value: selectedCandidates[position]?.contains(candidateId) ?? false,
-                        onChanged: (bool? isSelected) {
-                          onCandidateSelected(position, candidateId, isSelected ?? false);
-                        },
-                      ),
+        drawer: const AppDrawer(),
+        body: isLoading
+            ? Center(child: CircularProgressIndicator())
+            : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ListView(
+                  children: candidatesByPosition.entries.map((entry) {
+                    String position = entry.key;
+                    List<dynamic> positionCandidates = entry.value;
+              
+                    return ExpansionTile(
+                      title: Text(position),
+                      children: positionCandidates.map((candidate) {
+                        String candidateId = candidate['studentno'].toString();
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: NetworkImage(candidate['image_url'] ?? ''),
+                            child: candidate['image_url'] == null ? Icon(Icons.person) : null,
+                          ),
+                          title: Text('${candidate['firstname']} ${candidate['lastname']}'),
+                          subtitle: Text('Party: ${candidate['partylist']}'),
+                          trailing: Checkbox(
+                            value: selectedCandidates[position]?.contains(candidateId) ?? false,
+                            onChanged: (bool? isSelected) {
+                              onCandidateSelected(position, candidateId, isSelected ?? false);
+                            },
+                          ),
+                        );
+                      }).toList(),
                     );
                   }).toList(),
-                );
-              }).toList(),
+                ),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: onNext,
-        child: Icon(Icons.arrow_forward),
+        floatingActionButton: FloatingActionButton(
+          onPressed: onNext,
+          child: Icon(Icons.arrow_forward),
+        ),
       ),
     );
   }
@@ -292,29 +297,34 @@ class _ElectionSurveyPartylistState extends State<ElectionSurveyPartylist> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Select Partylist')),
-      body: partyLists.isEmpty
-          ? Center(child: CircularProgressIndicator())
-          : ListView(
-              children: partyLists.map((party) {
-                return ListTile(
-                  title: Text(party['name']),
-                  leading: Radio<String>(
-                    value: party['id'].toString(),
-                    groupValue: selectedPartylist,
-                    onChanged: (String? value) {
-                      setState(() {
-                        selectedPartylist = value;
-                      });
-                    },
-                  ),
-                );
-              }).toList(),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(title: Text('Select Partylist')),
+        body: partyLists.isEmpty
+            ? Center(child: CircularProgressIndicator())
+            : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ListView(
+                  children: partyLists.map((party) {
+                    return ListTile(
+                      title: Text(party['name']),
+                      leading: Radio<String>(
+                        value: party['id'].toString(),
+                        groupValue: selectedPartylist,
+                        onChanged: (String? value) {
+                          setState(() {
+                            selectedPartylist = value;
+                          });
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: onSubmit,
-        child: Icon(Icons.check),
+        floatingActionButton: FloatingActionButton(
+          onPressed: onSubmit,
+          child: Icon(Icons.check),
+        ),
       ),
     );
   }
@@ -328,49 +338,54 @@ class ParticipationMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
-              ),
-            ],
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Election Survey',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+                  ],
+                ),
+              ],
+            )
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Election Survey',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-                ],
-              ),
-            ],
-          )
         ),
-      ),
-      drawer: const AppDrawer(),
-      body: Center(
-        child: Text(message, style: TextStyle(fontSize: 20)),
+        drawer: const AppDrawer(),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Center(
+            child: Text(message, style: TextStyle(fontSize: 20), textAlign: TextAlign.center,),
+          ),
+        ),
       ),
     );
   }

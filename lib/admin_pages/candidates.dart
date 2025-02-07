@@ -485,337 +485,339 @@ class _CandidatesPageState extends State<CandidatesPage> {
           : (currentPage + 1) * rowsPerPage,
     );
 
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
-              ),
-            ],
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Candidates',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                  icon: Icon(_isSearchVisible ? Icons.close : Icons.search),
+                  onPressed: () {
+                    setState(() {
+                      _isSearchVisible = !_isSearchVisible;
+                      if (!_isSearchVisible) {
+                        _searchController.clear();
+                        _filterCandidates();
+                      }
+                    });
+                  },
+                ),
+                
+                // const SizedBox(width: 10),
+                IconButton(onPressed: (){
+                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const CandidatesPage()),
+                                  );
+                }, icon: const Icon(Icons.refresh))
+                  ],
+                )
+              ],
+            )
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Candidates',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-                ],
-              ),
-              Row(
-                children: [
-                  IconButton(
-                icon: Icon(_isSearchVisible ? Icons.close : Icons.search),
-                onPressed: () {
-                  setState(() {
-                    _isSearchVisible = !_isSearchVisible;
-                    if (!_isSearchVisible) {
-                      _searchController.clear();
-                      _filterCandidates();
-                    }
-                  });
-                },
-              ),
-              
-              // const SizedBox(width: 10),
-              IconButton(onPressed: (){
-                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const CandidatesPage()),
-                                );
-              }, icon: const Icon(Icons.refresh))
-                ],
-              )
-            ],
-          )
         ),
-      ),
-      drawer: const AppDrawerAdmin(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            if (_isSearchVisible)
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: const InputDecoration(
-                        hintText: 'Search by student number or name',
-                        border: OutlineInputBorder(),
+        drawer: const AppDrawerAdmin(),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              if (_isSearchVisible)
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: const InputDecoration(
+                          hintText: 'Search by student number or name',
+                          border: OutlineInputBorder(),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  DropdownButton<String>(
-                    icon: const Icon(Icons.filter_list, color: Colors.black54),
-                    hint: const Text('All', style: TextStyle(color: Colors.black54)),
-                    value: selectedPosition,
-                    items: <String>['All', ...positions]
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                    onChanged: (String? newValue) {
+                    const SizedBox(width: 10),
+                    DropdownButton<String>(
+                      icon: const Icon(Icons.filter_list, color: Colors.black54),
+                      hint: const Text('All', style: TextStyle(color: Colors.black54)),
+                      value: selectedPosition,
+                      items: <String>['All', ...positions]
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedPosition = newValue;
+                          _filterCandidates();
+                        });
+                      },
+                      // dropdownColor: const Color(0xFF1E3A8A),
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 16.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  padding: const EdgeInsets.all(10.0),
+                                  backgroundColor: Colors.black,
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const PositionsPage()),
+                                  );
+                                },
+                                child: const Text('Positions', 
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                  const SizedBox(width: 10.0),
+                  SizedBox(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  padding: const EdgeInsets.all(10.0),
+                                  backgroundColor: Colors.black,
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const PartyListPage()),
+                                  );
+                                },
+                                child: const Text('Partylists', 
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                ],
+              ),
+              SizedBox(height: 10,),
+              Row(
+        children: [
+          Checkbox(
+            value: selectAll,
+            onChanged: (bool? value) {
+              setState(() {
+                selectAll = value ?? false;
+                if (selectAll) {
+                  selectedCandidates = currentPageUsers.map((c) => c['studentno'].toString()).toList();
+                } else {
+                  selectedCandidates.clear();
+                }
+              });
+            },
+          ),
+          const Text('Select All'),
+          SizedBox(width: 5,),
+          SizedBox(
+            child: TextButton(
+              style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.all(10.0),
+                backgroundColor: Colors.black,
+              ),
+              onPressed: _showDeleteSelectedConfirmation,
+              child: const Text(
+                'Delete Selected',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 5,),
+          SizedBox(
+            child: TextButton(
+              style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.all(10.0),
+                backgroundColor: Colors.black,
+              ),
+              onPressed: _showResetVotesConfirmation,
+              child: const Text(
+                'Reset Votes',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+              const SizedBox(height: 16.0),
+              Expanded(
+        child: ListView.builder(
+      itemCount: currentPageUsers.length,
+      itemBuilder: (context, index) {
+        final candidate = currentPageUsers[index];
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CandidateDetailPage(candidate: candidate),
+              ),
+            );
+          },
+          child: Card(
+            color: Colors.white,
+            elevation: 2,
+            child: ListTile(
+              leading: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Checkbox(
+                    value: selectedCandidates.contains(candidate['studentno'].toString()),
+                    onChanged: (bool? value) {
                       setState(() {
-                        selectedPosition = newValue;
-                        _filterCandidates();
+                        if (value ?? false) {
+                          selectedCandidates.add(candidate['studentno'].toString());
+                        } else {
+                          selectedCandidates.remove(candidate['studentno'].toString());
+                        }
+                        selectAll = selectedCandidates.length == currentPageUsers.length;
                       });
                     },
-                    // dropdownColor: const Color(0xFF1E3A8A),
-                    style: const TextStyle(color: Colors.black),
+                  ),
+                  CircleAvatar(
+                    backgroundImage: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
+                        ? NetworkImage(candidate['image_url'])
+                        : const AssetImage('assets/bcp_logo.png') as ImageProvider,
                   ),
                 ],
               ),
-            const SizedBox(height: 16.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                padding: const EdgeInsets.all(10.0),
-                                backgroundColor: Colors.black,
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const PositionsPage()),
-                                );
-                              },
-                              child: const Text('Positions', 
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                const SizedBox(width: 10.0),
-                SizedBox(
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                padding: const EdgeInsets.all(10.0),
-                                backgroundColor: Colors.black,
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const PartyListPage()),
-                                );
-                              },
-                              child: const Text('Partylists', 
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-              ],
-            ),
-            SizedBox(height: 10,),
-            Row(
-      children: [
-        Checkbox(
-          value: selectAll,
-          onChanged: (bool? value) {
-            setState(() {
-              selectAll = value ?? false;
-              if (selectAll) {
-                selectedCandidates = currentPageUsers.map((c) => c['studentno'].toString()).toList();
-              } else {
-                selectedCandidates.clear();
-              }
-            });
-          },
-        ),
-        const Text('Select All'),
-        SizedBox(width: 5,),
-        SizedBox(
-          child: TextButton(
-            style: TextButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              padding: const EdgeInsets.all(10.0),
-              backgroundColor: Colors.black,
-            ),
-            onPressed: _showDeleteSelectedConfirmation,
-            child: const Text(
-              'Delete Selected',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-        SizedBox(width: 5,),
-        SizedBox(
-          child: TextButton(
-            style: TextButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              padding: const EdgeInsets.all(10.0),
-              backgroundColor: Colors.black,
-            ),
-            onPressed: _showResetVotesConfirmation,
-            child: const Text(
-              'Reset Votes',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-            const SizedBox(height: 16.0),
-            Expanded(
-  child: ListView.builder(
-    itemCount: currentPageUsers.length,
-    itemBuilder: (context, index) {
-      final candidate = currentPageUsers[index];
-      return GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CandidateDetailPage(candidate: candidate),
-            ),
-          );
-        },
-        child: Card(
-          color: Colors.white,
-          elevation: 2,
-          child: ListTile(
-            leading: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Checkbox(
-                  value: selectedCandidates.contains(candidate['studentno'].toString()),
-                  onChanged: (bool? value) {
-                    setState(() {
-                      if (value ?? false) {
-                        selectedCandidates.add(candidate['studentno'].toString());
-                      } else {
-                        selectedCandidates.remove(candidate['studentno'].toString());
-                      }
-                      selectAll = selectedCandidates.length == currentPageUsers.length;
-                    });
-                  },
+              title: Text(
+                '${candidate['firstname']} ${candidate['lastname']}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
-                CircleAvatar(
-                  backgroundImage: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
-                      ? NetworkImage(candidate['image_url'])
-                      : const AssetImage('assets/bcp_logo.png') as ImageProvider,
-                ),
-              ],
-            ),
-            title: Text(
-              '${candidate['firstname']} ${candidate['lastname']}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
               ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Student No: ${candidate['studentno']}'),
-                Text('Position: ${candidate['position']}'),
-              ],
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.black),
-                  onPressed: () {
-                    _showUpdateForm(candidate);
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.black),
-                  onPressed: () {
-                    _showDeleteConfirmation(candidate['studentno']);
-                  },
-                ),
-              ],
-            ),
-            isThreeLine: true,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          ),
-        ),
-      );
-    },
-  ),
-),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.black),
-                    onPressed: currentPage > 0 ? () {
-                    setState(() {
-                      currentPage--;
-                    });
-                  } : null,
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Student No: ${candidate['studentno']}'),
+                  Text('Position: ${candidate['position']}'),
+                ],
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.black),
+                    onPressed: () {
+                      _showUpdateForm(candidate);
+                    },
                   ),
-                Text('Page ${currentPage + 1} of $totalPages'),
-                IconButton(
-                    icon: const Icon(Icons.arrow_forward, color: Colors.black),
-                    onPressed: currentPage < totalPages - 1 ? () {
-                    setState(() {
-                      currentPage++;
-                    });
-                  } : null,
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.black),
+                    onPressed: () {
+                      _showDeleteConfirmation(candidate['studentno']);
+                    },
                   ),
-              ],
+                ],
+              ),
+              isThreeLine: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             ),
-          ],
+          ),
+        );
+      },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => NewCandidatePage()),
-              );
-        },
-        backgroundColor: Colors.black,
-        child: Icon(Icons.add, color: Colors.white),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.black),
+                      onPressed: currentPage > 0 ? () {
+                      setState(() {
+                        currentPage--;
+                      });
+                    } : null,
+                    ),
+                  Text('Page ${currentPage + 1} of $totalPages'),
+                  IconButton(
+                      icon: const Icon(Icons.arrow_forward, color: Colors.black),
+                      onPressed: currentPage < totalPages - 1 ? () {
+                      setState(() {
+                        currentPage++;
+                      });
+                    } : null,
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => NewCandidatePage()),
+                );
+          },
+          backgroundColor: Colors.black,
+          child: Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }

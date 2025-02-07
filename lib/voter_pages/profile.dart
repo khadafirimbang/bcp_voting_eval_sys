@@ -231,188 +231,190 @@ class _ProfileInfoState extends State<ProfileInfo> {
   Widget build(BuildContext context) {
     bool isDisabled = accountStatus == "Verified"; // Check if account status is verified
 
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
-        child: Container(
-          alignment: Alignment.center, // Align the AppBar in the center
-            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-            decoration: BoxDecoration(
-              color: Colors.white, 
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3), // Shadow color
-                  blurRadius: 8, // Blur intensity
-                  spreadRadius: 1, // Spread radius
-                  offset: const Offset(0, 4), // Vertical shadow position
-                ),
-              ],
-            ),
-          child: AppBar(
-            titleSpacing: -5,
-                        backgroundColor: Colors.transparent, // Make inner AppBar transparent
-                        elevation: 0, // Remove shadow
-                        title: const Text(
-                          'Student Information',
-                          style: TextStyle(fontSize: 18, color: Colors.black54),
-                        ),
-                        iconTheme: const IconThemeData(color: Colors.black45),
-            leading: Builder(
-              builder: (BuildContext context) {
-                return IconButton(
-                  icon: const Icon(Icons.menu),
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer(); // Use this context
-                  },
-                );
-              }
+    return SafeArea(
+      child: Scaffold(
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Container(
+            alignment: Alignment.center, // Align the AppBar in the center
+              margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+              decoration: BoxDecoration(
+                color: Colors.white, 
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3), // Shadow color
+                    blurRadius: 8, // Blur intensity
+                    spreadRadius: 1, // Spread radius
+                    offset: const Offset(0, 4), // Vertical shadow position
+                  ),
+                ],
+              ),
+            child: AppBar(
+              titleSpacing: -5,
+                          backgroundColor: Colors.transparent, // Make inner AppBar transparent
+                          elevation: 0, // Remove shadow
+                          title: const Text(
+                            'Student Information',
+                            style: TextStyle(fontSize: 18, color: Colors.black54),
+                          ),
+                          iconTheme: const IconThemeData(color: Colors.black45),
+              leading: Builder(
+                builder: (BuildContext context) {
+                  return IconButton(
+                    icon: const Icon(Icons.menu),
+                    onPressed: () {
+                      Scaffold.of(context).openDrawer(); // Use this context
+                    },
+                  );
+                }
+              ),
             ),
           ),
         ),
-      ),
-      drawer: const AppDrawer(),
-      body: SingleChildScrollView(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Column(
-              children: [
-                const SizedBox(height: 80),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Please enter your Information',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 23,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 340,
-                        child: TextFormField(
-                          enabled: !isDisabled, // Disable if verified
-                          keyboardType: TextInputType.text,
-                          controller: firstnameController,
-                          decoration: const InputDecoration(labelText: 'First Name'),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'First Name is required';
-                            }
-                            return null; // Return null if no validation error
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 340,
-                        child: TextFormField(
-                          enabled: !isDisabled, // Disable if verified
-                          keyboardType: TextInputType.text,
-                          controller: middlenameController,
-                          decoration: const InputDecoration(labelText: 'Middle Name'),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Middle Name is required';
-                            }
-                            return null; // Return null if no validation error
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 340,
-                        child: TextFormField(
-                          enabled: !isDisabled, // Disable if verified
-                          keyboardType: TextInputType.text,
-                          controller: lastnameController,
-                          decoration: const InputDecoration(labelText: 'Last Name'),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Last Name is required';
-                            }
-                            return null; // Return null if no validation error
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 340,
-                        child: TextFormField(
-                          enabled: !isDisabled, // Disable if verified
-                          keyboardType: TextInputType.text,
-                          controller: courseController,
-                          decoration: const InputDecoration(labelText: 'Course'),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Course is required';
-                            }
-                            return null; // Return null if no validation error
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 340,
-                        child: TextFormField(
-                          enabled: !isDisabled, // Disable if verified
-                          keyboardType: TextInputType.text,
-                          controller: sectionController,
-                          decoration: const InputDecoration(labelText: 'Section'),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Section is required';
-                            }
-                            return null; // Return null if no validation error
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          const Text('Account status: '),
-                          Text(
-                          statusController.text,
+        drawer: const AppDrawer(),
+        body: SingleChildScrollView(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                children: [
+                  const SizedBox(height: 80),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Please enter your Information',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: statusController.text == 'Verified' ? Colors.green : Colors.red,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 23,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: isDisabled
-                            ? null // Disable button if verified
-                            : () {
-                                _showConfirmationDialog(context); // Show confirmation dialog
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1E3A8A), // Button color
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: 340,
+                          child: TextFormField(
+                            enabled: !isDisabled, // Disable if verified
+                            keyboardType: TextInputType.text,
+                            controller: firstnameController,
+                            decoration: const InputDecoration(labelText: 'First Name'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'First Name is required';
+                              }
+                              return null; // Return null if no validation error
+                            },
+                          ),
                         ),
-                        child: const Text('Update Information', style: TextStyle(color: Colors.white),),
-                      ),
-                    ],
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: 340,
+                          child: TextFormField(
+                            enabled: !isDisabled, // Disable if verified
+                            keyboardType: TextInputType.text,
+                            controller: middlenameController,
+                            decoration: const InputDecoration(labelText: 'Middle Name'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Middle Name is required';
+                              }
+                              return null; // Return null if no validation error
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: 340,
+                          child: TextFormField(
+                            enabled: !isDisabled, // Disable if verified
+                            keyboardType: TextInputType.text,
+                            controller: lastnameController,
+                            decoration: const InputDecoration(labelText: 'Last Name'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Last Name is required';
+                              }
+                              return null; // Return null if no validation error
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: 340,
+                          child: TextFormField(
+                            enabled: !isDisabled, // Disable if verified
+                            keyboardType: TextInputType.text,
+                            controller: courseController,
+                            decoration: const InputDecoration(labelText: 'Course'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Course is required';
+                              }
+                              return null; // Return null if no validation error
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: 340,
+                          child: TextFormField(
+                            enabled: !isDisabled, // Disable if verified
+                            keyboardType: TextInputType.text,
+                            controller: sectionController,
+                            decoration: const InputDecoration(labelText: 'Section'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Section is required';
+                              }
+                              return null; // Return null if no validation error
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            const Text('Account status: '),
+                            Text(
+                            statusController.text,
+                            style: TextStyle(
+                              color: statusController.text == 'Verified' ? Colors.green : Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: isDisabled
+                              ? null // Disable button if verified
+                              : () {
+                                  _showConfirmationDialog(context); // Show confirmation dialog
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1E3A8A), // Button color
+                          ),
+                          child: const Text('Update Information', style: TextStyle(color: Colors.white),),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                const WarningBox(), // Warning box
-              ],
-            ),
-          ],
+                  const SizedBox(height: 20),
+                  const WarningBox(), // Warning box
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
-    floatingActionButton: FloatingActionButton(
-      backgroundColor: Colors.black,
-      foregroundColor: Colors.white,
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()),
-          );
-        },
-        child: Icon(Icons.chat_outlined),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotScreen()),
+            );
+          },
+          child: Icon(Icons.chat_outlined),
+        ),
       ),
     );
   }

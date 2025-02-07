@@ -59,66 +59,68 @@ class _ResultAdminPageState extends State<ResultAdminPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Election Result',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+              ],
+            )
+          ),
+        ),
+        drawer: const AppDrawerAdmin(),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                _electionName, // Display the election name
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+              const SizedBox(height: 16.0), // Add some spacing
+              Card(color: Colors.white,
+                    elevation: 2,child: buildChart('Voting Results for President', _presidentVotes)),
+              Card(color: Colors.white,
+                    elevation: 2,child: buildChart('Voting Results for Vice President', _vpVotes)),
+              Card(color: Colors.white,
+                    elevation: 2,child: buildChart('Voting Results for Secretary', _secretaryVotes)),
+              Card(color: Colors.white,
+                    elevation: 2,child: buildChart('Voting Results for Treasurer', _treasurerVotes)),
+              Card(color: Colors.white,
+                    elevation: 2,child: buildChart('Voting Results for Auditor', _auditorVotes)),
             ],
           ),
-          child: Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Election Result',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-            ],
-          )
-        ),
-      ),
-      drawer: const AppDrawerAdmin(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              _electionName, // Display the election name
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16.0), // Add some spacing
-            Card(color: Colors.white,
-                  elevation: 2,child: buildChart('Voting Results for President', _presidentVotes)),
-            Card(color: Colors.white,
-                  elevation: 2,child: buildChart('Voting Results for Vice President', _vpVotes)),
-            Card(color: Colors.white,
-                  elevation: 2,child: buildChart('Voting Results for Secretary', _secretaryVotes)),
-            Card(color: Colors.white,
-                  elevation: 2,child: buildChart('Voting Results for Treasurer', _treasurerVotes)),
-            Card(color: Colors.white,
-                  elevation: 2,child: buildChart('Voting Results for Auditor', _auditorVotes)),
-          ],
         ),
       ),
     );

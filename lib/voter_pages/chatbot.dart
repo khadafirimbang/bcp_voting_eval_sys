@@ -133,122 +133,124 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Chatbot Assistant'),
-        centerTitle: true,
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                // Chat messages list
-                Expanded(
-                  flex: 3,
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    itemCount: _messages.length + (_isTyping ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index < _messages.length) {
-                        return _buildMessageBubble(_messages[index]);
-                      } else {
-                        return _buildTypingIndicator();
-                      }
-                    },
-                  ),
-                ),
-
-                // Type selection buttons or questions
-                if (_selectedType == null) ...[
-                  // Type selection column
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Chatbot Assistant'),
+          centerTitle: true,
+        ),
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  // Chat messages list
                   Expanded(
-                    flex: 1,
+                    flex: 3,
                     child: ListView.builder(
-                      itemCount: ChatbotData.getUniqueTypes().length,
+                      controller: _scrollController,
+                      itemCount: _messages.length + (_isTyping ? 1 : 0),
                       itemBuilder: (context, index) {
-                        var type = ChatbotData.getUniqueTypes()[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                          child: ElevatedButton(
-                            onPressed: _isTyping
-                                ? null
-                                : () {
-                                    setState(() {
-                                      _selectedType = type;
-                                    });
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: Size(double.infinity, 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            child: Text(
-                              type,
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        );
+                        if (index < _messages.length) {
+                          return _buildMessageBubble(_messages[index]);
+                        } else {
+                          return _buildTypingIndicator();
+                        }
                       },
                     ),
                   ),
-                ] else ...[
-                  // Display questions for selected type
-                  Expanded(
-                    flex: 1,
-                    child: ListView.builder(
-                      itemCount: ChatbotData.getQuestionsByType(_selectedType!).length,
-                      itemBuilder: (context, index) {
-                        var question = ChatbotData.getQuestionsByType(_selectedType!)[index]['question']!;
-                        var answer = ChatbotData.getQuestionsByType(_selectedType!)[index]['answer']!;
-
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                          child: ElevatedButton(
-                            onPressed: _isTyping
-                                ? null
-                                : () => _sendPredefinedMessage(question, answer),
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: Size(double.infinity, 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+      
+                  // Type selection buttons or questions
+                  if (_selectedType == null) ...[
+                    // Type selection column
+                    Expanded(
+                      flex: 1,
+                      child: ListView.builder(
+                        itemCount: ChatbotData.getUniqueTypes().length,
+                        itemBuilder: (context, index) {
+                          var type = ChatbotData.getUniqueTypes()[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                            child: ElevatedButton(
+                              onPressed: _isTyping
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        _selectedType = type;
+                                      });
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: Size(double.infinity, 50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Text(
+                                type,
+                                style: TextStyle(fontSize: 16),
                               ),
                             ),
-                            child: Text(
-                              question,
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  // Back to Type Selection button
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: _isTyping
-                          ? null
-                          : () {
-                              setState(() {
-                                _selectedType = null;
-                              });
-                            },
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                  ] else ...[
+                    // Display questions for selected type
+                    Expanded(
+                      flex: 1,
+                      child: ListView.builder(
+                        itemCount: ChatbotData.getQuestionsByType(_selectedType!).length,
+                        itemBuilder: (context, index) {
+                          var question = ChatbotData.getQuestionsByType(_selectedType!)[index]['question']!;
+                          var answer = ChatbotData.getQuestionsByType(_selectedType!)[index]['answer']!;
+      
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                            child: ElevatedButton(
+                              onPressed: _isTyping
+                                  ? null
+                                  : () => _sendPredefinedMessage(question, answer),
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: Size(double.infinity, 50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Text(
+                                question,
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    // Back to Type Selection button
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed: _isTyping
+                            ? null
+                            : () {
+                                setState(() {
+                                  _selectedType = null;
+                                });
+                              },
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          'Back to Type Selection',
+                          style: TextStyle(fontSize: 16),
                         ),
                       ),
-                      child: Text(
-                        'Back to Type Selection',
-                        style: TextStyle(fontSize: 16),
-                      ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
-            ),
+              ),
+      ),
     );
   }
 

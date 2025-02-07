@@ -246,63 +246,65 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
-        title: const Text('Add New Candidate', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      drawer: AppDrawerAdmin(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
-                spreadRadius: 5,
-                blurRadius: 7,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(30.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _buildTextField(_studentNoController, 'Student No', 8),
-                    _buildTextField(_firstNameController, 'First Name'),
-                    _buildTextField(_middleNameController, 'Middle Name'),
-                    _buildTextField(_lastNameController, 'Last Name'),
-                    _buildTextField(_sectionController, 'Section'),
-                    _buildTextField(_courseController, 'Course'),
-                    _buildTextField(_sloganController, 'Slogan'),
-                    _buildDropdownFieldPosition(),
-                    _buildDropdownFieldPartylist(),
-                    const SizedBox(height: 10),
-                    _buildImageUploadSection(),
-                    const SizedBox(height: 20),
-                    _buildSubmitButton(),
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const CandidatesPage()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF1E3A8A),
+          title: const Text('Add New Candidate', style: TextStyle(color: Colors.white)),
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
+        drawer: AppDrawerAdmin(),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(30.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _buildTextField(_studentNoController, 'Student No', 8),
+                      _buildTextField(_firstNameController, 'First Name'),
+                      _buildTextField(_middleNameController, 'Middle Name'),
+                      _buildTextField(_lastNameController, 'Last Name'),
+                      _buildTextField(_sectionController, 'Section'),
+                      _buildTextField(_courseController, 'Course'),
+                      _buildTextField(_sloganController, 'Slogan'),
+                      _buildDropdownFieldPosition(),
+                      _buildDropdownFieldPartylist(),
+                      const SizedBox(height: 10),
+                      _buildImageUploadSection(),
+                      const SizedBox(height: 20),
+                      _buildSubmitButton(),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const CandidatesPage()),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text('Cancel', style: TextStyle(color: Colors.white)),
                       ),
-                      child: const Text('Cancel', style: TextStyle(color: Colors.white)),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
