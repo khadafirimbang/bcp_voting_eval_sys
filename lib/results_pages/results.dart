@@ -111,7 +111,7 @@ class _ResultsPageState extends State<ResultsPage> {
                 ),
                 const Text(
                   'Election Results',
-                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                  style: TextStyle(fontSize: 16, color: Colors.black54),
                 ),
                   ],
                 ),
@@ -139,47 +139,59 @@ class _ResultsPageState extends State<ResultsPage> {
         ),
         drawer: const AppDrawer(),
         body: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.all(10.0),
-                    backgroundColor: Colors.black,
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ElectionHistory()),
-                    );
-                  },
-                  child: const Text(
-                    'Election History',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
+              
+              Card(
+                elevation: 2,
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 60),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            padding: const EdgeInsets.all(10.0),
+                            backgroundColor: Colors.black,
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => ElectionHistory()),
+                            );
+                          },
+                          child: const Text(
+                            'Election History',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Voters: $totalVoters - 100%',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        'Voted: $totalVoted - ${votedPercentage.toStringAsFixed(1)}%',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        'Not Voted Yet: $totalNotVoted - ${notVotedPercentage.toStringAsFixed(1)}%',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Total Voters: $totalVoters - 100%',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                'Total Voted: $totalVoted - ${votedPercentage.toStringAsFixed(1)}%',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                'Total Not Voted Yet: $totalNotVoted - ${notVotedPercentage.toStringAsFixed(1)}%',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               
               SizedBox(height: 20),
