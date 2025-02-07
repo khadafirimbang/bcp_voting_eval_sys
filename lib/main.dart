@@ -15,7 +15,7 @@ class LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'BCP',
+      title: 'SSCVote',
       home: LoadingScreenWidget(),
       debugShowCheckedModeBanner: false,
     );

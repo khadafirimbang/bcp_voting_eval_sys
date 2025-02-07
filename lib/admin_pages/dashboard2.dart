@@ -339,7 +339,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
                       children: [
                         Expanded(
                           child: buildBarGraph("President", presidentData,
-                          () { Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAdminPage()),
+                          () { Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()),
                         ); 
                       },
                           ),
@@ -347,7 +347,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: buildBarGraph("Vice President", vicePresidentData,
-                          () { Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAdminPage()),
+                          () { Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()),
                         ); 
                       },
                       ),
@@ -357,13 +357,13 @@ class _DashboardPage2State extends State<DashboardPage2> {
                   : Column(
                       children: [
                         buildBarGraph("President", presidentData,
-                        () { Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAdminPage()),
+                        () { Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()),
                         ); 
                       },
                         ),
                         const SizedBox(height: 20),
                         buildBarGraph("Vice President", vicePresidentData,
-                        () { Navigator.push(context, MaterialPageRoute(builder: (context) => const ResultAdminPage()),
+                        () { Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()),
                         ); 
                       },
                         ),

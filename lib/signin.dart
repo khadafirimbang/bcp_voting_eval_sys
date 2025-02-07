@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:for_testing/admin_pages/dashboard.dart';
 import 'package:for_testing/admin_pages/dashboard2.dart';
 import 'package:for_testing/voter_pages/announcement.dart';
@@ -38,7 +39,7 @@ class _LoginWidgetState extends State<LoginWidget> {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'BCP',
+      title: 'SSCVote',
       home: LoginWidgetWidget(),
     );
   }
@@ -59,6 +60,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
   bool isConnectedToInternet = false;
   bool _isLoading = false; // Add this variable
   StreamSubscription? _internetConnectionStreamSubcription;
+  FocusNode _focusNode = FocusNode();
 
   void _togglePasswordVisibility() {
     setState(() {
@@ -141,106 +143,115 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Center(
-          child: SingleChildScrollView(
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              width: 400,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset(
-                    'assets/bcp_logo.png',
-                    width: 100,
-                  ),
-                  const SizedBox(height: 30),
-                  const Text(
-                    'Login your Account',
-                    style: TextStyle(
-                      fontSize: 23,
-                      fontWeight: FontWeight.w600,
+        body: KeyboardListener(
+          focusNode: _focusNode,
+          autofocus: true,
+          onKeyEvent: (KeyEvent event) {
+            if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
+              _login();
+            }
+          },
+          child: Center(
+            child: SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.all(16.0),
+                width: 400,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/bcp_logo.png',
+                      width: 100,
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: _studentNoController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Student Number',
-                            prefixIcon: const Icon(Icons.person),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your student number';
-                            }
-                            if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
-                              return 'Student number must be numeric';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: _obscureText,
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            prefixIcon: const Icon(Icons.lock),
-                            suffixIcon: IconButton(
-                              icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off),
-                              onPressed: _togglePasswordVisibility,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        // Show loading indicator if _isLoading is true
-                        if (_isLoading)
-                          const CircularProgressIndicator()
-                        else
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(double.infinity, 50),
-                              backgroundColor: Color(0xFF313131),
-                              shape: RoundedRectangleBorder(
+                    const SizedBox(height: 30),
+                    const Text(
+                      'Login your Account',
+                      style: TextStyle(
+                        fontSize: 23,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _studentNoController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: 'Student Number',
+                              prefixIcon: const Icon(Icons.person),
+                              border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
-                            onPressed: _login,
-                            child: const Text(
-                              'Login',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your student number';
+                              }
+                              if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                                return 'Student number must be numeric';
+                              }
+                              return null;
+                            },
                           ),
-                        const SizedBox(height: 10),
-                        // TextButton(
-                        //   onPressed: () {
-                        //     // Navigator.push(
-                        //     //   context,
-                        //     //   MaterialPageRoute(builder: (context) => const SignUpPage()),
-                        //     // );
-                        //   },
-                        //   child: const Text('Forgot Password', style: TextStyle(color: Colors.black)),
-                        // ),
-                      ],
+                          const SizedBox(height: 10),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscureText,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              prefixIcon: const Icon(Icons.lock),
+                              suffixIcon: IconButton(
+                                icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off),
+                                onPressed: _togglePasswordVisibility,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your password';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          // Show loading indicator if _isLoading is true
+                          if (_isLoading)
+                            const CircularProgressIndicator()
+                          else
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: const Size(double.infinity, 50),
+                                backgroundColor: Color(0xFF313131),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
+                              onPressed: _login,
+                              child: const Text(
+                                'Login',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          const SizedBox(height: 10),
+                          // TextButton(
+                          //   onPressed: () {
+                          //     // Navigator.push(
+                          //     //   context,
+                          //     //   MaterialPageRoute(builder: (context) => const SignUpPage()),
+                          //     // );
+                          //   },
+                          //   child: const Text('Forgot Password', style: TextStyle(color: Colors.black)),
+                          // ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
