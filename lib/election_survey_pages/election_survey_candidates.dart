@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:for_testing/main.dart';
+import 'package:for_testing/voter_pages/announcement.dart';
 import 'package:for_testing/voter_pages/drawerbar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -130,24 +132,29 @@ class _ElectionSurveyCandidatesState extends State<ElectionSurveyCandidates> {
               ],
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                  onPressed: () {
-                    _scaffoldKey.currentState?.openDrawer();
-                  },
-                  icon: const Icon(Icons.menu, color: Colors.black45),
-                ),
-                const Text(
-                  'Election Survey',
-                  style: TextStyle(fontSize: 18, color: Colors.black54),
-                ),
-                  ],
-                ),
-              ],
-            )
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+                icon: const Icon(Icons.menu, color: Colors.black45),
+              ),
+              const Text(
+                'Election Survey',
+                style: TextStyle(fontSize: 18, color: Colors.black54),
+              ),
+                ],
+              ),
+              Row(
+                children: [
+                  _buildProfileMenu(context)
+                ],
+              )
+            ],
+          )
           ),
         ),
         drawer: const AppDrawer(),
@@ -155,33 +162,40 @@ class _ElectionSurveyCandidatesState extends State<ElectionSurveyCandidates> {
             ? Center(child: CircularProgressIndicator())
             : Padding(
               padding: const EdgeInsets.all(16.0),
-              child: ListView(
-                  children: candidatesByPosition.entries.map((entry) {
-                    String position = entry.key;
-                    List<dynamic> positionCandidates = entry.value;
-              
-                    return ExpansionTile(
-                      title: Text(position),
-                      children: positionCandidates.map((candidate) {
-                        String candidateId = candidate['studentno'].toString();
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage(candidate['image_url'] ?? ''),
-                            child: candidate['image_url'] == null ? Icon(Icons.person) : null,
-                          ),
-                          title: Text('${candidate['firstname']} ${candidate['lastname']}'),
-                          subtitle: Text('Party: ${candidate['partylist']}'),
-                          trailing: Checkbox(
-                            value: selectedCandidates[position]?.contains(candidateId) ?? false,
-                            onChanged: (bool? isSelected) {
-                              onCandidateSelected(position, candidateId, isSelected ?? false);
-                            },
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  }).toList(),
-                ),
+              child: Column(
+                children: [
+                  Text("This is only a survey, please select the Candidates and Partyist you prefer", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                  Expanded(
+                    child: ListView(
+                        children: candidatesByPosition.entries.map((entry) {
+                          String position = entry.key;
+                          List<dynamic> positionCandidates = entry.value;
+                    
+                          return ExpansionTile(
+                            title: Text(position),
+                            children: positionCandidates.map((candidate) {
+                              String candidateId = candidate['studentno'].toString();
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  backgroundImage: NetworkImage(candidate['image_url'] ?? ''),
+                                  child: candidate['image_url'] == null ? Icon(Icons.person) : null,
+                                ),
+                                title: Text('${candidate['firstname']} ${candidate['lastname']}'),
+                                subtitle: Text('Party: ${candidate['partylist']}'),
+                                trailing: Checkbox(
+                                  value: selectedCandidates[position]?.contains(candidateId) ?? false,
+                                  onChanged: (bool? isSelected) {
+                                    onCandidateSelected(position, candidateId, isSelected ?? false);
+                                  },
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        }).toList(),
+                      ),
+                  ),
+                ],
+              ),
             ),
         floatingActionButton: FloatingActionButton(
           onPressed: onNext,
@@ -304,22 +318,29 @@ class _ElectionSurveyPartylistState extends State<ElectionSurveyPartylist> {
             ? Center(child: CircularProgressIndicator())
             : Padding(
               padding: const EdgeInsets.all(16.0),
-              child: ListView(
-                  children: partyLists.map((party) {
-                    return ListTile(
-                      title: Text(party['name']),
-                      leading: Radio<String>(
-                        value: party['id'].toString(),
-                        groupValue: selectedPartylist,
-                        onChanged: (String? value) {
-                          setState(() {
-                            selectedPartylist = value;
-                          });
-                        },
+              child: Column(
+                children: [
+                  Text("This is only a survey, please select the Candidates and Partyist you prefer", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                  Expanded(
+                    child: ListView(
+                        children: partyLists.map((party) {
+                          return ListTile(
+                            title: Text(party['name']),
+                            leading: Radio<String>(
+                              value: party['id'].toString(),
+                              groupValue: selectedPartylist,
+                              onChanged: (String? value) {
+                                setState(() {
+                                  selectedPartylist = value;
+                                });
+                              },
+                            ),
+                          );
+                        }).toList(),
                       ),
-                    );
-                  }).toList(),
-                ),
+                  ),
+                ],
+              ),
             ),
         floatingActionButton: FloatingActionButton(
           onPressed: onSubmit,
@@ -390,3 +411,82 @@ class ParticipationMessage extends StatelessWidget {
     );
   }
 }
+
+Widget _buildProfileMenu(BuildContext context) {
+    return PopupMenuButton<int>(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      onSelected: (item) {
+        switch (item) {
+          case 0:
+            // Navigate to Profile page
+            // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
+            break;
+          case 1:
+            // Handle sign out
+            _logout(context); // Example action for Sign Out
+            break;
+        }
+      },
+      offset: Offset(0, 50), // Adjust dropdown position
+      itemBuilder: (context) => [
+        PopupMenuItem<int>(
+          padding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+          value: 0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Signed in as', style: TextStyle(color: Colors.black54)),
+              Text(studentNo ?? 'Unknown'),
+            ],
+          ),
+        ),
+        PopupMenuDivider(),
+        PopupMenuItem<int>(
+          value: 0,
+          child: Row(
+            children: [
+              Icon(Icons.person, color: Colors.black54),
+              SizedBox(width: 10),
+              Text('Profile'),
+            ],
+          ),
+        ),
+        PopupMenuItem<int>(
+          value: 1,
+          child: Row(
+            children: [
+              Icon(Icons.logout, color: Colors.black54),
+              SizedBox(width: 10),
+              Text('Sign out'),
+            ],
+          ),
+        ),
+      ],
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.white,
+            child: Icon(Icons.person, color: Colors.black54),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  void _logout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    if (!context.mounted) return; // Ensure the widget is still mounted
+
+    // Use pushAndRemoveUntil to clear the navigation stack
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoadingScreen()), // Replace with your login page
+      (Route<dynamic> route) => false, // Remove all previous routes
+    );
+  }

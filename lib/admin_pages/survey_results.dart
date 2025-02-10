@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:for_testing/admin_pages/dashboard2.dart';
 import 'package:for_testing/admin_pages/drawerbar_admin.dart';
+import 'package:for_testing/main.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SurveyResponseGraph extends StatelessWidget {
   final String question;
@@ -223,7 +227,8 @@ class _SurveyResultsPageState extends State<SurveyResultsPage> {
                   children: [
                     IconButton(onPressed: (){
                       fetchSurveyData();
-                    }, icon: const Icon(Icons.refresh))
+                    }, icon: const Icon(Icons.refresh)),
+                    _buildProfileMenu(context)
                   ],
                 )
               ],
@@ -297,3 +302,82 @@ class _SurveyResultsPageState extends State<SurveyResultsPage> {
     );
   }
 }
+
+Widget _buildProfileMenu(BuildContext context) {
+    return PopupMenuButton<int>(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      onSelected: (item) {
+        switch (item) {
+          case 0:
+            // Navigate to Profile page
+            // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePagsse()));
+            break;
+          case 1:
+            // Handle sign out
+            _logout(context); // Example action for Sign Out
+            break;
+        }
+      },
+      offset: Offset(0, 50), // Adjust dropdown position
+      itemBuilder: (context) => [
+        PopupMenuItem<int>(
+          padding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+          value: 0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Signed in as', style: TextStyle(color: Colors.black54)),
+              Text(studentNo ?? 'Unknown'),
+            ],
+          ),
+        ),
+        PopupMenuDivider(),
+        PopupMenuItem<int>(
+          value: 0,
+          child: Row(
+            children: [
+              Icon(Icons.person, color: Colors.black54),
+              SizedBox(width: 10),
+              Text('Profile'),
+            ],
+          ),
+        ),
+        PopupMenuItem<int>(
+          value: 1,
+          child: Row(
+            children: [
+              Icon(Icons.logout, color: Colors.black54),
+              SizedBox(width: 10),
+              Text('Sign out'),
+            ],
+          ),
+        ),
+      ],
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.white,
+            child: Icon(Icons.person, color: Colors.black54),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  void _logout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    if (!context.mounted) return; // Ensure the widget is still mounted
+
+    // Use pushAndRemoveUntil to clear the navigation stack
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoadingScreen()), // Replace with your login page
+      (Route<dynamic> route) => false, // Remove all previous routes
+    );
+  }

@@ -21,7 +21,7 @@ class AppDrawerAdmin extends StatefulWidget {
 }
 
 class _AppDrawerState extends State<AppDrawerAdmin> {
-  String? studentNo = "Name here"; // Default value
+  String? studentNo = "Unknown"; // Default value
 
   @override
   void initState() {
@@ -55,7 +55,83 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
     );
   }
 
-
+  Widget _buildProfileMenu(BuildContext context) {
+    return PopupMenuButton<int>(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      onSelected: (item) {
+        switch (item) {
+          case 0:
+            // Navigate to Profile page
+            // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
+            break;
+          case 1:
+            // Handle sign out
+            _logout(context); // Example action for Sign Out
+            break;
+        }
+      },
+      offset: Offset(0, 50), // Adjust dropdown position
+      itemBuilder: (context) => [
+        PopupMenuItem<int>(
+          value: 0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Signed in as', style: TextStyle(color: Colors.black54)),
+              Text('Student num here', style: TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ),
+        PopupMenuDivider(),
+        PopupMenuItem<int>(
+          value: 0,
+          child: Row(
+            children: [
+              Icon(Icons.person, color: Colors.black54),
+              SizedBox(width: 10),
+              Text('Profile'),
+            ],
+          ),
+        ),
+        PopupMenuItem<int>(
+          value: 1,
+          child: Row(
+            children: [
+              Icon(Icons.logout, color: Colors.black54),
+              SizedBox(width: 10),
+              Text('Sign out'),
+            ],
+          ),
+        ),
+      ],
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.white,
+            child: Icon(Icons.person, color: Colors.black54),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: Colors.green,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -94,40 +170,40 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const CandidatesPage()));
             },
           ),        
-          const SizedBox(height: 10,),
-          ListTile(
-            leading: const Icon(Icons.chat, color: Colors.black,),
-            title: const Text('Chatbot Management', style: TextStyle(color: Colors.black)),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotAdminPage()));
-            },
-          ),        
-          const SizedBox(height: 10,),
-          ExpansionTile(
-            collapsedIconColor: Colors.black,
-            leading: const Icon(Icons.contact_emergency_sharp, color: Colors.black,),
-            title: const Text('Voters', style: TextStyle(color: Colors.black)),
-            childrenPadding: const EdgeInsets.only(left: 37),
-            children: [
-              ListTile(
-              leading: const Icon(Icons.people, color: Colors.black,),
-              title: const Text('Verified Voters', style: TextStyle(color: Colors.black)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const VotersPage()));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.people_outline, color: Colors.black,),
-              title: const Text('Unverified Voters', style: TextStyle(color: Colors.black)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const PendingVotersPage()));
-              },
-            ),
-            ],
-          ),
+          // const SizedBox(height: 10,),
+          // ListTile(
+          //   leading: const Icon(Icons.chat, color: Colors.black,),
+          //   title: const Text('Chatbot Management', style: TextStyle(color: Colors.black)),
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //     Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotAdminPage()));
+          //   },
+          // ),        
+          // const SizedBox(height: 10,),
+          // ExpansionTile(
+          //   collapsedIconColor: Colors.black,
+          //   leading: const Icon(Icons.contact_emergency_sharp, color: Colors.black,),
+          //   title: const Text('Voters', style: TextStyle(color: Colors.black)),
+          //   childrenPadding: const EdgeInsets.only(left: 37),
+          //   children: [
+          //     ListTile(
+          //     leading: const Icon(Icons.people, color: Colors.black,),
+          //     title: const Text('Verified Voters', style: TextStyle(color: Colors.black)),
+          //     onTap: () {
+          //       Navigator.pop(context);
+          //       Navigator.push(context, MaterialPageRoute(builder: (context) => const VotersPage()));
+          //     },
+          //   ),
+          //   ListTile(
+          //     leading: const Icon(Icons.people_outline, color: Colors.black,),
+          //     title: const Text('Unverified Voters', style: TextStyle(color: Colors.black)),
+          //     onTap: () {
+          //       Navigator.pop(context);
+          //       Navigator.push(context, MaterialPageRoute(builder: (context) => const PendingVotersPage()));
+          //     },
+          //   ),
+          //   ],
+          // ),
           
           const SizedBox(height: 10,),
           ListTile(
@@ -198,16 +274,18 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionPredictionPage()));
             },
           ),
-          const SizedBox(height: 10,),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.black,),
-            title: const Text('Logout', style: TextStyle(color: Colors.black)),
-            onTap: () {
-              _logout(context);
-            },
-          ),
+          // const SizedBox(height: 10,),
+          // ListTile(
+          //   leading: const Icon(Icons.logout, color: Colors.black,),
+          //   title: const Text('Logout', style: TextStyle(color: Colors.black)),
+          //   onTap: () {
+          //     _logout(context);
+          //   },
+          // ),
         ],
       ),
     );
   }
 }
+
+

@@ -79,15 +79,15 @@ class _AppDrawerState extends State<AppDrawer> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => AnnouncementPage()));
             },
           ),
-          const SizedBox(height: 10,),
-          ListTile(
-            leading: const Icon(Icons.person, color: Colors.black,),
-            title: const Text('Profile', style: TextStyle(color: Colors.black)),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileInfo()));
-            },
-          ),
+          // const SizedBox(height: 10,),
+          // ListTile(
+          //   leading: const Icon(Icons.person, color: Colors.black,),
+          //   title: const Text('Profile', style: TextStyle(color: Colors.black)),
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //     Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileInfo()));
+          //   },
+          // ),
           const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.how_to_vote, color: Colors.black,),
@@ -124,14 +124,14 @@ class _AppDrawerState extends State<AppDrawer> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionSurveyCandidates()));
             },
           ),
-          const SizedBox(height: 10,),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.black,),
-            title: const Text('Logout', style: TextStyle(color: Colors.black)),
-            onTap: () {
-              _logout(context);
-            },
-          ),
+          // const SizedBox(height: 10,),
+          // ListTile(
+          //   leading: const Icon(Icons.logout, color: Colors.black,),
+          //   title: const Text('Logout', style: TextStyle(color: Colors.black)),
+          //   onTap: () {
+          //     _logout(context);
+          //   },
+          // ),
         ],
       ),
     );

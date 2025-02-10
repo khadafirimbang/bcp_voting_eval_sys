@@ -5,14 +5,18 @@ import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:for_testing/admin_pages/evaluation_admin.dart';
 import 'package:for_testing/admin_pages/resultAdmin.dart';
 import 'package:for_testing/admin_pages/voters.dart';
+import 'package:for_testing/main.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:fl_chart/fl_chart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardPage2 extends StatefulWidget {
   @override
   _DashboardPage2State createState() => _DashboardPage2State();
 }
+
+String? studentNo = "Unknown"; // Default value
 
 class _DashboardPage2State extends State<DashboardPage2> {
   int totalVoters = 0;
@@ -28,6 +32,14 @@ class _DashboardPage2State extends State<DashboardPage2> {
     super.initState();
     fetchData();
     fetchCandidatesData();
+    _loadStudentNo();
+  }
+
+  Future<void> _loadStudentNo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      studentNo = prefs.getString('studentno') ?? 'Student No'; // Fetch student no
+    });
   }
 
   Future<void> fetchData() async {
@@ -258,17 +270,23 @@ class _DashboardPage2State extends State<DashboardPage2> {
               ],
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(
-                  onPressed: () {
-                    _scaffoldKey.currentState?.openDrawer();
-                  },
-                  icon: const Icon(Icons.menu, color: Colors.black45),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        _scaffoldKey.currentState?.openDrawer();
+                      },
+                      icon: const Icon(Icons.menu, color: Colors.black45),
+                    ),
+                    const Text(
+                      'Dashboard',
+                      style: TextStyle(fontSize: 18, color: Colors.black54),
+                    ),
+                  ],
                 ),
-                const Text(
-                  'Dashboard',
-                  style: TextStyle(fontSize: 18, color: Colors.black54),
-                ),
+                _buildProfileMenu(context)
               ],
             )
           ),
@@ -376,3 +394,83 @@ class _DashboardPage2State extends State<DashboardPage2> {
     );
   }
 }
+
+
+Widget _buildProfileMenu(BuildContext context) {
+    return PopupMenuButton<int>(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      onSelected: (item) {
+        switch (item) {
+          case 0:
+            // Navigate to Profile page
+            // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
+            break;
+          case 1:
+            // Handle sign out
+            _logout(context); // Example action for Sign Out
+            break;
+        }
+      },
+      offset: Offset(0, 50), // Adjust dropdown position
+      itemBuilder: (context) => [
+        PopupMenuItem<int>(
+          padding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+          value: 0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Signed in as', style: TextStyle(color: Colors.black54)),
+              Text(studentNo ?? 'Unknown'),
+            ],
+          ),
+        ),
+        PopupMenuDivider(),
+        PopupMenuItem<int>(
+          value: 0,
+          child: Row(
+            children: [
+              Icon(Icons.person, color: Colors.black54),
+              SizedBox(width: 10),
+              Text('Profile'),
+            ],
+          ),
+        ),
+        PopupMenuItem<int>(
+          value: 1,
+          child: Row(
+            children: [
+              Icon(Icons.logout, color: Colors.black54),
+              SizedBox(width: 10),
+              Text('Sign out'),
+            ],
+          ),
+        ),
+      ],
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.white,
+            child: Icon(Icons.person, color: Colors.black54),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  void _logout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    if (!context.mounted) return; // Ensure the widget is still mounted
+
+    // Use pushAndRemoveUntil to clear the navigation stack
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoadingScreen()), // Replace with your login page
+      (Route<dynamic> route) => false, // Remove all previous routes
+    );
+  }
