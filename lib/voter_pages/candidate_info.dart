@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 class CandidateDetailPage extends StatelessWidget {
@@ -27,13 +30,32 @@ class CandidateDetailPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 30),
                     child: Column(
                       children: [
-                        ClipOval(
-                          child: Image.network(
-                            candidate['image_url'],
-                            width: 180,
-                            height: 180,
-                            fit: BoxFit.cover,
-                          ),
+                        CircleAvatar(
+                          backgroundImage: candidate['img'] != null && candidate['img'].isNotEmpty
+                            ? MemoryImage(
+                                (() {
+                                  try {
+                                    // Print raw data for debugging
+                                    print('Raw image data: ${candidate['img'].substring(0, 50)}...'); // Show first 50 chars
+                                    
+                                    // Clean and decode the base64 string
+                                    String cleanBase64 = candidate['img']
+                                        .replaceAll(RegExp(r'data:image/[^;]+;base64,'), '')
+                                        .replaceAll('\n', '')
+                                        .replaceAll('\r', '')
+                                        .replaceAll(' ', '+');
+                                        
+                                    // print('Cleaned base64: ${cleanBase64.substring(0, 50)}...'); // Show first 50 chars
+                                    
+                                    return base64Decode(cleanBase64);
+                                  } catch (e) {
+                                    print('Error decoding image: $e');
+                                    return Uint8List(0); // Return empty image data
+                                  }
+                                })()
+                              )
+                            : const AssetImage('assets/bcp_logo.png') as ImageProvider,
+                          radius: 100,
                         ),
                         SizedBox(height: 20),
                         Text(

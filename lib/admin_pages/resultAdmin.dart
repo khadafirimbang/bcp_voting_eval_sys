@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:for_testing/admin_pages/dashboard2.dart';
 import 'package:for_testing/admin_pages/drawerbar_admin.dart';
@@ -346,43 +347,57 @@ class _ResultAdminPageState extends State<ResultAdminPage> {
                                     : 0;
                                 return Card(
                                   elevation: 5,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      ClipOval(
-                                        child: candidate['image_url'] != null &&
-                                                candidate['image_url'].isNotEmpty
-                                            ? Image.network(
-                                                candidate['image_url'],
-                                                height: 155,
-                                                width: 155,
-                                                fit: BoxFit.cover,
-                                              )
-                                            : Image.asset(
-                                                'assets/images/bcp_logo.png',
-                                                height: 155,
-                                                width: 155,
-                                                fit: BoxFit.cover,
-                                              ),
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        '${candidate['lastname']}, ${candidate['firstname']}',
-                                        style: TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      Text('Position: ${candidate['position']}'),
-                                      Text('${candidate['total_votes']} votes'),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: LinearProgressIndicator(
-                                          value: percentage / 100,
-                                          backgroundColor: Colors.grey[300],
-                                          color: Colors.blue,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        CircleAvatar(
+                                            backgroundImage: candidate['img'] != null && candidate['img'].isNotEmpty
+                                              ? MemoryImage(
+                                                  (() {
+                                                    try {
+                                                      // Print raw data for debugging
+                                                      // print('Raw image data: ${candidate['img'].substring(0, 50)}...'); // Show first 50 chars
+                                                      
+                                                      // Clean and decode the base64 string
+                                                      String cleanBase64 = candidate['img']
+                                                          .replaceAll(RegExp(r'data:image/[^;]+;base64,'), '')
+                                                          .replaceAll('\n', '')
+                                                          .replaceAll('\r', '')
+                                                          .replaceAll(' ', '+');
+                                                          
+                                                      // print('Cleaned base64: ${cleanBase64.substring(0, 50)}...'); // Show first 50 chars
+                                                      
+                                                      return base64Decode(cleanBase64);
+                                                    } catch (e) {
+                                                      print('Error decoding image: $e');
+                                                      return Uint8List(0); // Return empty image data
+                                                    }
+                                                  })()
+                                                )
+                                              : const AssetImage('assets/bcp_logo.png') as ImageProvider,
+                                            radius: 70,
+                                          ),
+                                        SizedBox(height: 8),
+                                        Text(
+                                          '${candidate['lastname']}, ${candidate['firstname']}',
+                                          style: TextStyle(fontWeight: FontWeight.bold),
                                         ),
-                                      ),
-                                      Text('${percentage.toStringAsFixed(2)}%'),
-                                    ],
+                                        Text('Position: ${candidate['position']}'),
+                                        Text('${candidate['total_votes']} votes'),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: LinearProgressIndicator(
+                                            value: percentage / 100,
+                                            backgroundColor: Colors.grey[300],
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+                                        Text('${percentage.toStringAsFixed(2)}%'),
+                                      ],
+                                    ),
                                   ),
                                 );
                               },

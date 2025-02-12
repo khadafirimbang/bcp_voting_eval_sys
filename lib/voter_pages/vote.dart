@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:for_testing/main.dart';
 import 'package:for_testing/results_pages/results.dart';
@@ -29,6 +31,7 @@ class _VotePageState extends State<VotePage> {
   Map<String, List<String>> userVotes = {};
   Timer? _scheduleCheckTimer;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final Map<String, ImageProvider> _imageCache = {};
 
   @override
   void initState() {
@@ -47,6 +50,32 @@ class _VotePageState extends State<VotePage> {
     _debounce?.cancel();
     _scheduleCheckTimer?.cancel();
     super.dispose();
+  }
+
+  ImageProvider _getImageProvider(dynamic candidate) {
+    if (candidate['img'] == null || candidate['img'].isEmpty) {
+      return const AssetImage('assets/bcp_logo.png');
+    }
+
+    final String imageKey = candidate['studentno'].toString();
+    if (_imageCache.containsKey(imageKey)) {
+      return _imageCache[imageKey]!;
+    }
+
+    try {
+      final String cleanBase64 = candidate['img']
+          .replaceAll(RegExp(r'data:image/[^;]+;base64,'), '')
+          .replaceAll('\n', '')
+          .replaceAll('\r', '')
+          .trim();
+
+      final ImageProvider provider = MemoryImage(base64Decode(cleanBase64));
+      _imageCache[imageKey] = provider;
+      return provider;
+    } catch (e) {
+      print('Error loading image for candidate ${candidate['studentno']}: $e');
+      return const AssetImage('assets/bcp_logo.png');
+    }
   }
 
   Future<void> fetchElectionSchedule() async {
@@ -563,21 +592,17 @@ class _VotePageState extends State<VotePage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            ClipOval(
-                                    child: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
-                                        ? Image.network(
-                                            candidate['image_url'],
-                                            height: 155,
-                                            width: 155,
-                                            fit: BoxFit.cover,
-                                          )
-                                        : Image.asset(
-                                            'assets/images/bcp_logo.png',
-                                            height: 155,
-                                            width: 155,
-                                            fit: BoxFit.cover,
-                                          ),
-                                  ),
+                            CircleAvatar(
+                              radius: 80,
+                              backgroundImage: _getImageProvider(candidate),
+                              onBackgroundImageError: (exception, stackTrace) {
+                                print('Error loading image: $exception');
+                                setState(() {
+                                  // Remove failed image from cache
+                                  _imageCache.remove(candidate['studentno'].toString());
+                                });
+                              },
+                            ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(

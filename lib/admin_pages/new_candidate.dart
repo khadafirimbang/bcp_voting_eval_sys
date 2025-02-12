@@ -106,41 +106,36 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
     }
   }
 
-  Future<String?> _uploadImageToCloudinary(Uint8List image) async {
+  Future<String?> _uploadImageToDatabase(Uint8List image) async {
+  setState(() {
+    _isUploadingImage = true;
+  });
+
+  try {
+    // Convert image to base64 string
+    String base64Image = base64Encode(image);
+    
     setState(() {
-      _isUploadingImage = true;
+      _isUploadingImage = false;
     });
-
-    String cloudinaryUrl = 'https://api.cloudinary.com/v1_1/dcmdta4rb/image/upload';
-    String apiKey = '187942544922379';
-    String uploadPreset = 'sjon389q';
-
-    String studentNo = _studentNoController.text;
-    String filename = 'candidate_$studentNo.png';
-
-    var request = http.MultipartRequest('POST', Uri.parse(cloudinaryUrl));
-    request.fields['upload_preset'] = uploadPreset;
-    request.fields['api_key'] = apiKey;
-    request.files.add(http.MultipartFile.fromBytes('file', image, filename: filename));
-
-    var response = await request.send();
-
-    if (response.statusCode == 200) {
-      final responseData = await response.stream.bytesToString();
-      final jsonData = json.decode(responseData);
-      setState(() {
-        _isUploadingImage = false;
-      });
-      return jsonData['secure_url'];
-    } else {
-      setState(() {
-        _isUploadingImage = false;
-      });
-      return null;
-    }
+    
+    return base64Image;
+  } catch (e) {
+    setState(() {
+      _isUploadingImage = false;
+    });
+    
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      backgroundColor: Colors.red,
+      content: Text('Image conversion failed: $e'),
+    ));
+    
+    return null;
   }
+}
 
-  Future<void> _saveCandidate(String imageUrl) async {
+
+  Future<void> _saveCandidate(String img) async {
     setState(() {
       _isSaving = true;
     });
@@ -158,7 +153,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
         'slogan': _sloganController.text,
         'position': _selectedPosition,
         'partylist': _selectedPartylist,
-        'image_url': imageUrl,
+        'img': img,
       },
     );
 
@@ -212,9 +207,9 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
       }
 
       if (_imageFile != null) {
-        final imageUrl = await _uploadImageToCloudinary(_imageFile!);
-        if (imageUrl != null) {
-          await _saveCandidate(imageUrl);
+        final base64Image = await _uploadImageToDatabase(_imageFile!);
+        if (base64Image != null) {
+          await _saveCandidate(base64Image);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             backgroundColor: Colors.red,

@@ -736,10 +736,32 @@ class _CandidatesPageState extends State<CandidatesPage> {
                     },
                   ),
                   CircleAvatar(
-                    backgroundImage: candidate['image_url'] != null && candidate['image_url'].isNotEmpty
-                        ? NetworkImage(candidate['image_url'])
-                        : const AssetImage('assets/bcp_logo.png') as ImageProvider,
-                  ),
+                    backgroundImage: candidate['img'] != null && candidate['img'].isNotEmpty
+                      ? MemoryImage(
+                          (() {
+                            try {
+                              // Print raw data for debugging
+                              print('Raw image data: ${candidate['img'].substring(0, 50)}...'); // Show first 50 chars
+                              
+                              // Clean and decode the base64 string
+                              String cleanBase64 = candidate['img']
+                                  .replaceAll(RegExp(r'data:image/[^;]+;base64,'), '')
+                                  .replaceAll('\n', '')
+                                  .replaceAll('\r', '')
+                                  .replaceAll(' ', '+');
+                                  
+                              // print('Cleaned base64: ${cleanBase64.substring(0, 50)}...'); // Show first 50 chars
+                              
+                              return base64Decode(cleanBase64);
+                            } catch (e) {
+                              print('Error decoding image: $e');
+                              return Uint8List(0); // Return empty image data
+                            }
+                          })()
+                        )
+                      : const AssetImage('assets/bcp_logo.png') as ImageProvider,
+                    radius: 25,
+                  )
                 ],
               ),
               title: Text(
