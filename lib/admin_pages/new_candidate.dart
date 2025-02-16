@@ -244,11 +244,8 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color(0xFF1E3A8A),
-          title: const Text('Add New Candidate', style: TextStyle(color: Colors.white)),
-          iconTheme: const IconThemeData(color: Colors.white),
+          title: const Text('Add New Candidate'),
         ),
-        drawer: AppDrawerAdmin(),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Container(
@@ -293,10 +290,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
                             MaterialPageRoute(builder: (context) => const CandidatesPage()),
                           );
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                        ),
-                        child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+                        child: const Text('Cancel',),
                       ),
                     ],
                   ),
@@ -412,7 +406,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
       child: ElevatedButton(
         onPressed: _isSaving || _isUploadingImage ? null : _submitForm,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1E3A8A),
+          backgroundColor: Colors.black,
           padding: const EdgeInsets.symmetric(vertical: 15),
         ),
         child: _isSaving

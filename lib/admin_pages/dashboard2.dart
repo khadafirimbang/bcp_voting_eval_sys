@@ -26,13 +26,40 @@ class _DashboardPage2State extends State<DashboardPage2> {
   List<Map<String, dynamic>> presidentData = [];
   List<Map<String, dynamic>> vicePresidentData = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  int totalVoted = 0;
+  int totalNotVoted = 0;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    fetchData();
-    fetchCandidatesData();
-    _loadStudentNo();
+    _fetchAllData();
+  }
+
+  Future<void> _fetchAllData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Use Future.wait to run multiple async operations concurrently
+      await Future.wait([
+        fetchData(),
+        fetchCandidatesData(),
+        _loadStudentNo(),
+        fetchResults()
+      ]);
+    } catch (e) {
+      // Handle any errors that might occur during data fetching
+      print('Error fetching data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load dashboard data')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _loadStudentNo() async {
@@ -41,6 +68,21 @@ class _DashboardPage2State extends State<DashboardPage2> {
       studentNo = prefs.getString('studentno') ?? 'Student No'; // Fetch student no
     });
   }
+
+  Future<void> fetchResults() async {
+  final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/results.php'));
+
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    setState(() {
+      totalVoters = data['total_voters'];
+      totalVoted = data['total_voted'];
+      totalNotVoted = totalVoters - totalVoted;
+    });
+  } else {
+    throw Exception('Failed to load results');
+  }
+}
 
   Future<void> fetchData() async {
     final response = await http.get(
@@ -113,6 +155,158 @@ class _DashboardPage2State extends State<DashboardPage2> {
     );
   }
 
+  Widget buildVotingStatisticsChart(VoidCallback onTap) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Card(
+      elevation: 2,
+      color: Colors.white, // Set Card color to white
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Voting Statistics',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Current Voting Overview',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black54,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              height: 200,
+              child: BarChart(
+                BarChartData(
+                  backgroundColor: Colors.white,
+                  alignment: BarChartAlignment.spaceAround,
+                  maxY: totalVoters.toDouble() * 1.2,
+                  barTouchData: BarTouchData(
+                    enabled: true,
+                    touchTooltipData: BarTouchTooltipData(
+                      tooltipBgColor: Colors.blueGrey,
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        String label;
+                        switch (groupIndex) {
+                          case 0:
+                            label = 'Total Voters';
+                            break;
+                          case 1:
+                            label = 'Total Voted';
+                            break;
+                          case 2:
+                            label = 'Total Not Voted';
+                            break;
+                          default:
+                            label = '';
+                        }
+                        return BarTooltipItem(
+                          '$label\n',
+                          const TextStyle(color: Colors.white),
+                          children: <TextSpan>[
+                            TextSpan(
+                              text: rod.toY.toInt().toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (double value, TitleMeta meta) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              value == 0 
+                                ? 'Voters' 
+                                : value == 1 
+                                  ? 'Voted' 
+                                  : 'Not Voted',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        },
+                        reservedSize: 42,
+                      ),
+                    ),
+                    leftTitles: const AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40,
+                      ),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  barGroups: [
+                    BarChartGroupData(
+                      x: 0,
+                      barRods: [
+                        BarChartRodData(
+                          toY: totalVoters.toDouble(),
+                          color: Colors.black,
+                          width: 20,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ],
+                    ),
+                    BarChartGroupData(
+                      x: 1,
+                      barRods: [
+                        BarChartRodData(
+                          toY: totalVoted.toDouble(),
+                          color: Colors.black,
+                          width: 20,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ],
+                    ),
+                    BarChartGroupData(
+                      x: 2,
+                      barRods: [
+                        BarChartRodData(
+                          toY: totalNotVoted.toDouble(),
+                          color: Colors.black,
+                          width: 20,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
   Widget buildBarGraph(String title, List<Map<String, dynamic>> data, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
@@ -133,7 +327,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
               ),
               const SizedBox(height: 4),
               const Text(
-                'Current Election Ranking',
+                'Current President Election Ranking',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.black54,
@@ -292,7 +486,9 @@ class _DashboardPage2State extends State<DashboardPage2> {
           ),
         ),
         drawer: const AppDrawerAdmin(),
-        body: SingleChildScrollView(
+        body: _isLoading
+          ? _buildLoadingView()
+          : SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
@@ -364,11 +560,11 @@ class _DashboardPage2State extends State<DashboardPage2> {
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: buildBarGraph("Vice President", vicePresidentData,
+                          child: buildVotingStatisticsChart(
                           () { Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()),
-                        ); 
-                      },
-                      ),
+                          ); 
+                        },
+                          ),
                         ),
                       ],
                     )
@@ -393,8 +589,28 @@ class _DashboardPage2State extends State<DashboardPage2> {
       ),
     );
   }
+  
+Widget _buildLoadingView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+          ),
+          SizedBox(height: 20),
+          Text(
+            'Loading Dashboard...',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black54,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
-
 
 Widget _buildProfileMenu(BuildContext context) {
     return PopupMenuButton<int>(

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:for_testing/admin_pages/dashboard2.dart';
 import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:for_testing/admin_pages/new_candidate.dart';
 import 'package:for_testing/admin_pages/partylist.dart';
@@ -539,7 +540,10 @@ class _CandidatesPageState extends State<CandidatesPage> {
                     });
                   },
                 ),
-                
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: _fetchCandidates,
+                ),
               // SizedBox(width: 16), // Spacing
               _buildProfileMenu(context),
                   ],
@@ -741,7 +745,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
                           (() {
                             try {
                               // Print raw data for debugging
-                              print('Raw image data: ${candidate['img'].substring(0, 50)}...'); // Show first 50 chars
+                              // print('Raw image data: ${candidate['img'].substring(0, 50)}...'); // Show first 50 chars
                               
                               // Clean and decode the base64 string
                               String cleanBase64 = candidate['img']
@@ -865,12 +869,13 @@ Widget _buildProfileMenu(BuildContext context) {
       offset: Offset(0, 50), // Adjust dropdown position
       itemBuilder: (context) => [
         PopupMenuItem<int>(
+          padding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
           value: 0,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Signed in as', style: TextStyle(color: Colors.black54)),
-              Text('Student num here', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(studentNo ?? 'Unknown'),
             ],
           ),
         ),
@@ -903,19 +908,6 @@ Widget _buildProfileMenu(BuildContext context) {
             radius: 20,
             backgroundColor: Colors.white,
             child: Icon(Icons.person, color: Colors.black54),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: Colors.green,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-              ),
-            ),
           ),
         ],
       ),

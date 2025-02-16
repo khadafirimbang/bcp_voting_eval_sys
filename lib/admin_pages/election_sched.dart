@@ -227,15 +227,53 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
-        appBar: AppBar(
-          title: const Text('Election Schedule'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: _fetchSchedules,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
             ),
-            _buildProfileMenu(context)
-          ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Election Schedule',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: _fetchSchedules,
+                    ),
+                  // SizedBox(width: 16), // Spacing
+                  _buildProfileMenu(context),
+                  ],
+                )
+              ],
+            )
+          ),
         ),
         drawer: const AppDrawerAdmin(),
         body: Padding(

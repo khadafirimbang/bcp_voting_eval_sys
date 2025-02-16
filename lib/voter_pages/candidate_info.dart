@@ -36,7 +36,7 @@ class CandidateDetailPage extends StatelessWidget {
                                 (() {
                                   try {
                                     // Print raw data for debugging
-                                    print('Raw image data: ${candidate['img'].substring(0, 50)}...'); // Show first 50 chars
+                                    // print('Raw image data: ${candidate['img'].substring(0, 50)}...'); // Show first 50 chars
                                     
                                     // Clean and decode the base64 string
                                     String cleanBase64 = candidate['img']
