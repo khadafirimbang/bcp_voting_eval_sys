@@ -4,6 +4,7 @@ import 'package:for_testing/admin_pages/candidates.dart';
 import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:for_testing/admin_pages/evaluation_admin.dart';
 import 'package:for_testing/admin_pages/resultAdmin.dart';
+import 'package:for_testing/admin_pages/survey_results.dart';
 import 'package:for_testing/admin_pages/voters.dart';
 import 'package:for_testing/main.dart';
 import 'dart:convert';
@@ -29,11 +30,51 @@ class _DashboardPage2State extends State<DashboardPage2> {
   int totalVoted = 0;
   int totalNotVoted = 0;
   bool _isLoading = true;
+  int totalEval = 0;
+  int totalEvalAns = 0;
+  int totalEvalNotAns = 0;
 
   @override
   void initState() {
     super.initState();
     _fetchAllData();
+  }
+
+  Future<void> fetchTotalEvalAns() async {
+    try {
+      final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_total_eval_answered.php'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          totalEvalAns = data['total_eval_answered'];
+          // Calculate totalEvalNotAns
+          totalEvalNotAns = totalEval - totalEvalAns;
+          totalEvalNotAns = totalEvalNotAns < 0 ? 0 : totalEvalNotAns; // Ensure it's not negative
+        });
+      } else {
+        throw Exception('Failed to load total eval answered');
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> fetchTotalEval() async {
+    try {
+      final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_total_eval.php'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          totalEval = data['total_eval'];
+        });
+      } else {
+        throw Exception('Failed to load total eval');
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> _fetchAllData() async {
@@ -47,7 +88,9 @@ class _DashboardPage2State extends State<DashboardPage2> {
         fetchData(),
         fetchCandidatesData(),
         _loadStudentNo(),
-        fetchResults()
+        fetchResults(),
+        fetchTotalEval(),
+        fetchTotalEvalAns()
       ]);
     } catch (e) {
       // Handle any errors that might occur during data fetching
@@ -112,6 +155,148 @@ class _DashboardPage2State extends State<DashboardPage2> {
     }
   }
 
+  Widget buildBarGraph(String title, VoidCallback onTap) {
+    // Create a list of evaluation data
+    List<Map<String, dynamic>> evaluationData = [
+      {
+        'name': 'Total Evaluation',
+        'value': totalEval,
+      },
+      {
+        'name': 'Evaluated',
+        'value': totalEvalAns,
+      },
+      {
+        'name': 'Not Evaluated',
+        'value': totalEvalNotAns,
+      }
+    ];
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Card(
+          elevation: 2,
+          color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Evaluation Statistics',
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Current Evaluation Overview',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  height: 200,
+                  child: BarChart(
+                    BarChartData(
+                      backgroundColor: Colors.white,
+                      alignment: BarChartAlignment.spaceAround,
+                      maxY: totalEval * 1.2,
+                      barTouchData: BarTouchData(
+                        enabled: true,
+                        touchTooltipData: BarTouchTooltipData(
+                          tooltipBgColor: Colors.blueGrey,
+                          getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                            return BarTooltipItem(
+                              '${evaluationData[groupIndex]['name']}\n',
+                              const TextStyle(color: Colors.white),
+                              children: <TextSpan>[
+                                TextSpan(
+                                  text: rod.toY.toInt().toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        show: true,
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (double value, TitleMeta meta) {
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  evaluationData[value.toInt()]['name'],
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              );
+                            },
+                            reservedSize: 50,
+                          ),
+                        ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 40,
+                            getTitlesWidget: (double value, TitleMeta meta) {
+                              return Text(
+                                value.toInt().toString(),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.black,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      barGroups: evaluationData.asMap().entries.map((entry) {
+                        int index = entry.key;
+                        Map<String, dynamic> data = entry.value;
+                        return BarChartGroupData(
+                          x: index,
+                          barRods: [
+                            BarChartRodData(
+                              toY: data['value'].toDouble(),
+                              color: index == 0 
+                                ? Colors.black 
+                                : (index == 1 
+                                    ? Colors.black 
+                                    : Colors.black),
+                              width: 20,
+                              borderRadius: BorderRadius.circular(4),
+                            )
+                          ],
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget buildCard(String title, String value, IconData icon, VoidCallback onTap) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -156,159 +341,9 @@ class _DashboardPage2State extends State<DashboardPage2> {
   }
 
   Widget buildVotingStatisticsChart(VoidCallback onTap) {
-  return GestureDetector(
-    onTap: onTap,
-    child: Card(
-      elevation: 2,
-      color: Colors.white, // Set Card color to white
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Voting Statistics',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Current Voting Overview',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.black54,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              height: 200,
-              child: BarChart(
-                BarChartData(
-                  backgroundColor: Colors.white,
-                  alignment: BarChartAlignment.spaceAround,
-                  maxY: totalVoters.toDouble() * 1.2,
-                  barTouchData: BarTouchData(
-                    enabled: true,
-                    touchTooltipData: BarTouchTooltipData(
-                      tooltipBgColor: Colors.blueGrey,
-                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                        String label;
-                        switch (groupIndex) {
-                          case 0:
-                            label = 'Total Voters';
-                            break;
-                          case 1:
-                            label = 'Total Voted';
-                            break;
-                          case 2:
-                            label = 'Total Not Voted';
-                            break;
-                          default:
-                            label = '';
-                        }
-                        return BarTooltipItem(
-                          '$label\n',
-                          const TextStyle(color: Colors.white),
-                          children: <TextSpan>[
-                            TextSpan(
-                              text: rod.toY.toInt().toString(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                  titlesData: FlTitlesData(
-                    show: true,
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (double value, TitleMeta meta) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              value == 0 
-                                ? 'Voters' 
-                                : value == 1 
-                                  ? 'Voted' 
-                                  : 'Not Voted',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          );
-                        },
-                        reservedSize: 42,
-                      ),
-                    ),
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 40,
-                      ),
-                    ),
-                    topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  barGroups: [
-                    BarChartGroupData(
-                      x: 0,
-                      barRods: [
-                        BarChartRodData(
-                          toY: totalVoters.toDouble(),
-                          color: Colors.black,
-                          width: 20,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ],
-                    ),
-                    BarChartGroupData(
-                      x: 1,
-                      barRods: [
-                        BarChartRodData(
-                          toY: totalVoted.toDouble(),
-                          color: Colors.black,
-                          width: 20,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ],
-                    ),
-                    BarChartGroupData(
-                      x: 2,
-                      barRods: [
-                        BarChartRodData(
-                          toY: totalNotVoted.toDouble(),
-                          color: Colors.black,
-                          width: 20,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-  Widget buildBarGraph(String title, List<Map<String, dynamic>> data, VoidCallback onTap) {
-    return GestureDetector(
+  return MouseRegion(
+    cursor: SystemMouseCursors.click,
+    child: GestureDetector(
       onTap: onTap,
       child: Card(
         elevation: 2,
@@ -319,15 +354,15 @@ class _DashboardPage2State extends State<DashboardPage2> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                title,
+                'Voting Statistics',
                 style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black),
               ),
               const SizedBox(height: 4),
               const Text(
-                'Current President Election Ranking',
+                'Current Voting Overview',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.black54,
@@ -338,24 +373,34 @@ class _DashboardPage2State extends State<DashboardPage2> {
                 height: 200,
                 child: BarChart(
                   BarChartData(
-                    backgroundColor: Colors.white, // Set background color to white
+                    backgroundColor: Colors.white,
                     alignment: BarChartAlignment.spaceAround,
-                    maxY: data.isEmpty
-                        ? 100
-                        : (data.map((e) => (e['total_votes'] as num).toDouble()).reduce(
-                                (a, b) => a > b ? a : b) *
-                            1.2),
+                    maxY: totalVoters.toDouble() * 1.2,
                     barTouchData: BarTouchData(
                       enabled: true,
                       touchTooltipData: BarTouchTooltipData(
                         tooltipBgColor: Colors.blueGrey,
                         getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                          String label;
+                          switch (groupIndex) {
+                            case 0:
+                              label = 'Total Voters';
+                              break;
+                            case 1:
+                              label = 'Total Voted';
+                              break;
+                            case 2:
+                              label = 'Total Not Voted';
+                              break;
+                            default:
+                              label = '';
+                          }
                           return BarTooltipItem(
-                            '${data[groupIndex]['lastname']}\n',
+                            '$label\n',
                             const TextStyle(color: Colors.white),
                             children: <TextSpan>[
                               TextSpan(
-                                text: '${data[groupIndex]['total_votes']} votes',
+                                text: rod.toY.toInt().toString(),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -372,23 +417,20 @@ class _DashboardPage2State extends State<DashboardPage2> {
                         sideTitles: SideTitles(
                           showTitles: true,
                           getTitlesWidget: (double value, TitleMeta meta) {
-                            int index = value.toInt();
-                            if (index >= 0 && index < data.length) {
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: Transform.rotate(
-                                  angle: 45 * 3.1415927 / 180,
-                                  child: Text(
-                                    data[index]['lastname'].toString(),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                value == 0 
+                                  ? 'Voters' 
+                                  : value == 1 
+                                    ? 'Voted' 
+                                    : 'Not Voted',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              );
-                            }
-                            return const Text('');
+                              ),
+                            );
                           },
                           reservedSize: 42,
                         ),
@@ -407,20 +449,41 @@ class _DashboardPage2State extends State<DashboardPage2> {
                       ),
                     ),
                     borderData: FlBorderData(show: false),
-                    barGroups: List.generate(
-                      data.length,
-                      (index) => BarChartGroupData(
-                        x: index,
+                    barGroups: [
+                      BarChartGroupData(
+                        x: 0,
                         barRods: [
                           BarChartRodData(
-                            toY: (data[index]['total_votes'] as num).toDouble(),
+                            toY: totalVoters.toDouble(),
                             color: Colors.black,
                             width: 20,
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ],
                       ),
-                    ),
+                      BarChartGroupData(
+                        x: 1,
+                        barRods: [
+                          BarChartRodData(
+                            toY: totalVoted.toDouble(),
+                            color: Colors.black,
+                            width: 20,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ],
+                      ),
+                      BarChartGroupData(
+                        x: 2,
+                        barRods: [
+                          BarChartRodData(
+                            toY: totalNotVoted.toDouble(),
+                            color: Colors.black,
+                            width: 20,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -428,8 +491,9 @@ class _DashboardPage2State extends State<DashboardPage2> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -547,42 +611,62 @@ class _DashboardPage2State extends State<DashboardPage2> {
                 ],
               ),
               const SizedBox(height: 20),
-              screenWidth >= 800
-                  ? Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: buildBarGraph("President", presidentData,
-                          () { Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()),
-                        ); 
-                      },
-                          ),
+              LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth >= 800) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: buildBarGraph(
+                          "Evaluation Statistics",
+                          () { 
+                            Navigator.push(
+                              context, 
+                              MaterialPageRoute(builder: (context) => SurveyResultsPage())
+                            ); 
+                          },
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: buildVotingStatisticsChart(
-                          () { Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: buildVotingStatisticsChart(
+                          () { 
+                            Navigator.push(
+                              context, 
+                              MaterialPageRoute(builder: (context) => ResultAdminPage())
+                            ); 
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                } else {
+                  return Column(
+                    children: [
+                      buildBarGraph(
+                        "Evaluation Statistics",
+                        () { 
+                          Navigator.push(
+                            context, 
+                            MaterialPageRoute(builder: (context) => SurveyResultsPage())
                           ); 
                         },
-                          ),
-                        ),
-                      ],
-                    )
-                  : Column(
-                      children: [
-                        buildBarGraph("President", presidentData,
-                        () { Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()),
-                        ); 
-                      },
-                        ),
-                        const SizedBox(height: 20),
-                        buildBarGraph("Vice President", vicePresidentData,
-                        () { Navigator.push(context, MaterialPageRoute(builder: (context) => ResultAdminPage()),
-                        ); 
-                      },
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 16),
+                      buildVotingStatisticsChart(
+                        () { 
+                          Navigator.push(
+                            context, 
+                            MaterialPageRoute(builder: (context) => ResultAdminPage())
+                          ); 
+                        },
+                      ),
+                    ],
+                  );
+                }
+              },
+            ),
             ],
           ),
         ),

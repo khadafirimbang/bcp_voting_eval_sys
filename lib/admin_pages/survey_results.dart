@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:for_testing/admin_pages/dashboard2.dart';
 import 'package:for_testing/admin_pages/drawerbar_admin.dart';
+import 'package:for_testing/admin_pages/feedback_results.dart';
 import 'package:for_testing/main.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -236,68 +237,98 @@ class _SurveyResultsPageState extends State<SurveyResultsPage> {
           ),
         ),
         drawer: const AppDrawerAdmin(),
-        body: isLoading 
-          ? const Center(child: CircularProgressIndicator())
-          : error != null
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      error!,
-                      style: const TextStyle(color: Colors.red),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: fetchSurveyData,
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              )
-            : LayoutBuilder(
-                builder: (context, constraints) {
-                  final crossAxisCount = constraints.maxWidth > 600 ? 2 : 1;
-                  
-                  // Group responses by question
-                  Map<String, List<Map<String, dynamic>>> groupedResponses = {};
-                  for (var response in surveyData) {
-                    String question = response['question'];
-                    if (!groupedResponses.containsKey(question)) {
-                      groupedResponses[question] = [];
-                    }
-                    groupedResponses[question]!.add(response);
-                  }
-      
-                  if (groupedResponses.isEmpty) {
-                    return const Center(
-                      child: Text('No survey responses available'),
-                    );
-                  }
-      
-                  return RefreshIndicator(
-                    onRefresh: fetchSurveyData,
-                    child: GridView.builder(
-                      padding: const EdgeInsets.all(8),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        childAspectRatio: 1.2,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
+        body: Column(
+          children: [
+            const SizedBox(height: 16),
+            SizedBox(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  padding: const EdgeInsets.all(10.0),
+                                  backgroundColor: Colors.black,
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => QuestionsListPage()),
+                                  );
+                                },
+                                child: const Text('Feedback Results', 
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+            Expanded(
+              child: isLoading 
+                ? const Center(child: CircularProgressIndicator())
+                : error != null
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            error!,
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: fetchSurveyData,
+                            child: const Text('Retry'),
+                          ),
+                        ],
                       ),
-                      itemCount: groupedResponses.length,
-                      itemBuilder: (context, index) {
-                        String question = groupedResponses.keys.elementAt(index);
-                        return SurveyResponseGraph(
-                          question: question,
-                          responses: groupedResponses[question]!,
+                    )
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        final crossAxisCount = constraints.maxWidth > 600 ? 2 : 1;
+                        
+                        // Group responses by question
+                        Map<String, List<Map<String, dynamic>>> groupedResponses = {};
+                        for (var response in surveyData) {
+                          String question = response['question'];
+                          if (!groupedResponses.containsKey(question)) {
+                            groupedResponses[question] = [];
+                          }
+                          groupedResponses[question]!.add(response);
+                        }
+                    
+                        if (groupedResponses.isEmpty) {
+                          return const Center(
+                            child: Text('No survey responses available'),
+                          );
+                        }
+                    
+                        return RefreshIndicator(
+                          onRefresh: fetchSurveyData,
+                          child: GridView.builder(
+                            padding: const EdgeInsets.all(8),
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossAxisCount,
+                              childAspectRatio: 1.2,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
+                            ),
+                            itemCount: groupedResponses.length,
+                            itemBuilder: (context, index) {
+                              String question = groupedResponses.keys.elementAt(index);
+                              return SurveyResponseGraph(
+                                question: question,
+                                responses: groupedResponses[question]!,
+                              );
+                            },
+                          ),
                         );
                       },
                     ),
-                  );
-                },
-              ),
+            ),
+          ],
+        ),
       ),
     );
   }
