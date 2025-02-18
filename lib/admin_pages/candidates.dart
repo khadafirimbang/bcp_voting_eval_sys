@@ -7,6 +7,7 @@ import 'package:for_testing/admin_pages/drawerbar_admin.dart';
 import 'package:for_testing/admin_pages/new_candidate.dart';
 import 'package:for_testing/admin_pages/partylist.dart';
 import 'package:for_testing/admin_pages/positions.dart';
+import 'package:for_testing/admin_pages/update_candidate.dart';
 import 'package:for_testing/main.dart';
 import 'package:for_testing/voter_pages/candidate_info.dart';
 
@@ -289,184 +290,6 @@ class _CandidatesPageState extends State<CandidatesPage> {
         );
       },
     );
-  }
-
-  void _showUpdateForm(Map candidate) {
-    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    final TextEditingController studentnoController = TextEditingController(text: candidate['studentno']);
-    final TextEditingController lastnameController = TextEditingController(text: candidate['lastname']);
-    final TextEditingController firstnameController = TextEditingController(text: candidate['firstname']);
-    final TextEditingController middlenameController = TextEditingController(text: candidate['middlename']);
-    final TextEditingController courseController = TextEditingController(text: candidate['course']);
-    final TextEditingController sectionController = TextEditingController(text: candidate['section']);
-    final TextEditingController sloganController = TextEditingController(text: candidate['slogan']);
-    String? selectedPosition = candidate['position'];
-    String? selectedPartylist= candidate['partylist'];
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Update Candidate'),
-          content: SingleChildScrollView(
-            child: SizedBox(
-              width: 400,
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      controller: studentnoController,
-                      decoration: const InputDecoration(labelText: 'Student Number'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter student number';
-                        }
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      controller: lastnameController,
-                      decoration: const InputDecoration(labelText: 'Last Name'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter last name';
-                        }
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      controller: firstnameController,
-                      decoration: const InputDecoration(labelText: 'First Name'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter first name';
-                        }
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      controller: middlenameController,
-                      decoration: const InputDecoration(labelText: 'Middle Name'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter middle name';
-                        }
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      controller: courseController,
-                      decoration: const InputDecoration(labelText: 'Course'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter course';
-                        }
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      controller: sectionController,
-                      decoration: const InputDecoration(labelText: 'Section'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter section';
-                        }
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      controller: sloganController,
-                      decoration: const InputDecoration(labelText: 'Slogan'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter slogan';
-                        }
-                        return null;
-                      },
-                    ),
-                    DropdownButtonFormField<String>(
-                      value: selectedPosition,
-                      decoration: const InputDecoration(labelText: 'Position'),
-                      items: positions.map((String position) {
-                        return DropdownMenuItem<String>(
-                          value: position,
-                          child: Text(position),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedPosition = newValue;
-                        });
-                      },
-                    ),
-                    DropdownButtonFormField<String>(
-                      value: selectedPartylist,
-                      decoration: const InputDecoration(labelText: 'Partylist'),
-                      items: partylists.map((String partylist) {
-                        return DropdownMenuItem<String>(
-                          value: partylist,
-                          child: Text(partylist),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedPartylist = newValue;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  _updateCandidate(studentnoController.text, lastnameController.text, firstnameController.text, middlenameController.text, courseController.text, sectionController.text, sloganController.text, selectedPosition, selectedPartylist);
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Update'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _updateCandidate(String studentno, String lastname, String firstname, String middlename, String course, String section, String slogan, String? position, String? partylist) async {
-    final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/update_candidate.php');
-    final response = await http.post(url, body: {
-      'studentno': studentno,
-      'lastname': lastname,
-      'firstname': firstname,
-      'middlename': middlename,
-      'course': course,
-      'section': section,
-      'slogan': slogan,
-      'position': position,
-      'partylist': partylist,
-    });
-
-    if (response.statusCode == 200) {
-      _fetchCandidates();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Candidate updated successfully'), backgroundColor: Colors.green),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update candidate'), backgroundColor: Colors.red),
-      );
-    }
   }
 
   @override
@@ -788,9 +611,24 @@ class _CandidatesPageState extends State<CandidatesPage> {
                   IconButton(
                     icon: const Icon(Icons.edit, color: Colors.black),
                     onPressed: () {
-                      _showUpdateForm(candidate);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UpdateCandidatePage(
+                            candidate: candidate, 
+                            positions: positions, 
+                            partylists: partylists
+                          )
+                        )
+                      ).then((result) {
+                        if (result == true) {
+                          // Refresh the candidates list if update was successful
+                          _fetchCandidates();
+                        }
+                      });
                     },
                   ),
+
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.black),
                     onPressed: () {
