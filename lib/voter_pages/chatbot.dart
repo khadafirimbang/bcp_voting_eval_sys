@@ -91,6 +91,14 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     await ChatbotData.fetchQuestions();
     setState(() {
       _isLoading = false;
+
+      // Add welcome message automatically when chatbot initializes
+      _messages.add(ChatMessage(
+        text: 'Welcome to the Student Council Chatbot! 👋\n\n'
+              'I can help you with various questions. '
+              'Please select a category to get started.',
+        isUser: false
+      ));
     });
   }
 
@@ -179,6 +187,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                       });
                                     },
                               style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                foregroundColor: Colors.white,
                                 minimumSize: Size(double.infinity, 50),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
@@ -210,6 +220,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                   ? null
                                   : () => _sendPredefinedMessage(question, answer),
                               style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                foregroundColor: Colors.white,
                                 minimumSize: Size(double.infinity, 50),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
@@ -236,6 +248,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                 });
                               },
                         style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                                foregroundColor: Colors.white,
                           minimumSize: Size(double.infinity, 50),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
