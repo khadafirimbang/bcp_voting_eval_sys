@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:for_testing/main.dart';
-import 'package:for_testing/voter_pages/announcement.dart';
-import 'package:for_testing/voter_pages/chatbot.dart';
-import 'package:for_testing/voter_pages/drawerbar.dart';
+import 'package:SSCVote/main.dart';
+import 'package:SSCVote/voter_pages/announcement.dart';
+import 'package:SSCVote/voter_pages/chatbot.dart';
+import 'package:SSCVote/voter_pages/drawerbar.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 

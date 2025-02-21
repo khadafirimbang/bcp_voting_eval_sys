@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:for_testing/election_survey_pages/election_survey_candidates.dart';
-import 'package:for_testing/main.dart';
-import 'package:for_testing/results_pages/results.dart';
-import 'package:for_testing/voter_pages/announcement.dart';
-import 'package:for_testing/voter_pages/evaluation.dart';
-import 'package:for_testing/voter_pages/profile.dart';
-import 'package:for_testing/voter_pages/vote.dart';
+import 'package:SSCVote/election_survey_pages/election_survey_candidates.dart';
+import 'package:SSCVote/main.dart';
+import 'package:SSCVote/results_pages/results.dart';
+import 'package:SSCVote/voter_pages/announcement.dart';
+import 'package:SSCVote/voter_pages/evaluation.dart';
+import 'package:SSCVote/newsfeed/newsfeed.dart';
+import 'package:SSCVote/voter_pages/profile.dart';
+import 'package:SSCVote/voter_pages/vote.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -37,7 +38,7 @@ class _AppDrawerState extends State<AppDrawer> {
     await prefs.clear();
 
     // Optionally call your server to end the session
-    // await http.post(Uri.parse('http://192.168.1.6/for_testing/logout.php'));
+    // await http.post(Uri.parse('http://192.168.1.6/SSCVote/logout.php'));
     // await http.post(Uri.parse('https://studentcouncil.bcp-sms1.com/php/logout.php'));
 
     if (!context.mounted) return; // Ensure the widget is still mounted
@@ -115,13 +116,22 @@ class _AppDrawerState extends State<AppDrawer> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => EvaluationPage()));
             },
           ),
-                    const SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.announcement, color: Colors.black,),
             title: const Text('Election Survey', style: TextStyle(color: Colors.black)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionSurveyCandidates()));
+            },
+          ),
+          const SizedBox(height: 10,),
+          ListTile(
+            leading: const Icon(Icons.announcement, color: Colors.black,),
+            title: const Text('Newsfeed', style: TextStyle(color: Colors.black)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => NewsfeedPage()));
             },
           ),
           // const SizedBox(height: 10,),

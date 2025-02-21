@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:for_testing/main.dart';
-import 'package:for_testing/voter_pages/chatbot.dart';
-import 'package:for_testing/voter_pages/drawerbar.dart';
+import 'package:SSCVote/main.dart';
+import 'package:SSCVote/voter_pages/chatbot.dart';
+import 'package:SSCVote/voter_pages/drawerbar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 

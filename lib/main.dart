@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:for_testing/admin_pages/dashboard.dart';
-import 'package:for_testing/admin_pages/dashboard2.dart';
-import 'package:for_testing/voter_pages/announcement.dart';
-import 'package:for_testing/signin.dart';
+import 'package:SSCVote/admin_pages/dashboard.dart';
+import 'package:SSCVote/admin_pages/dashboard2.dart';
+import 'package:SSCVote/voter_pages/announcement.dart';
+import 'package:SSCVote/signin.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 

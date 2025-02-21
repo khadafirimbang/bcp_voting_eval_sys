@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:for_testing/admin_pages/dashboard2.dart';
-import 'package:for_testing/admin_pages/drawerbar_admin.dart';
-import 'package:for_testing/admin_pages/survey_results.dart';
-import 'package:for_testing/main.dart';
+import 'package:SSCVote/admin_pages/dashboard2.dart';
+import 'package:SSCVote/admin_pages/drawerbar_admin.dart';
+import 'package:SSCVote/admin_pages/survey_results.dart';
+import 'package:SSCVote/main.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -84,140 +84,142 @@ class _QuestionsListPageState extends State<QuestionsListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-        child: Container(
-          height: 56,
-          alignment: Alignment.center, // Align the AppBar in the center
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-          decoration: BoxDecoration(
-            color: Colors.white, 
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3), // Shadow color
-                blurRadius: 8, // Blur intensity
-                spreadRadius: 1, // Spread radius
-                offset: const Offset(0, 4), // Vertical shadow position
-              ),
-            ],
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Feedback Results',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(onPressed: (){
+                      fetchQuestions();
+                    }, icon: const Icon(Icons.refresh)),
+                    _buildProfileMenu(context)
+                  ],
+                )
+              ],
+            )
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-                icon: const Icon(Icons.menu, color: Colors.black45),
-              ),
-              const Text(
-                'Feedback Results',
-                style: TextStyle(fontSize: 18, color: Colors.black54),
-              ),
-                ],
-              ),
-              Row(
-                children: [
-                  IconButton(onPressed: (){
-                    fetchQuestions();
-                  }, icon: const Icon(Icons.refresh)),
-                  _buildProfileMenu(context)
-                ],
-              )
-            ],
-          )
         ),
-      ),
-      drawer: const AppDrawerAdmin(),
-      body: Column(
-        children: [
-          const SizedBox(height: 16),
-          SizedBox(
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
+        drawer: const AppDrawerAdmin(),
+        body: Column(
+          children: [
+            const SizedBox(height: 16),
+            SizedBox(
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    padding: const EdgeInsets.all(10.0),
+                                    backgroundColor: Colors.black,
                                   ),
-                                  padding: const EdgeInsets.all(10.0),
-                                  backgroundColor: Colors.black,
-                                ),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => SurveyResultsPage()),
-                                  );
-                                },
-                                child: const Text('Survey Results', 
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white,
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => SurveyResultsPage()),
+                                    );
+                                  },
+                                  child: const Text('Survey Results', 
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-          Expanded(
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : error != null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              error!,
-                              style: const TextStyle(color: Colors.red),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  isLoading = true;
-                                  error = null;
-                                });
-                                fetchQuestions();
-                              },
-                              child: const Text('Retry'),
-                            ),
-                          ],
-                        ),
-                      )
-                    : questions.isEmpty
-                        ? const Center(child: Text('No questions available'))
-                        : Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: ListView.builder(
-                              itemCount: questions.length,
-                              itemBuilder: (context, index) {
-                                return Card(
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  child: ListTile(
-                                    title: Text(questions[index]),
-                                    trailing: const Icon(Icons.arrow_forward_ios),
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => ResponsesPage(
-                                            question: questions[index],
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : error != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                error!,
+                                style: const TextStyle(color: Colors.red),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    isLoading = true;
+                                    error = null;
+                                  });
+                                  fetchQuestions();
+                                },
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        )
+                      : questions.isEmpty
+                          ? const Center(child: Text('No questions available'))
+                          : Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: ListView.builder(
+                                itemCount: questions.length,
+                                itemBuilder: (context, index) {
+                                  return Card(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    child: ListTile(
+                                      title: Text(questions[index]),
+                                      trailing: const Icon(Icons.arrow_forward_ios),
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ResponsesPage(
+                                              question: questions[index],
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
-                            ),
-                        ),
-          ),
-        ],
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                          ),
+            ),
+          ],
+        ),
       ),
     );
   }

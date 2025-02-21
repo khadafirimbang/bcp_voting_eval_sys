@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:for_testing/admin_pages/dashboard2.dart';
-import 'package:for_testing/admin_pages/drawerbar_admin.dart';
-import 'package:for_testing/main.dart';
+import 'package:SSCVote/admin_pages/dashboard2.dart';
+import 'package:SSCVote/admin_pages/drawerbar_admin.dart';
+import 'package:SSCVote/main.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;

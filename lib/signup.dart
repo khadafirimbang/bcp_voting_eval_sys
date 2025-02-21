@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:for_testing/signin.dart';
+import 'package:SSCVote/signin.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -67,7 +67,7 @@ class _SignUpPageState extends State<SignUpPage> {
     // Use the sanitized inputs in the request
     try {
       final response = await http.post(
-        // Uri.parse('http://192.168.1.6/for_testing/signup.php'),
+        // Uri.parse('http://192.168.1.6/SSCVote/signup.php'),
         Uri.parse('https://studentcouncil.bcp-sms1.com/php/signup.php'),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: {
