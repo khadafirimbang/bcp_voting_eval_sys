@@ -4,7 +4,6 @@ import 'package:SSCVote/main.dart';
 import 'package:SSCVote/results_pages/results.dart';
 import 'package:SSCVote/voter_pages/announcement.dart';
 import 'package:SSCVote/voter_pages/evaluation.dart';
-import 'package:SSCVote/newsfeed/newsfeed.dart';
 import 'package:SSCVote/voter_pages/profile.dart';
 import 'package:SSCVote/voter_pages/vote.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -123,15 +122,6 @@ class _AppDrawerState extends State<AppDrawer> {
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionSurveyCandidates()));
-            },
-          ),
-          const SizedBox(height: 10,),
-          ListTile(
-            leading: const Icon(Icons.announcement, color: Colors.black,),
-            title: const Text('Newsfeed', style: TextStyle(color: Colors.black)),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => NewsfeedPage()));
             },
           ),
           // const SizedBox(height: 10,),

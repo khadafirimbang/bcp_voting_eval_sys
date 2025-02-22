@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:SSCVote/voter_pages/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/main.dart';
 import 'package:SSCVote/voter_pages/announcement.dart';
@@ -440,7 +441,7 @@ Widget _buildProfileMenu(BuildContext context) {
         switch (item) {
           case 0:
             // Navigate to Profile page
-            // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileInfoPage()));
             break;
           case 1:
             // Handle sign out

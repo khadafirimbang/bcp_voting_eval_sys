@@ -1,3 +1,4 @@
+import 'package:SSCVote/voter_pages/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/admin_pages/announcement_admin.dart';
 import 'package:SSCVote/admin_pages/candidates.dart';
@@ -705,7 +706,7 @@ Widget _buildProfileMenu(BuildContext context) {
         switch (item) {
           case 0:
             // Navigate to Profile page
-            // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileInfoPage()));
             break;
           case 1:
             // Handle sign out
