@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:SSCVote/voter_pages/profile.dart';
@@ -18,25 +19,129 @@ class ResultsPage extends StatefulWidget {
 
 class _ResultsPageState extends State<ResultsPage> {
   List<dynamic> candidates = [];
+  Map<String, Uint8List> imageCache = {};
   int totalVoters = 0;
   int totalVoted = 0;
   int totalNotVoted = 0;
   String selectedPosition = 'All';
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  late Timer _timer;
+  bool isInitialLoad = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialFetch();
+    _setupPeriodicFetch();
+  }
+
+  Future<void> _initialFetch() async {
+    await fetchResults();
+    if (mounted) {
+      setState(() {
+        isInitialLoad = false;
+      });
+    }
+  }
+
+  void _setupPeriodicFetch() {
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _updateVoteCounts();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  Future<void> _updateVoteCounts() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/results.php')
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (mounted) {
+          setState(() {
+            // Only update the vote counts and totals, not the images
+            for (var newCandidate in data['candidates']) {
+              final index = candidates.indexWhere((c) => 
+                c['studentno'].toString() == newCandidate['studentno'].toString());
+              if (index != -1) {
+                candidates[index]['total_votes'] = newCandidate['total_votes'];
+              }
+            }
+            totalVoters = data['total_voters'];
+            totalVoted = data['total_voted'];
+            totalNotVoted = totalVoters - totalVoted;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error updating vote counts: $e');
+    }
+  }
 
   Future<void> fetchResults() async {
-    final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/results.php'));
+    try {
+      final response = await http.get(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/results.php')
+      );
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      setState(() {
-        candidates = data['candidates'];
-        totalVoters = data['total_voters'];
-        totalVoted = data['total_voted'];
-        totalNotVoted = totalVoters - totalVoted;
-      });
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (mounted) {
+          setState(() {
+            candidates = data['candidates'];
+            totalVoters = data['total_voters'];
+            totalVoted = data['total_voted'];
+            totalNotVoted = totalVoters - totalVoted;
+          });
+        }
+
+        // Cache images only during initial load
+        if (isInitialLoad) {
+          for (var candidate in data['candidates']) {
+            final studentNo = candidate['studentno'].toString(); // Convert to string
+            if (candidate['img'] != null && 
+                candidate['img'].isNotEmpty && 
+                !imageCache.containsKey(studentNo)) {
+              try {
+                String cleanBase64 = candidate['img']
+                    .replaceAll(RegExp(r'data:image/[^;]+;base64,'), '')
+                    .replaceAll('\n', '')
+                    .replaceAll('\r', '')
+                    .replaceAll(' ', '+');
+                imageCache[studentNo] = base64Decode(cleanBase64);
+              } catch (e) {
+                print('Error caching image for $studentNo: $e');
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print('Error fetching results: $e');
+    }
+  }
+
+  Widget _buildCandidateImage(dynamic candidate) {
+    final studentNo = candidate['studentno'].toString(); // Convert to string
+    if (candidate['img'] != null && 
+        candidate['img'].isNotEmpty && 
+        imageCache.containsKey(studentNo)) {
+      return CircleAvatar(
+        backgroundImage: MemoryImage(imageCache[studentNo]!),
+        radius: 70,
+      );
     } else {
-      throw Exception('Failed to load results');
+      return const CircleAvatar(
+        backgroundImage: AssetImage('assets/bcp_logo.png'),
+        radius: 70,
+      );
     }
   }
 
@@ -171,16 +276,11 @@ class _ResultsPageState extends State<ResultsPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    fetchResults();
-  }
-
-  @override
   Widget build(BuildContext context) {
     List<dynamic> filteredCandidates = selectedPosition == 'All'
         ? candidates
-        : candidates.where((candidate) => candidate['position'] == selectedPosition).toList();
+        : candidates.where((candidate) => 
+            candidate['position'] == selectedPosition).toList();
 
     Set<String> positions = {'All'};
     for (var candidate in candidates) {
@@ -267,152 +367,125 @@ class _ResultsPageState extends State<ResultsPage> {
           ),
         ),
         drawer: const AppDrawer(),
-        body: SingleChildScrollView( // Make the body scrollable
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Card(
-                  elevation: 2,
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          child: TextButton(
-                            style: TextButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              padding: const EdgeInsets.all(10.0),
-                              backgroundColor: Colors.black,
-                            ),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => ElectionHistory()),
-                              );
-                            },
-                            child: const Text(
-                              'Election History',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        _buildVotingStatsChart(),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                ListView(
-                  physics: NeverScrollableScrollPhysics(), // Prevent scrolling of ListView
-                  shrinkWrap: true, // Allow ListView to take only the necessary space
-                  children: groupedCandidates.entries.map((entry) {
-                    int totalPositionVotes = entry.value.fold<int>(0, (sum, candidate) {
-                      return sum + (candidate['total_votes'] as int);
-                    });
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 10),
-                        ExpansionTile(
-                          collapsedShape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.zero,
-                          ),
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.zero,
-                          ),
-                          title: Text(entry.key),
+        body: isInitialLoad 
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Card(
+                      elevation: 2,
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                        child: Column(
                           children: [
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossAxisCount,
-                                crossAxisSpacing: 8.0,
-                                mainAxisSpacing: 8.0,
-                              ),
-                              itemCount: entry.value.length,
-                              itemBuilder: (context, index) {
-                                var candidate = entry.value[index];
-                                double percentage = totalVoters > 0
-                                    ? (candidate['total_votes'] / totalVoters) * 100
-                                    : 0;
-                                return Card(
-                                  elevation: 5,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        CircleAvatar(
-                                          backgroundImage: candidate['img'] != null && candidate['img'].isNotEmpty
-                                            ? MemoryImage(
-                                                (() {
-                                                  try {
-                                                    // Print raw data for debugging
-                                                    // print('Raw image data: ${candidate['img'].substring(0, 50)}...'); // Show first 50 chars
-                                                    
-                                                    // Clean and decode the base64 string
-                                                    String cleanBase64 = candidate['img']
-                                                        .replaceAll(RegExp(r'data:image/[^;]+;base64,'), '')
-                                                        .replaceAll('\n', '')
-                                                        .replaceAll('\r', '')
-                                                        .replaceAll(' ', '+');
-                                                        
-                                                    // print('Cleaned base64: ${cleanBase64.substring(0, 50)}...'); // Show first 50 chars
-                                                    
-                                                    return base64Decode(cleanBase64);
-                                                  } catch (e) {
-                                                    print('Error decoding image: $e');
-                                                    return Uint8List(0); // Return empty image data
-                                                  }
-                                                })()
-                                              )
-                                            : const AssetImage('assets/bcp_logo.png') as ImageProvider,
-                                          radius: 70,
-                                        ),
-                                        SizedBox(height: 8),
-                                        Text(
-                                          '${candidate['lastname']}, ${candidate['firstname']}',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
-                                        ),
-                                        Text('Position: ${candidate['position']}'),
-                                        Text('${candidate['total_votes']} votes'),
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: LinearProgressIndicator(
-                                            value: percentage / 100,
-                                            backgroundColor: Colors.grey[300],
-                                            color: Colors.blue,
-                                          ),
-                                        ),
-                                        Text('${percentage.toStringAsFixed(2)}%'),
-                                      ],
-                                    ),
+                            SizedBox(
+                              child: TextButton(
+                                style: TextButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
-                                );
-                              },
+                                  padding: const EdgeInsets.all(10.0),
+                                  backgroundColor: Colors.black,
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => ElectionHistory()),
+                                  );
+                                },
+                                child: const Text(
+                                  'Election History',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
                             ),
+                            SizedBox(height: 10),
+                            _buildVotingStatsChart(),
                           ],
                         ),
-                      ],
-                    );
-                  }).toList(),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    ListView(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      children: groupedCandidates.entries.map((entry) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 10),
+                            ExpansionTile(
+                              collapsedShape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.zero,
+                              ),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.zero,
+                              ),
+                              title: Text(entry.key),
+                              children: [
+                                GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: crossAxisCount,
+                                    crossAxisSpacing: 8.0,
+                                    mainAxisSpacing: 8.0,
+                                  ),
+                                  itemCount: entry.value.length,
+                                  itemBuilder: (context, index) {
+                                    var candidate = entry.value[index];
+                                    double percentage = totalVoters > 0
+                                        ? (candidate['total_votes'] / totalVoters) * 100
+                                        : 0;
+                                    return Card(
+                                      elevation: 5,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            _buildCandidateImage(candidate),
+                                            SizedBox(height: 8),
+                                            Text(
+                                              '${candidate['lastname']}, ${candidate['firstname']}',
+                                              style: TextStyle(fontWeight: FontWeight.bold),
+                                            ),
+                                            Text('Position: ${candidate['position']}'),
+                                            Text('${candidate['total_votes']} votes'),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: LinearProgressIndicator(
+                                                value: percentage / 100,
+                                                backgroundColor: Colors.grey[300],
+                                                color: Colors.blue,
+                                              ),
+                                            ),
+                                            Text('${percentage.toStringAsFixed(2)}%'),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        );
+                      }).toList(),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
       ),
     );
   }

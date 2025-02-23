@@ -366,9 +366,12 @@ class _CandidatesPageState extends State<CandidatesPage> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.refresh),
-                  onPressed: _fetchCandidates,
+                  onPressed: () {
+                    _fetchCandidates();
+                    _loadPositions();
+                  },
                 ),
-              // SizedBox(width: 16), // Spacing
+              // SizedBox(width: 16), // Spacing _loadPositions
               _buildProfileMenu(context),
                   ],
                 )

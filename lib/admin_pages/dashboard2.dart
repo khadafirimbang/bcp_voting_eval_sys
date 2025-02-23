@@ -84,17 +84,25 @@ class _DashboardPage2State extends State<DashboardPage2> {
     });
 
     try {
-      // Use Future.wait to run multiple async operations concurrently
+      // First, fetch total voters and results
       await Future.wait([
-        fetchData(),
-        fetchCandidatesData(),
-        _loadStudentNo(),
         fetchResults(),
-        fetchTotalEval(),
-        fetchTotalEvalAns()
+        fetchData(),
       ]);
+
+      // Then fetch evaluation-related data
+      await Future.wait([
+        fetchTotalEval(),
+        fetchTotalEvalAns(),
+      ]);
+
+      // Load student number last
+      await _loadStudentNo();
+      
+      // Additional data fetching
+      await fetchCandidatesData();
+
     } catch (e) {
-      // Handle any errors that might occur during data fetching
       print('Error fetching data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load dashboard data')),
@@ -134,7 +142,6 @@ class _DashboardPage2State extends State<DashboardPage2> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       setState(() {
-        totalVoters = data['totalVoters'];
         totalCandidates = data['totalCandidates'];
         totalEvaluations = data['totalEvaluations'];
         totalAnnouncements = data['totalAnnouncements'];
