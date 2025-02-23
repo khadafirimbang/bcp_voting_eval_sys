@@ -50,7 +50,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
         setState(() {
           totalEvalAns = data['total_eval_answered'];
           // Calculate totalEvalNotAns
-          totalEvalNotAns = totalEval - totalEvalAns;
+          totalEvalNotAns = totalVoters - totalEvalAns;
           totalEvalNotAns = totalEvalNotAns < 0 ? 0 : totalEvalNotAns; // Ensure it's not negative
         });
       } else {
@@ -207,7 +207,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
                     BarChartData(
                       backgroundColor: Colors.white,
                       alignment: BarChartAlignment.spaceAround,
-                      maxY: totalEval * 1.2,
+                      maxY: totalVoters.toDouble() * 1.2,
                       barTouchData: BarTouchData(
                         enabled: true,
                         touchTooltipData: BarTouchTooltipData(
@@ -241,7 +241,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
                                   evaluationData[value.toInt()]['name'],
                                   style: const TextStyle(
                                     fontSize: 12,
-                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               );

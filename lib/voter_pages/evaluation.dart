@@ -23,40 +23,85 @@ class _EvaluationPageState extends State<EvaluationPage> {
   String? studentno;
   bool _isSubmitted = false; // Track submission status
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isLoading = true; // Add loading state
 
   @override
   void initState() {
     super.initState();
-    _fetchSurveyQuestions();
-    _fetchFeedbackQuestions();
     _getStudentNo();
+    _initializeData();
+  }
+
+  // Consolidated initialization method
+  Future<void> _initializeData() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      // Get student number first
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      setState(() {
+        studentno = prefs.getString('studentno');
+      });
+
+      // Fetch data concurrently
+      await Future.wait([
+        _fetchSurveyQuestions(),
+        _fetchFeedbackQuestions(),
+        _checkSubmissionStatus()
+      ]);
+    } catch (e) {
+      print('Initialization error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load data: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   // Fetch Survey questions
   Future<void> _fetchSurveyQuestions() async {
-    var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_evaluation.php?type=Survey');
-    var response = await http.get(url);
+    try {
+      var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_evaluation.php?type=Survey');
+      var response = await http.get(url);
 
-    if (response.statusCode == 200) {
-      setState(() {
-        surveyQuestions = json.decode(response.body);
-      });
-    } else {
-      print('Failed to fetch survey questions');
+      if (response.statusCode == 200) {
+        setState(() {
+          surveyQuestions = json.decode(response.body);
+        });
+      } else {
+        throw Exception('Failed to fetch survey questions');
+      }
+    } catch (e) {
+      print('Survey Questions Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading survey questions: $e')),
+      );
     }
   }
 
   // Fetch Feedback questions
   Future<void> _fetchFeedbackQuestions() async {
-    var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_evaluation.php?type=Feedback');
-    var response = await http.get(url);
+    try {
+      var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_evaluation.php?type=Feedback');
+      var response = await http.get(url);
 
-    if (response.statusCode == 200) {
-      setState(() {
-        feedbackQuestions = json.decode(response.body);
-      });
-    } else {
-      print('Failed to fetch feedback questions');
+      if (response.statusCode == 200) {
+        setState(() {
+          feedbackQuestions = json.decode(response.body);
+        });
+      } else {
+        throw Exception('Failed to fetch feedback questions');
+      }
+    } catch (e) {
+      print('Feedback Questions Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading feedback questions: $e')),
+      );
     }
   }
 
@@ -73,24 +118,43 @@ class _EvaluationPageState extends State<EvaluationPage> {
   Future<void> _checkSubmissionStatus() async {
     if (studentno == null) return;
 
-    var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/check_submission_status.php?studentno=$studentno');
-    var response = await http.get(url);
+    try {
+      var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/check_submission_status.php?studentno=$studentno');
+      var response = await http.get(url);
 
-    if (response.statusCode == 200) {
-      var result = json.decode(response.body);
+      if (response.statusCode == 200) {
+        var result = json.decode(response.body);
+        setState(() {
+          _isSubmitted = result['submitted'] == 1;
+        });
+      } else {
+        throw Exception('Failed to check submission status');
+      }
+    } catch (e) {
+      print('Submission Status Error: $e');
       setState(() {
-        _isSubmitted = result['submitted'] == 1;
-      });
-    } else {
-      print('Failed to check submission status');
-      setState(() {
-        _isSubmitted = false; // Default to not submitted if query fails
+        _isSubmitted = false;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Show loading indicator if data is being fetched
+    if (_isLoading) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 20),
+              Text('Loading Evaluation...'),
+            ],
+          ),
+        ),
+      );
+    }
     return SafeArea(
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
@@ -158,6 +222,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
                   }
       
                   return Card(
+                    elevation: 2,
                     color: Colors.white,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
