@@ -12,35 +12,46 @@ class PositionsPage extends StatefulWidget {
 
 class _PositionsPageState extends State<PositionsPage> {
   late Future<List<dynamic>> _positions;
+  Map<String, int> candidateCounts = {};
 
   @override
   void initState() {
     super.initState();
-    _positions = _fetchPositions();
+    _positions = _fetchPositionsAndCandidateCounts();
   }
 
-  Future<List<dynamic>> _fetchPositions() async {
-  try {
-    final response = await http.get(Uri.parse(
-        'https://studentcouncil.bcp-sms1.com/php/fetch_positions.php')); // Replace with your URL
+  Future<List<dynamic>> _fetchPositionsAndCandidateCounts() async {
+    try {
+      // Fetch positions
+      final positionsResponse = await http.get(
+          Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_positions.php'));
 
-    if (response.statusCode == 200) {
-      final jsonResponse = json.decode(response.body);
+      // Fetch candidate counts
+      final candidateCountsResponse = await http.get(
+          Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_total_running_candidates_pos.php'));
 
-      // Check if the response is a list
-      if (jsonResponse is List) {
-        return jsonResponse; // Return the entire list if it's an array
+      if (positionsResponse.statusCode == 200 && candidateCountsResponse.statusCode == 200) {
+        final positions = json.decode(positionsResponse.body);
+        final counts = json.decode(candidateCountsResponse.body);
+        
+        // Store the counts in the map
+        candidateCounts.clear();
+        for (var count in counts) {
+          candidateCounts[count['position']] = int.parse(count['count'].toString());
+        }
+
+        if (positions is List) {
+          return positions;
+        } else {
+          throw Exception('Expected a list but got ${positions.runtimeType}');
+        }
       } else {
-        // Handle case where response is not a list
-        throw Exception('Expected a list but got ${jsonResponse.runtimeType}');
+        throw Exception('Failed to load data');
       }
-    } else {
-      throw Exception('Failed to load party lists');
+    } catch (e) {
+      rethrow;
     }
-  } catch (e) {
-    rethrow;
   }
-}
 
 
   Future<void> _editPosition(String positionId, String newName, String votesQty) async {
@@ -59,7 +70,7 @@ class _PositionsPageState extends State<PositionsPage> {
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['status'] == 'success') {
         setState(() {
-          _positions = _fetchPositions();
+          _positions = _fetchPositionsAndCandidateCounts();
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -88,7 +99,7 @@ class _PositionsPageState extends State<PositionsPage> {
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['status'] == 'success') {
         setState(() {
-          _positions = _fetchPositions();
+          _positions = _fetchPositionsAndCandidateCounts();
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -114,7 +125,7 @@ class _PositionsPageState extends State<PositionsPage> {
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['status'] == 'success') {
         setState(() {
-          _positions = _fetchPositions();
+          _positions = _fetchPositionsAndCandidateCounts();
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -254,13 +265,21 @@ class _PositionsPageState extends State<PositionsPage> {
                   itemCount: positions.length,
                   itemBuilder: (context, index) {
                     final position = positions[index];
+                    final candidateCount = candidateCounts[position['name']] ?? 0;
+                    
                     return SingleChildScrollView(
                       child: Card(
                         color: Colors.white,
                         elevation: 2,
                         child: ListTile(
                           title: Text(position['name']),
-                          subtitle: Text('Votes Quantity: ${position['votes_qty']}'),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Votes Quantity: ${position['votes_qty']}'),
+                              Text('Running Candidates: $candidateCount'),
+                            ],
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -268,10 +287,10 @@ class _PositionsPageState extends State<PositionsPage> {
                                 icon: const Icon(Icons.edit),
                                 onPressed: () {
                                   _showPositionDialog(
-                                      positionId: position['id'].toString(),
-                                      initialName: position['name'],
-                                      initialVotesQty:
-                                          position['votes_qty'].toString());
+                                    positionId: position['id'].toString(),
+                                    initialName: position['name'],
+                                    initialVotesQty: position['votes_qty'].toString(),
+                                  );
                                 },
                               ),
                               IconButton(
