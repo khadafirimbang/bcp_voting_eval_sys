@@ -1,3 +1,4 @@
+import 'package:SSCVote/forum/list_forum.dart';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/election_survey_pages/election_survey_candidates.dart';
 import 'package:SSCVote/main.dart';
@@ -122,6 +123,22 @@ class _AppDrawerState extends State<AppDrawer> {
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionSurveyCandidates()));
+            },
+          ),
+          const SizedBox(height: 10,),
+          ListTile(
+            leading: const Icon(Icons.format_quote, color: Colors.black,),
+            title: const Text('Forums', style: TextStyle(color: Colors.black)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context, 
+                MaterialPageRoute(
+                  builder: (context) => ForumsListScreen(
+                    studentNo: studentNo ?? '', // Pass the student number
+                  )
+                )
+              );
             },
           ),
           // const SizedBox(height: 10,),
