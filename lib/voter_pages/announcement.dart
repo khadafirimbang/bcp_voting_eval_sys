@@ -139,9 +139,12 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                           ),
                           const SizedBox(height: 10),
-                          Text(
-                            announcement['description'],
-                            textAlign: TextAlign.center,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 50.0),
+                            child: Text(
+                              announcement['description'],
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Text(

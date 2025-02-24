@@ -179,18 +179,58 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
   }
 
   Future<void> _deleteAnnouncement(int id) async {
-    final response = await http.post(
-      Uri.parse('https://studentcouncil.bcp-sms1.com/php/delete_announcement.php'),
-      body: {'id': id.toString()},
+    // Show a confirmation dialog before deleting
+    bool? confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Announcement'),
+          content: const Text('Are you sure you want to delete this announcement? This action cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
     );
 
-    if (response.statusCode == 200) {
-      _fetchAnnouncements();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(backgroundColor: Colors.green, content: Text('Announcement deleted successfully!')),
-      );
-    } else {
-      throw Exception('Failed to delete announcement');
+    // Only proceed with deletion if user confirms
+    if (confirmDelete == true) {
+      try {
+        final response = await http.post(
+          Uri.parse('https://studentcouncil.bcp-sms1.com/php/delete_announcement.php'),
+          body: {'id': id.toString()},
+        );
+
+        if (response.statusCode == 200) {
+          await _fetchAnnouncements();
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                backgroundColor: Colors.green, 
+                content: Text('Announcement deleted successfully!')
+              ),
+            );
+          }
+        } else {
+          throw Exception('Failed to delete announcement');
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.red, 
+              content: Text('Error deleting announcement: ${e.toString()}')
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -203,6 +243,7 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
       _imageData = null; // Reset image field for editing
     });
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -358,7 +399,7 @@ class _AnnouncementAdminPageState extends State<AnnouncementAdminPage> {
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Description: ${announcement['description']}'),
+                                  Text('Description: ${announcement['description']}', maxLines: 3,),
                                   const SizedBox(height: 8),
                                   // Check if the image URL exists and display the image or "No image"
                                   if (announcement['image_url'] != null && announcement['image_url'].isNotEmpty)
