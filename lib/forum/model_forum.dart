@@ -6,6 +6,7 @@ class Forum {
   final DateTime createdAt;
   final int totalLikes;
   final int totalDislikes;
+  final String authorStudentNo;
   
 
   Forum({
@@ -16,6 +17,7 @@ class Forum {
     required this.createdAt,
     this.totalLikes = 0,
     this.totalDislikes = 0,
+    required this.authorStudentNo
   });
 
   factory Forum.fromJson(Map<String, dynamic> json) {
@@ -27,6 +29,7 @@ class Forum {
       createdAt: DateTime.parse(json['created_at']),
       totalLikes: json['total_likes'] ?? 0,
       totalDislikes: json['total_dislikes'] ?? 0,
+      authorStudentNo: json['studentno'].toString(),
     );
   }
 }

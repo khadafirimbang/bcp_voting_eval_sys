@@ -87,16 +87,78 @@ class _CommentScreenState extends State<CommentScreen> {
     }
   }
 
+  bool _isAuthorOfForum(Forum forum) {
+    return forum.authorStudentNo == widget.studentNo;
+  }
+
+  void _deleteForum() async {
+    // Show confirmation dialog
+    bool? confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Forum'),
+        content: Text('Are you sure you want to delete this forum? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    // If user confirms deletion
+    if (confirmDelete == true) {
+      try {
+        final result = await _forumService.deleteForum(widget.studentNo, widget.forum.id);
+
+        if (result['success'] == true) {
+          // Navigate back to previous screen
+          Navigator.of(context).pop(true);
+
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Forum deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['error'] ?? 'Failed to delete forum'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        // Handle any network or unexpected errors
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting forum: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Comments - ${widget.forum.authorName}'),
+        title: Text('${widget.forum.authorName}'),
         actions: [
           IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: _loadComments,
             ),
+            
         ],
       ),
       body: SingleChildScrollView(
@@ -112,9 +174,37 @@ class _CommentScreenState extends State<CommentScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        'By ${widget.forum.authorName}',
-                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'By ${widget.forum.authorName}',
+                            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                          ),
+                          // Delete Forum Option
+                          if (_isAuthorOfForum(widget.forum))
+                            PopupMenuButton<String>(
+                              icon: Icon(Icons.more_horiz, size: 20), // Three dots icon
+                              onSelected: (String choice) {
+                                switch (choice) {
+                                  case 'delete':
+                                    _deleteForum();
+                                    break;
+                                }
+                              },
+                              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                PopupMenuItem<String>(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      SizedBox(width: 10),
+                                      Text('Delete Forum', style: TextStyle(color: Colors.black)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
                       ),
                       SizedBox(height: 10),
                       Text(

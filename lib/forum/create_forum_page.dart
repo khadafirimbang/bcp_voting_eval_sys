@@ -25,13 +25,13 @@ class _CreateForumScreenState extends State<CreateForumScreen> {
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Forum created successfully!')),
+          const SnackBar(content: Text('Forum created successfully!'), backgroundColor: Colors.green,),
         );
         Navigator.pop(context, true); // Return to previous screen
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error creating forum: $e')),
+        SnackBar(content: Text('Error creating forum: $e'), backgroundColor: Colors.red,),
       );
     }
   }

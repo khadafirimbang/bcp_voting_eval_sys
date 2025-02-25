@@ -52,6 +52,21 @@ class ForumService {
     return json.decode(response.body);
   }
 
+  // Delete a forum
+  Future<Map<String, dynamic>> deleteForum(String studentNo, int forumId) async {
+  final response = await http.post(
+    Uri.parse('${baseUrl}delete_forum.php'),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: json.encode({
+      'studentno': studentNo,
+      'forum_id': forumId,
+    }),
+  );
+
+  return json.decode(response.body);
+}
 
   // Fetch comments for a specific forum
   Future<List<Comment>> fetchComments(int forumId) async {

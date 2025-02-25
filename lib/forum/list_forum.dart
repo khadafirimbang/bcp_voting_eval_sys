@@ -72,6 +72,7 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
             createdAt: forum.createdAt,
             totalLikes: result['total_likes'] ?? 0,
             totalDislikes: result['total_dislikes'] ?? 0,
+            authorStudentNo: forum.authorStudentNo,
           );
         }
       });
@@ -113,6 +114,71 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
       return 0;
     }
   }
+
+  bool _isAuthorOfForum(Forum forum) {
+    return forum.authorStudentNo == widget.studentNo;
+  }
+
+
+  void _deleteForum(Forum forum) async {
+    // Show confirmation dialog
+    bool? confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Forum'),
+        content: Text('Are you sure you want to delete this forum? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    // If user confirms deletion
+    if (confirmDelete == true) {
+      try {
+        final result = await _forumService.deleteForum(widget.studentNo, forum.id);
+
+        if (result['success'] == true) {
+          // Remove the forum from the list
+          setState(() {
+            _forums.removeWhere((f) => f.id == forum.id);
+          });
+
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Forum deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['error'] ?? 'Failed to delete forum'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        // Handle any network or unexpected errors
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting forum: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
 
 Widget _buildCommentCountWidget(Forum forum) {
     return FutureBuilder<int>(
@@ -193,15 +259,57 @@ Widget _buildCommentCountWidget(Forum forum) {
               child: Card(
                 elevation: 8,
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: ListTile(
-                    title: Text('By ${forum.authorName}', style: TextStyle(fontWeight: FontWeight.w900)),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('By ${forum.authorName}', style: TextStyle(fontWeight: FontWeight.w900)),
+                        // Delete Forum
+                        if (_isAuthorOfForum(forum))
+                          PopupMenuButton<String>(
+                            icon: Icon(Icons.more_horiz), // Three dots icon
+                            onSelected: (String choice) {
+                              switch (choice) {
+                                case 'delete':
+                                  _deleteForum(forum);
+                                  break;
+                                // case 'edit':
+                                //   _deleteForum(forum);
+                                //   break;
+                              }
+                            },
+                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                              PopupMenuItem<String>(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    SizedBox(width: 10),
+                                    Text('Delete', style: TextStyle(color: Colors.black)),
+                                  ],
+                                ),
+                              ),
+                              // PopupMenuItem<String>(
+                              //   value: 'edit',
+                              //   child: Row(
+                              //     children: [
+                              //       Icon(Icons.edit, color: Colors.black),
+                              //       SizedBox(width: 8),
+                              //       Text('Edit', style: TextStyle(color: Colors.black)),
+                              //     ],
+                              //   ),
+                              // ),
+                            ],
+                          ),
+                      ],
+                    ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(forum.title, style: TextStyle(fontWeight: FontWeight.w800),),
+                        Text(forum.title, style: TextStyle(fontWeight: FontWeight.w800)),
                         SizedBox(height: 15),
-                        Text(forum.content, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                        Text(forum.content, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14), maxLines: 10,),
+                        
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -221,7 +329,12 @@ Widget _buildCommentCountWidget(Forum forum) {
                                       studentNo: widget.studentNo,
                                     ),
                                   ),
-                                );
+                                ).then((result) {
+                                  // If the forum was deleted from the CommentScreen
+                                  if (result == true) {
+                                    _loadForums(); // Refresh the forums list
+                                  }
+                                });
                               },
                             ),
                             _buildCommentCountWidget(forum),
@@ -235,6 +348,7 @@ Widget _buildCommentCountWidget(Forum forum) {
                       ],
                     ),
                   ),
+
                 ),
               ),
             );
