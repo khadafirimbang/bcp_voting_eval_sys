@@ -225,35 +225,39 @@ class _CommentScreenState extends State<CommentScreen> {
                 
                 // Comments List
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _comments.isEmpty
-                          ? const Center(child: Text('No comments yet'))
-                          : ListView.builder(
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemCount: _comments.length,
-                              itemBuilder: (context, index) {
-                                final comment = _comments[index];
-                                return Column(
-                                  children: [
-                                    SizedBox(height: 5),
-                                    Card(
-                                      elevation: 5,
-                                      child: ListTile(
-                                        title: Text(
-                                          '${comment.authorName} • ${_formatDateTime(comment.createdAt)}',
-                                          style: TextStyle(fontWeight: FontWeight.w900),
-                                        ),
-                                        subtitle: Text(comment.content, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16)),
+                padding: const EdgeInsets.all(16.0),
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _comments.isEmpty
+                        ? const Center(child: Text('No comments yet'))
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: _comments.length,
+                            itemBuilder: (context, index) {
+                              final comment = _comments[index];
+                              return Column(
+                                children: [
+                                  SizedBox(height: 5),
+                                  Card(
+                                    elevation: 5,
+                                    child: ListTile(
+                                      title: Text(
+                                        '${comment.authorName} • ${_formatDateTime(comment.createdAt)}',
+                                        style: TextStyle(fontWeight: FontWeight.w900),
                                       ),
+                                      subtitle: Text(
+                                        comment.content, 
+                                        style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16)
+                                      ),
+                                      trailing: _buildCommentOptions(comment),
                                     ),
-                                  ],
-                                );
-                              },
-                            ),
-                ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+              ),
             
                 // Comment Input
                 Padding(
@@ -310,6 +314,96 @@ class _CommentScreenState extends State<CommentScreen> {
       return '${DateFormat('MMM d, yyyy').format(dateTime)}, $timeString';
     }
   }
+
+  // New method to build comment options
+Widget _buildCommentOptions(Comment comment) {
+  // Check if the current user is the author of the comment
+  bool isCommentAuthor = comment.studentNo == widget.studentNo;
+
+  if (!isCommentAuthor) return SizedBox.shrink();
+
+  return PopupMenuButton<String>(
+    icon: Icon(Icons.more_vert),
+    onSelected: (String choice) {
+      switch (choice) {
+        case 'delete':
+          _deleteComment(comment);
+          break;
+      }
+    },
+    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+      PopupMenuItem<String>(
+        value: 'delete',
+        child: Row(
+          children: [
+            SizedBox(width: 10),
+            Text('Delete Comment', style: TextStyle(color: Colors.black)),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+// New method to handle comment deletion
+void _deleteComment(Comment comment) async {
+  // Show confirmation dialog
+  bool? confirmDelete = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Delete Comment'),
+      content: Text('Are you sure you want to delete this comment? This action cannot be undone.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text('Delete', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ),
+  );
+
+  // If user confirms deletion
+  if (confirmDelete == true) {
+    try {
+      final result = await _forumService.deleteComment(widget.studentNo, comment.id);
+
+      if (result['success'] == true) {
+        // Remove the comment from the list
+        setState(() {
+          _comments.removeWhere((c) => c.id == comment.id);
+        });
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Comment deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['error'] ?? 'Failed to delete comment'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle any network or unexpected errors
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting comment: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+}
 
   @override
   void dispose() {

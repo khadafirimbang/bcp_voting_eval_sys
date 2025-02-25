@@ -148,6 +148,42 @@ class ForumService {
     }
   }
 
+  Future<Map<String, dynamic>> deleteComment(String studentNo, int commentId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/delete_comment.php'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'studentno': studentNo,
+          'comment_id': commentId
+        }),
+      );
+
+      // Parse the response body
+      final responseBody = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': responseBody['message'] ?? 'Comment deleted successfully'
+        };
+      } else {
+        return {
+          'success': false,
+          'error': responseBody['error'] ?? 'Failed to delete comment'
+        };
+      }
+    } catch (e) {
+      print('Delete Comment Error: $e');
+      return {
+        'success': false,
+        'error': 'Network error: $e'
+      };
+    }
+  }
+
 }
 
 

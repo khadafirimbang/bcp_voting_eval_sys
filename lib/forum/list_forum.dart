@@ -285,7 +285,7 @@ Widget _buildCommentCountWidget(Forum forum) {
                                 child: Row(
                                   children: [
                                     SizedBox(width: 10),
-                                    Text('Delete', style: TextStyle(color: Colors.black)),
+                                    Text('Delete Forum', style: TextStyle(color: Colors.black)),
                                   ],
                                 ),
                               ),
