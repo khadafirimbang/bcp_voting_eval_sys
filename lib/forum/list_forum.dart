@@ -307,9 +307,67 @@ Widget _buildCommentCountWidget(Forum forum) {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(forum.title, style: TextStyle(fontWeight: FontWeight.w800)),
-                        SizedBox(height: 15),
-                        Text(forum.content, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14), maxLines: 10,),
-                        
+                    SizedBox(height: 15),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Create a TextPainter to calculate if text exceeds 10 lines
+                        final textPainter = TextPainter(
+                          text: TextSpan(
+                            text: forum.content,
+                            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                          ),
+                          maxLines: 10,
+                          textDirection: TextDirection.ltr,
+                        )..layout(maxWidth: constraints.maxWidth);
+
+                        // Check if text is truncated
+                        final bool isTextTruncated = textPainter.didExceedMaxLines;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              forum.content, 
+                              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14), 
+                              maxLines: 10,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (isTextTruncated)
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CommentScreen(
+                                        forum: forum,
+                                        studentNo: widget.studentNo,
+                                      ),
+                                    ),
+                                  ).then((result) {
+                                    // If the forum was deleted from the CommentScreen
+                                    if (result == true) {
+                                      _loadForums(); // Refresh the forums list
+                                    }
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: Text(
+                                      'See more...',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
