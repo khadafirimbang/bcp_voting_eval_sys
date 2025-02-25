@@ -68,6 +68,24 @@ class ForumService {
   return json.decode(response.body);
 }
 
+  // Edit a forum
+  Future<Map<String, dynamic>> editForum(String studentNo, int forumId, String title, String content) async {
+    final response = await http.post(
+      Uri.parse('${baseUrl}edit_forum.php'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'studentno': studentNo,
+        'forum_id': forumId,
+        'title': title,
+        'content': content,
+      }),
+    );
+
+    return json.decode(response.body);
+  }
+
   // Fetch comments for a specific forum
   Future<List<Comment>> fetchComments(int forumId) async {
     try {

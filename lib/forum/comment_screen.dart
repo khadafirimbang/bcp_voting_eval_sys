@@ -1,3 +1,4 @@
+import 'package:SSCVote/forum/edit_forum_page.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:SSCVote/forum/model_forum.dart';
@@ -148,6 +149,24 @@ class _CommentScreenState extends State<CommentScreen> {
     }
   }
 
+  void _editForum() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditForumScreen(
+          forum: widget.forum,
+          studentNo: widget.studentNo,
+        ),
+      ),
+    );
+
+    // If forum was successfully updated, refresh the screen or go back
+    if (result == true) {
+      // Option 1: Pop back to previous screen with updated status
+      Navigator.of(context).pop(true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -190,9 +209,21 @@ class _CommentScreenState extends State<CommentScreen> {
                                   case 'delete':
                                     _deleteForum();
                                     break;
+                                  case 'edit':
+                                  _editForum();
+                                  break;
                                 }
                               },
                               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                PopupMenuItem<String>(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      SizedBox(width: 10),
+                                      Text('Edit Forum', style: TextStyle(color: Colors.black)),
+                                    ],
+                                  ),
+                                ),
                                 PopupMenuItem<String>(
                                   value: 'delete',
                                   child: Row(
@@ -202,6 +233,7 @@ class _CommentScreenState extends State<CommentScreen> {
                                     ],
                                   ),
                                 ),
+                                
                               ],
                             ),
                         ],

@@ -1,5 +1,6 @@
 import 'package:SSCVote/forum/comment_screen.dart';
 import 'package:SSCVote/forum/create_forum_page.dart';
+import 'package:SSCVote/forum/edit_forum_page.dart';
 import 'package:SSCVote/forum/model_forum.dart';
 import 'package:SSCVote/forum/service_forum.dart';
 import 'package:SSCVote/main.dart';
@@ -22,7 +23,6 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final _forumService = ForumService();
   List<Forum> _forums = [];
-  Map<int, int> _commentCountCache = {};
   bool _isLoading = false;
 
   @override
@@ -93,27 +93,7 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
 }
 
 // Method to get comment count
-  Future<int> _getCommentCount(Forum forum) async {
-    // Check if count is already in cache
-    if (_commentCountCache.containsKey(forum.id)) {
-      return _commentCountCache[forum.id]!;
-    }
 
-    try {
-      // Fetch comment count
-      final count = await _forumService.getCommentCount(forum.id);
-      
-      // Cache the count
-      setState(() {
-        _commentCountCache[forum.id] = count;
-      });
-
-      return count;
-    } catch (e) {
-      print('Error fetching comment count: $e');
-      return 0;
-    }
-  }
 
   bool _isAuthorOfForum(Forum forum) {
     return forum.authorStudentNo == widget.studentNo;
@@ -125,16 +105,19 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
     bool? confirmDelete = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete Forum'),
-        content: Text('Are you sure you want to delete this forum? This action cannot be undone.'),
+        title: const Text('Delete Forum'),
+        content: const Text('Are you sure you want to delete this forum? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Delete'),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red, // Make delete button red for emphasis
+            ),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -142,8 +125,20 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
 
     // If user confirms deletion
     if (confirmDelete == true) {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
       try {
         final result = await _forumService.deleteForum(widget.studentNo, forum.id);
+
+        // Dismiss loading dialog
+        Navigator.of(context).pop();
 
         if (result['success'] == true) {
           // Remove the forum from the list
@@ -153,26 +148,37 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
 
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Forum deleted successfully'),
               backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
             ),
           );
+
+          // Optional: Navigate back if this was the last forum or in a detail view
+          if (_forums.isEmpty) {
+            Navigator.of(context).pop();
+          }
         } else {
-          // Show error message
+          // Show specific error message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(result['error'] ?? 'Failed to delete forum'),
               backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
             ),
           );
         }
       } catch (e) {
+        // Dismiss loading dialog
+        Navigator.of(context).pop();
+
         // Handle any network or unexpected errors
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error deleting forum: $e'),
+            content: Text('Error deleting forum: ${e.toString()}'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -180,17 +186,40 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
   }
 
 
-Widget _buildCommentCountWidget(Forum forum) {
-    return FutureBuilder<int>(
-      future: _getCommentCount(forum),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Text('0'); // Show 0 while loading
-        }
-        return Text('${snapshot.data ?? 0}');
+  void _editForum(Forum forum) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditForumScreen(
+          forum: forum,
+          studentNo: widget.studentNo,
+        ),
+      ),
+    );
+
+    // If forum was successfully updated, refresh the list
+    if (result == true) {
+      _loadForums();
+    }
+  }
+
+
+  Widget _buildCommentCountWidget(Forum forum) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return FutureBuilder<int>(
+          future: _forumService.getCommentCount(forum.id),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Text('0'); // Show 0 while loading
+            }
+            return Text('${snapshot.data ?? 0}');
+          },
+        );
       },
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -274,31 +303,31 @@ Widget _buildCommentCountWidget(Forum forum) {
                                 case 'delete':
                                   _deleteForum(forum);
                                   break;
-                                // case 'edit':
-                                //   _deleteForum(forum);
-                                //   break;
+                                case 'edit':
+                                  _editForum(forum);
+                                  break;
                               }
                             },
                             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                              PopupMenuItem<String>(
+                                value: 'edit',
+                                child: Row(
+                                  children: [
+                                    SizedBox(width: 8),
+                                    Text('Edit', style: TextStyle(color: Colors.black)),
+                                  ],
+                                ),
+                              ),
                               PopupMenuItem<String>(
                                 value: 'delete',
                                 child: Row(
                                   children: [
                                     SizedBox(width: 10),
-                                    Text('Delete Forum', style: TextStyle(color: Colors.black)),
+                                    Text('Delete', style: TextStyle(color: Colors.black)),
                                   ],
                                 ),
                               ),
-                              // PopupMenuItem<String>(
-                              //   value: 'edit',
-                              //   child: Row(
-                              //     children: [
-                              //       Icon(Icons.edit, color: Colors.black),
-                              //       SizedBox(width: 8),
-                              //       Text('Edit', style: TextStyle(color: Colors.black)),
-                              //     ],
-                              //   ),
-                              // ),
+                              
                             ],
                           ),
                       ],
