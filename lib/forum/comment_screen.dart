@@ -25,6 +25,7 @@ class _CommentScreenState extends State<CommentScreen> {
   bool _isLoading = false;
   bool _isSubmittingComment = false;
   int? _editingCommentId;
+  bool _showAllComments = false;
 
   @override
   void initState() {
@@ -224,11 +225,20 @@ class _CommentScreenState extends State<CommentScreen> {
     }
   }
 
+
+  // Method to get displayed comments based on _showAllComments
+  List<Comment> _getDisplayedComments() {
+    if (_showAllComments) {
+      return _comments;
+    }
+    return _comments.take(5).toList();
+  }
   
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[200],
       appBar: AppBar(
         title: Text('${widget.forum.authorName}'),
         actions: [
@@ -316,39 +326,86 @@ class _CommentScreenState extends State<CommentScreen> {
                 
                 // Comments List
                 Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: _isLoading
+                  padding: const EdgeInsets.all(16.0),
+                  child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : _comments.isEmpty
-                        ? const Center(child: Text('No comments yet'))
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: _comments.length,
-                            itemBuilder: (context, index) {
-                              final comment = _comments[index];
-                              return Column(
-                                children: [
-                                  SizedBox(height: 5),
-                                  Card(
-                                    elevation: 5,
-                                    child: ListTile(
-                                      title: Text(
-                                        '${comment.authorName} • ${_formatDateTime(comment.createdAt)}',
-                                        style: TextStyle(fontWeight: FontWeight.w900),
+                      ? const Center(child: Text('No comments yet'))
+                      : Column(
+                          children: [
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: _getDisplayedComments().length,
+                              itemBuilder: (context, index) {
+                                final comment = _getDisplayedComments()[index];
+                                return Column(
+                                  children: [
+                                    SizedBox(height: 5),
+                                    Card(
+                                      color: Colors.grey[300],
+                                      child: ListTile(
+                                        title: Text(
+                                          '${comment.authorName}',
+                                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                        ),
+                                        subtitle: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              comment.content, 
+                                              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16)
+                                            ),
+                                            Text(
+                                              '${_formatDateTime(comment.createdAt)}',
+                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w200),
+                                            )
+                                          ],
+                                        ),
+                                        trailing: _buildCommentOptions(comment),
                                       ),
-                                      subtitle: Text(
-                                        comment.content, 
-                                        style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16)
-                                      ),
-                                      trailing: _buildCommentOptions(comment),
                                     ),
+                                  ],
+                                );
+                              },
+                            ),
+                            // "See all comments" button
+                            if (!_showAllComments && _comments.length > 10)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black,
+                                    foregroundColor: Colors.white,
                                   ),
-                                ],
-                              );
-                            },
-                          ),
-              ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _showAllComments = true;
+                                    });
+                                  },
+                                  child: Text('See all ${_comments.length} comments'),
+                                ),
+                              ),
+                            // "Collapse comments" button when all comments are shown
+                            if (_showAllComments && _comments.length > 5)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _showAllComments = false;
+                                    });
+                                  },
+                                  child: Text('Collapse to 5 comments'),
+                                ),
+                              ),
+                          ],
+                        ),
+                ),
             
                 // Comment Input
                 Padding(
