@@ -19,11 +19,23 @@ class ForumsListScreen extends StatefulWidget {
   _ForumsListScreenState createState() => _ForumsListScreenState();
 }
 
+// Enum for sorting options
+  enum ForumSortOption {
+    newest,
+    oldest,
+    popular,
+    myForums
+  }
+
 class _ForumsListScreenState extends State<ForumsListScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final _forumService = ForumService();
   List<Forum> _forums = [];
   bool _isLoading = false;
+  // Current selected sort option
+  ForumSortOption _currentSortOption = ForumSortOption.newest;
+  List<Forum> _originalForums = []; // To store the original list of forums
+  Map<int, int> _commentCountCache = {};
 
   @override
   void initState() {
@@ -38,8 +50,11 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
 
     try {
       final forums = await _forumService.fetchForums();
+      await _preloadCommentCounts(forums);
       setState(() {
-        _forums = forums;
+        _originalForums = forums;
+        _forums = List.from(_originalForums);
+        _sortForums(ForumSortOption.newest); // Default sorting
         _isLoading = false;
       });
     } catch (e) {
@@ -47,6 +62,59 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
         SnackBar(content: Text('Error loading forums: $e')),
       );
     }
+  }
+
+  void _sortForums(ForumSortOption option) {
+    setState(() {
+      _currentSortOption = option;
+      
+      switch (option) {
+        case ForumSortOption.newest:
+          _forums = List.from(_originalForums)
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          break;
+        case ForumSortOption.oldest:
+          _forums = List.from(_originalForums)
+            ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+          break;
+        case ForumSortOption.popular:
+          _forums = List.from(_originalForums)
+            ..sort((a, b) {
+              // Sort by total interactions (likes + comments)
+              return _calculatePopularity(b).compareTo(_calculatePopularity(a));
+            });
+          break;
+        case ForumSortOption.myForums:
+          _forums = _originalForums
+              .where((forum) => _isAuthorOfForum(forum))
+              .toList();
+          break;
+      }
+    });
+  }
+
+  // Preload comment counts for all forums
+  Future<void> _preloadCommentCounts(List<Forum> forums) async {
+    _commentCountCache.clear();
+    for (var forum in forums) {
+      try {
+        int commentCount = await _forumService.getCommentCount(forum.id);
+        _commentCountCache[forum.id] = commentCount;
+      } catch (e) {
+        print('Error loading comment count for forum ${forum.id}: $e');
+        _commentCountCache[forum.id] = 0;
+      }
+    }
+  }
+
+  // Helper method to calculate forum popularity
+  int _calculatePopularity(Forum forum) {
+    // Get cached comment count, default to 0 if not found
+    int commentCount = _commentCountCache[forum.id] ?? 0;
+    // print('comments: $commentCount');
+    
+    // Calculate popularity as total likes plus total comments
+    return forum.totalLikes + commentCount;
   }
   
   void _handleLike(Forum forum, bool isLike) async {
@@ -246,13 +314,95 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
               ),
               Row(
                 children: [
-                  IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: () {
-                    _loadForums();
-                  },
-                ),
-                  _buildProfileMenu(context)
+                  PopupMenuButton<ForumSortOption>(
+                      icon: Icon(Icons.filter_list, color: Colors.black54),
+                      onSelected: _sortForums,
+                      itemBuilder: (BuildContext context) => [
+                        PopupMenuItem<ForumSortOption>(
+                          value: ForumSortOption.newest,
+                          child: Row(
+                            children: [
+                              Icon(Icons.new_releases_outlined, 
+                                color: _currentSortOption == ForumSortOption.newest 
+                                  ? Colors.black
+                                  : Colors.black45
+                              ),
+                              SizedBox(width: 10),
+                              Text('Newest', 
+                                style: TextStyle(
+                                  color: _currentSortOption == ForumSortOption.newest 
+                                    ? Colors.black
+                                    : Colors.black45                               )
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem<ForumSortOption>(
+                          value: ForumSortOption.oldest,
+                          child: Row(
+                            children: [
+                              Icon(Icons.history, 
+                                color: _currentSortOption == ForumSortOption.oldest 
+                                  ? Colors.black
+                                  : Colors.black45
+                              ),
+                              SizedBox(width: 10),
+                              Text('Oldest', 
+                                style: TextStyle(
+                                  color: _currentSortOption == ForumSortOption.oldest 
+                                    ? Colors.black
+                                    : Colors.black45                               )
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem<ForumSortOption>(
+                          value: ForumSortOption.popular,
+                          child: Row(
+                            children: [
+                              Icon(Icons.trending_up, 
+                                color: _currentSortOption == ForumSortOption.popular 
+                                  ? Colors.black
+                                  : Colors.black45
+                              ),
+                              SizedBox(width: 10),
+                              Text('Popular', 
+                                style: TextStyle(
+                                  color: _currentSortOption == ForumSortOption.popular 
+                                    ? Colors.black
+                                    : Colors.black45                               )
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem<ForumSortOption>(
+                          value: ForumSortOption.myForums,
+                          child: Row(
+                            children: [
+                              Icon(Icons.person_outline, 
+                                color: _currentSortOption == ForumSortOption.myForums 
+                                  ? Colors.black
+                                  : Colors.black45
+                              ),
+                              SizedBox(width: 10),
+                              Text('My Forums', 
+                                style: TextStyle(
+                                  color: _currentSortOption == ForumSortOption.myForums 
+                                    ? Colors.black
+                                    : Colors.black45                               )
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: () {
+                        _loadForums(); // This will reset to newest by default
+                      },
+                    ),
+                    _buildProfileMenu(context)
                 ],
               )
             ],

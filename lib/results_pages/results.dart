@@ -338,7 +338,7 @@ class _ResultsPageState extends State<ResultsPage> {
                       icon: const Icon(Icons.menu, color: Colors.black45),
                     ),
                     const Text(
-                      'Election Results',
+                      'Results',
                       style: TextStyle(fontSize: 16, color: Colors.black54),
                     ),
                   ],
