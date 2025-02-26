@@ -165,7 +165,7 @@ class _ElectionSurveyCandidatesState extends State<ElectionSurveyCandidates> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  Text("This is only a survey, please select the Candidates and Partyist you prefer", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                  Text("This is only a survey, please select the Candidates and Partylist you preferred.", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
                   Expanded(
                     child: ListView(
                         children: candidatesByPosition.entries.map((entry) {
@@ -199,8 +199,9 @@ class _ElectionSurveyCandidatesState extends State<ElectionSurveyCandidates> {
               ),
             ),
         floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.black,
           onPressed: onNext,
-          child: Icon(Icons.arrow_forward),
+          child: Icon(Icons.arrow_forward, color: Colors.white),
         ),
       ),
     );
@@ -344,8 +345,9 @@ class _ElectionSurveyPartylistState extends State<ElectionSurveyPartylist> {
               ),
             ),
         floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.black,
           onPressed: onSubmit,
-          child: Icon(Icons.check),
+          child: Icon(Icons.check, color: Colors.white),
         ),
       ),
     );

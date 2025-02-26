@@ -48,7 +48,7 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
       );
     }
   }
-
+  
   void _handleLike(Forum forum, bool isLike) async {
   try {
     final result = await _forumService.likeForum(
@@ -114,9 +114,6 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red, // Make delete button red for emphasis
-            ),
             child: const Text('Delete'),
           ),
         ],
@@ -125,20 +122,9 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
 
     // If user confirms deletion
     if (confirmDelete == true) {
-      // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
 
       try {
         final result = await _forumService.deleteForum(widget.studentNo, forum.id);
-
-        // Dismiss loading dialog
-        Navigator.of(context).pop();
 
         if (result['success'] == true) {
           // Remove the forum from the list
@@ -170,9 +156,6 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
           );
         }
       } catch (e) {
-        // Dismiss loading dialog
-        Navigator.of(context).pop();
-
         // Handle any network or unexpected errors
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -20,6 +20,7 @@ class _EditForumScreenState extends State<EditForumScreen> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
   final _forumService = ForumService();
+  bool _isSubmittingForum = false;
 
   @override
   void initState() {
@@ -30,6 +31,17 @@ class _EditForumScreenState extends State<EditForumScreen> {
   }
 
   void _updateForum() async {
+    if (_contentController.text.trim().isEmpty || _titleController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Title or Content cannot be empty')),
+      );
+      return;
+    }
+    // Set loading state
+    setState(() {
+      _isSubmittingForum = true;
+    });
+
     try {
       final result = await _forumService.editForum(
         widget.studentNo, 
@@ -61,7 +73,12 @@ class _EditForumScreenState extends State<EditForumScreen> {
           backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      setState(() {
+        _isSubmittingForum = false;
+      });
     }
+
   }
 
   @override
@@ -81,6 +98,8 @@ class _EditForumScreenState extends State<EditForumScreen> {
                 border: OutlineInputBorder(),
               ),
               maxLines: null,
+              maxLength: null,
+              enabled: !_isSubmittingForum,
             ),
             const SizedBox(height: 16),
             TextField(
@@ -90,12 +109,15 @@ class _EditForumScreenState extends State<EditForumScreen> {
                 border: OutlineInputBorder(),
               ),
               maxLines: 6,
+              enabled: !_isSubmittingForum,
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _updateForum,
-              child: const Text('Update Forum'),
-            ),
+            _isSubmittingForum
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _updateForum,
+                    child: const Text('Update Forum'),
+                  ),
           ],
         ),
       ),

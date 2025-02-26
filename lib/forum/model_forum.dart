@@ -7,7 +7,6 @@ class Forum {
   final int totalLikes;
   final int totalDislikes;
   final String authorStudentNo;
-  
 
   Forum({
     required this.id,

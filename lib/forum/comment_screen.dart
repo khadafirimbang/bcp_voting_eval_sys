@@ -23,6 +23,8 @@ class _CommentScreenState extends State<CommentScreen> {
   final _commentController = TextEditingController();
   List<Comment> _comments = [];
   bool _isLoading = false;
+  bool _isSubmittingComment = false;
+  int? _editingCommentId;
 
   @override
   void initState() {
@@ -56,35 +58,90 @@ class _CommentScreenState extends State<CommentScreen> {
   }
 
   void _submitComment() async {
-    if (_commentController.text.trim().isEmpty) {
+    String commentText = _commentController.text.trim();
+
+    if (commentText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Comment cannot be empty')),
       );
       return;
     }
 
-    try {
-      final result = await _forumService.addComment(
-        widget.studentNo, 
-        widget.forum.id, 
-        _commentController.text.trim()
-      );
+    // Set loading state
+    setState(() {
+      _isSubmittingComment = true;
+    });
 
-      if (result['success'] == true) {
-        // Clear the text field
-        _commentController.clear();
-        
-        // Reload comments
-        _loadComments();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['error'] ?? 'Failed to add comment')),
+    try {
+      // Check if we're editing an existing comment
+      if (_editingCommentId != null) {
+        // Edit existing comment
+        final result = await _forumService.editComment(
+          widget.studentNo, 
+          _editingCommentId!, 
+          commentText
         );
+
+        if (result['success'] == true) {
+          // Update the comment in the list
+          setState(() {
+            int index = _comments.indexWhere((c) => c.id == _editingCommentId);
+            if (index != -1) {
+              _comments[index] = Comment(
+                id: _comments[index].id,
+                forumId: _comments[index].forumId,
+                studentNo: _comments[index].studentNo,
+                content: commentText,
+                authorName: _comments[index].authorName,
+                createdAt: _comments[index].createdAt,
+              );
+            }
+            
+            // Reset editing state
+            _editingCommentId = null;
+          });
+
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Comment updated successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result['error'] ?? 'Failed to edit comment')),
+          );
+        }
+      } else {
+        // Add new comment
+        final result = await _forumService.addComment(
+          widget.studentNo, 
+          widget.forum.id, 
+          commentText
+        );
+
+        if (result['success'] == true) {
+          // Reload comments
+          _loadComments();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result['error'] ?? 'Failed to add comment')),
+          );
+        }
       }
+
+      // Clear the text field
+      _commentController.clear();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error submitting comment: $e')),
       );
+    } finally {
+      // Always reset loading state
+      setState(() {
+        _isSubmittingComment = false;
+      });
     }
   }
 
@@ -166,6 +223,8 @@ class _CommentScreenState extends State<CommentScreen> {
       Navigator.of(context).pop(true);
     }
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -302,17 +361,48 @@ class _CommentScreenState extends State<CommentScreen> {
                           keyboardType: TextInputType.multiline,
                           maxLines: null,
                           decoration: InputDecoration(
-                            hintText: 'Add a comment...',
+                            hintText: _editingCommentId != null 
+                              ? 'Edit your comment...' 
+                              : 'Add a comment...',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
+                            suffixIcon: _editingCommentId != null
+                              ? IconButton(
+                                  icon: Icon(Icons.close),
+                                  onPressed: () {
+                                    setState(() {
+                                      _editingCommentId = null;
+                                      _commentController.clear();
+                                    });
+                                  },
+                                )
+                              : null,
                           ),
+                          // Disable text field while submitting
+                          enabled: !_isSubmittingComment,
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.send, color: Colors.black),
-                        onPressed: _submitComment,
-                      ),
+                      // Conditionally render send button or loading indicator
+                      _isSubmittingComment
+                        ? SizedBox(
+                            width: 48, // Match the IconButton size
+                            height: 48,
+                            child: Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                ),
+                              ),
+                            ),
+                          )
+                        : IconButton(
+                            icon: Icon(Icons.send, color: Colors.black),
+                            onPressed: _submitComment,
+                          ),
                     ],
                   ),
                 ),
@@ -347,7 +437,7 @@ class _CommentScreenState extends State<CommentScreen> {
     }
   }
 
-  // New method to build comment options
+  // Method to build comment options
 Widget _buildCommentOptions(Comment comment) {
   // Check if the current user is the author of the comment
   bool isCommentAuthor = comment.studentNo == widget.studentNo;
@@ -361,9 +451,21 @@ Widget _buildCommentOptions(Comment comment) {
         case 'delete':
           _deleteComment(comment);
           break;
+        case 'edit':
+          _editComment(comment);
+          break;
       }
     },
     itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+      PopupMenuItem<String>(
+        value: 'edit',
+        child: Row(
+          children: [
+            SizedBox(width: 10),
+            Text('Edit Comment', style: TextStyle(color: Colors.black)),
+          ],
+        ),
+      ),
       PopupMenuItem<String>(
         value: 'delete',
         child: Row(
@@ -377,64 +479,83 @@ Widget _buildCommentOptions(Comment comment) {
   );
 }
 
-// New method to handle comment deletion
-void _deleteComment(Comment comment) async {
-  // Show confirmation dialog
-  bool? confirmDelete = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text('Delete Comment'),
-      content: Text('Are you sure you want to delete this comment? This action cannot be undone.'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text('Delete', style: TextStyle(color: Colors.red)),
-        ),
-      ],
-    ),
-  );
-
-  // If user confirms deletion
-  if (confirmDelete == true) {
-    try {
-      final result = await _forumService.deleteComment(widget.studentNo, comment.id);
-
-      if (result['success'] == true) {
-        // Remove the comment from the list
-        setState(() {
-          _comments.removeWhere((c) => c.id == comment.id);
-        });
-
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Comment deleted successfully'),
-            backgroundColor: Colors.green,
+  // Method to handle comment deletion
+  void _deleteComment(Comment comment) async {
+    // Show confirmation dialog
+    bool? confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Comment'),
+        content: Text('Are you sure you want to delete this comment? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel'),
           ),
-        );
-      } else {
-        // Show error message
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Delete',),
+          ),
+        ],
+      ),
+    );
+
+    // If user confirms deletion
+    if (confirmDelete == true) {
+      try {
+        final result = await _forumService.deleteComment(widget.studentNo, comment.id);
+
+        if (result['success'] == true) {
+          // Remove the comment from the list
+          setState(() {
+            _comments.removeWhere((c) => c.id == comment.id);
+          });
+
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Comment deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['error'] ?? 'Failed to delete comment'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        // Handle any network or unexpected errors
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result['error'] ?? 'Failed to delete comment'),
+            content: Text('Error deleting comment: $e'),
             backgroundColor: Colors.red,
           ),
         );
       }
-    } catch (e) {
-      // Handle any network or unexpected errors
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error deleting comment: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
+
+  // Method to handle comment editing
+  void _editComment(Comment comment) {
+  // Set the comment controller to the current comment content
+  _commentController.text = comment.content;
+
+  // Scroll to the bottom of the screen to show the comment input
+  // This assumes you're using a SingleChildScrollView
+  // If not, you might need to adjust this approach
+  Future.delayed(Duration.zero, () {
+    // Focus on the comment input field
+    FocusScope.of(context).requestFocus();
+  });
+
+  // Temporarily store the comment being edited
+  setState(() {
+    _editingCommentId = comment.id;
+  });
 }
 
   @override

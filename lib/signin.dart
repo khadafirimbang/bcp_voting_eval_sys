@@ -237,15 +237,15 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
                                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                               ),
                             ),
-                          const SizedBox(height: 10),
+                          // const SizedBox(height: 10),
                           // TextButton(
                           //   onPressed: () {
-                          //     // Navigator.push(
-                          //     //   context,
-                          //     //   MaterialPageRoute(builder: (context) => const SignUpPage()),
-                          //     // );
+                          //     Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(builder: (context) => const SignUpPage()),
+                          //     );
                           //   },
-                          //   child: const Text('Forgot Password', style: TextStyle(color: Colors.black)),
+                          //   child: const Text('Create Account', style: TextStyle(color: Colors.black)),
                           // ),
                         ],
                       ),

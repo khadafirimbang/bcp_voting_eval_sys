@@ -166,6 +166,7 @@ class ForumService {
     }
   }
 
+  // Delete a comment
   Future<Map<String, dynamic>> deleteComment(String studentNo, int commentId) async {
     try {
       final response = await http.post(
@@ -201,6 +202,49 @@ class ForumService {
       };
     }
   }
+
+  // Edit a comment
+  Future<Map<String, dynamic>> editComment(
+    String studentNo, 
+    int commentId, 
+    String newContent
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${baseUrl}edit_comment.php'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'studentno': studentNo,
+          'comment_id': commentId,
+          'content': newContent,
+        }),
+      );
+
+      // Parse the response body
+      final responseBody = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': responseBody['message'] ?? 'Comment updated successfully'
+        };
+      } else {
+        return {
+          'success': false,
+          'error': responseBody['error'] ?? 'Failed to edit comment'
+        };
+      }
+    } catch (e) {
+      print('Edit Comment Error: $e');
+      return {
+        'success': false,
+        'error': 'Network error: $e'
+      };
+    }
+  }
+  
 
 }
 
