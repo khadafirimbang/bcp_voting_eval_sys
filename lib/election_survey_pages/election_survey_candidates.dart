@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:SSCVote/voter_pages/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/main.dart';
 import 'package:SSCVote/voter_pages/announcement.dart';
 import 'package:SSCVote/voter_pages/drawerbar.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,22 +29,45 @@ class _ElectionSurveyCandidatesState extends State<ElectionSurveyCandidates> {
   }
 
   Future<void> checkParticipation() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? studentno = prefs.getString('studentno');
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? studentno = prefs.getString('studentno');
 
-    final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/check_participation.php?studentno=$studentno'));
-    if (response.statusCode == 200 && json.decode(response.body)['participated']) {
-      // User has already participated
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ParticipationMessage(message: 'You already participated in the election survey.')),
-      );
+  try {
+    final response = await http.get(
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/check_participation.php?studentno=$studentno')
+    );
+    
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> participationData = json.decode(response.body);
+      
+      if (participationData['participated'] == true) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ParticipationDetailsPage(
+              selectedCandidates: participationData['selected_candidates'],
+              selectedPartylist: participationData['selected_partylist'],
+              participationDate: participationData['participation_date'],
+            ),
+          ),
+        );
+      } else {
+        // Proceed with survey
+        fetchCandidates();
+        fetchVotesQty();
+      }
     } else {
-      // User has not participated, fetch candidates and votes quantity
-      fetchCandidates();
-      fetchVotesQty();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error checking participation status')),
+      );
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Network error: ${e.toString()}')),
+    );
   }
+}
+
 
   Future<void> fetchCandidates() async {
     final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_candidates.php'));
@@ -177,10 +203,10 @@ class _ElectionSurveyCandidatesState extends State<ElectionSurveyCandidates> {
                             children: positionCandidates.map((candidate) {
                               String candidateId = candidate['studentno'].toString();
                               return ListTile(
-                                leading: CircleAvatar(
-                                  backgroundImage: NetworkImage(candidate['image_url'] ?? ''),
-                                  child: candidate['image_url'] == null ? Icon(Icons.person) : null,
-                                ),
+                                // leading: CircleAvatar(
+                                  
+                                //   child: Icon(Icons.person),
+                                // ),
                                 title: Text('${candidate['firstname']} ${candidate['lastname']}'),
                                 subtitle: Text('Party: ${candidate['partylist']}'),
                                 trailing: Checkbox(
@@ -240,39 +266,157 @@ class _ElectionSurveyPartylistState extends State<ElectionSurveyPartylist> {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? studentno = prefs.getString('studentno');
 
+  // Ensure a partylist is selected
+  if (selectedPartylist == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Please select a Partylist before submitting'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
+
   showDialog(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text('Confirm Submission'),
-      content: Text('Are you sure you want to submit your selections?'),
-      actions: [
-        TextButton(
-          onPressed: () async {
-            await submitSurveyData(studentno!);
-            await updatePopularity();
-            Navigator.of(context).pop();
-          },
-          child: Text('Yes'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text('No'),
-        ),
-      ],
+    barrierDismissible: false,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) {
+        return WillPopScope(
+          onWillPop: () async => false,
+          child: AlertDialog(
+            title: Text('Confirm Submission'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Are you sure you want to submit your selections?'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  // Dismiss the confirmation dialog
+                  Navigator.of(context).pop();
+
+                  // Show loading dialog
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (context) => WillPopScope(
+                      onWillPop: () async => false,
+                      child: AlertDialog(
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: 16),
+                            Text('Submitting your selections...'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+
+                  try {
+                    // Perform submissions
+                    await submitSurveyData(studentno!);
+                    await updatePopularity();
+
+                    // Ensure we're not in the loading dialog before navigating
+                    Navigator.of(context, rootNavigator: true).pop();
+
+                    // Fetch survey details and navigate
+                    final surveyDetails = await fetchSurveyDetails(studentno);
+                    
+                    if (surveyDetails['participated'] == true) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ParticipationDetailsPage(
+                            selectedCandidates: surveyDetails['selectedCandidates'],
+                            selectedPartylist: surveyDetails['selectedPartylist'],
+                            participationDate: surveyDetails['participationDate'],
+                          ),
+                        ),
+                      );
+                    } else {
+                      throw Exception('Survey submission failed');
+                    }
+                  } catch (e) {
+                    // Close any open dialogs
+                    Navigator.of(context, rootNavigator: true).pop();
+
+                    // Show error snackbar
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error submitting survey: ${e.toString()}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                child: Text('Yes'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('No'),
+              ),
+            ],
+          ),
+        );
+      },
     ),
   );
 }
 
+
+
+Future<Map<String, dynamic>> fetchSurveyDetails(String studentno) async {
+  try {
+    final response = await http.get(
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/check_participation.php?studentno=$studentno'),
+    ).timeout(
+      Duration(seconds: 10), // Add a timeout
+      onTimeout: () {
+        throw TimeoutException('Network request timed out');
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> surveyData = json.decode(response.body);
+
+      if (surveyData['participated'] == true) {
+        return {
+          'participated': true,
+          'participationDate': surveyData['participation_date'] ?? DateTime.now().toIso8601String(),
+          'selectedCandidates': surveyData['selected_candidates'] ?? [],
+          'selectedPartylist': surveyData['selected_partylist'] ?? {},
+        };
+      } else {
+        throw Exception('Survey submission not found');
+      }
+    } else {
+      throw Exception('Failed to fetch survey details: ${response.body}');
+    }
+  } catch (e) {
+    print('Error fetching survey details: $e');
+    throw e; // Rethrow to be handled by caller
+  }
+}
+
+
+
   Future<void> submitSurveyData(String studentno) async {
-    List<String> selectedCandidateIds = widget.selectedCandidates.values.expand((x) => x).toList();
-    String? selectedPartylistId = selectedPartylist;
+  List<String> selectedCandidateIds = widget.selectedCandidates.values.expand((x) => x).toList();
+  String? selectedPartylistId = selectedPartylist;
 
-    Map<String, dynamic> body = {
-      'studentno': studentno,
-      'candidates': selectedCandidateIds,
-      'partylist': selectedPartylistId,
-    };
+  Map<String, dynamic> body = {
+    'studentno': studentno,
+    'candidates': selectedCandidateIds,
+    'partylist': selectedPartylistId,
+  };
 
+  try {
     final response = await http.post(
       Uri.parse('https://studentcouncil.bcp-sms1.com/php/submit_survey.php'),
       headers: {'Content-Type': 'application/json'},
@@ -280,36 +424,53 @@ class _ElectionSurveyPartylistState extends State<ElectionSurveyPartylist> {
     );
 
     if (response.statusCode == 200) {
+      // Fetch and navigate to details page
+      final surveyDetails = await fetchSurveyDetails(studentno);
+    
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => ParticipationMessage(message: 'Thank you for participating in our survey.')),
+        MaterialPageRoute(
+          builder: (context) => ParticipationDetailsPage(
+            selectedCandidates: surveyDetails['selectedCandidates'],
+            selectedPartylist: surveyDetails['selectedPartylist'],
+            participationDate: surveyDetails['participationDate'],
+          ),
+        ),
       );
     } else {
-      print('Failed to submit survey: ${response.body}');
+      // Throw an error to be caught in the calling method
+      throw Exception('Failed to submit survey: ${response.body}');
     }
+  } catch (e) {
+    // Rethrow to be handled by the caller
+    rethrow;
   }
+}
 
   Future<void> updatePopularity() async {
-    List<String> selectedCandidateIds = widget.selectedCandidates.values.expand((x) => x).toList();
-    String? selectedPartylistId = selectedPartylist;
+  List<String> selectedCandidateIds = widget.selectedCandidates.values.expand((x) => x).toList();
+  String? selectedPartylistId = selectedPartylist;
 
-    Map<String, dynamic> body = {
-      'candidates': selectedCandidateIds,
-      'partylist': selectedPartylistId,
-    };
+  Map<String, dynamic> body = {
+    'candidates': selectedCandidateIds,
+    'partylist': selectedPartylistId,
+  };
 
+  try {
     final response = await http.post(
       Uri.parse('https://studentcouncil.bcp-sms1.com/php/update_popularity.php'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(body),
     );
 
-    if (response.statusCode == 200) {
-      print('Popularity updated successfully');
-    } else {
-      print('Failed to update popularity: ${response.body}');
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update popularity: ${response.body}');
     }
+  } catch (e) {
+    // Rethrow to be handled by the caller
+    rethrow;
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -415,6 +576,164 @@ class ParticipationMessage extends StatelessWidget {
   }
 }
 
+class ParticipationDetailsPage extends StatelessWidget {
+  final List<dynamic> selectedCandidates;
+  final dynamic selectedPartylist;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final String participationDate;
+
+  ParticipationDetailsPage({
+    required this.selectedCandidates, 
+    required this.selectedPartylist,
+    required this.participationDate
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Group candidates by position
+    Map<String, List<dynamic>> candidatesByPosition = {};
+    for (var candidate in selectedCandidates) {
+      String position = candidate['position'] ?? 'Unknown';
+      if (!candidatesByPosition.containsKey(position)) {
+        candidatesByPosition[position] = [];
+      }
+      candidatesByPosition[position]!.add(candidate);
+    }
+
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Container(
+            height: 56,
+            alignment: Alignment.center,
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        _scaffoldKey.currentState?.openDrawer();
+                      },
+                      icon: const Icon(Icons.menu, color: Colors.black45),
+                    ),
+                    const Text(
+                      'Participation Details',
+                      style: TextStyle(fontSize: 18, color: Colors.black54),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    _buildProfileMenu(context)
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
+        drawer: const AppDrawer(),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // Selected Partylist Section
+              Column(
+                children: [
+                  Text(
+                      'Your Election Survey Selections',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Text(
+                  'Selected Partylist:',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+              ),
+              ListTile(
+                title: Text(selectedPartylist['name'] ?? 'No Partylist Selected'),
+                leading: Icon(Icons.flag),
+              ),
+                ],
+              ),
+              Expanded(
+                child: Column(
+                  // mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // SizedBox(height: 16),
+                    
+                    // Selected Candidates Section
+                    Text(
+                      'Selected Candidates:',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    ),
+                    Expanded(
+                      child: ListView(
+                        children: candidatesByPosition.entries.map((entry) {
+                          String position = entry.key;
+                          List<dynamic> positionCandidates = entry.value;
+                
+                          return ExpansionTile(
+                            title: Text(
+                              position, 
+                              style: TextStyle(
+                                fontSize: 16, 
+                                fontWeight: FontWeight.bold
+                              )
+                            ),
+                            children: positionCandidates.map((candidate) {
+                              return ListTile(
+                                // leading: CircleAvatar(
+                                  
+                                //   child: Icon(Icons.person),
+                                // ),
+                                title: Text('${candidate['firstname']} ${candidate['lastname']}'),
+                                subtitle: Text('Party: ${candidate['partylist']}'),
+                              );
+                            }).toList(),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    
+                    
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+String _formatDate(String dateString) {
+    try {
+      DateTime dateTime = DateTime.parse(dateString);
+      return DateFormat('MMMM d, yyyy at h:mm a').format(dateTime);
+    } catch (e) {
+      return dateString; // Return original string if parsing fails
+    }
+  }
+
+
 Widget _buildProfileMenu(BuildContext context) {
     return PopupMenuButton<int>(
       shape: RoundedRectangleBorder(
@@ -493,3 +812,4 @@ Widget _buildProfileMenu(BuildContext context) {
       (Route<dynamic> route) => false, // Remove all previous routes
     );
   }
+  

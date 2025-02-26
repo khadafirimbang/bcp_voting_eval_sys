@@ -26,10 +26,12 @@ class _CommentScreenState extends State<CommentScreen> {
   bool _isSubmittingComment = false;
   int? _editingCommentId;
   bool _showAllComments = false;
+  late Forum _currentForum;
 
   @override
   void initState() {
     super.initState();
+    _currentForum = widget.forum;
     _loadComments();
   }
 
@@ -234,6 +236,44 @@ class _CommentScreenState extends State<CommentScreen> {
     return _comments.take(5).toList();
   }
   
+  void _updateForum(Forum updatedForum) {
+    setState(() {
+      _currentForum = updatedForum;
+    });
+  }
+
+  void _handleLike(bool isLike) async {
+    try {
+      final result = await _forumService.likeForum(
+        widget.studentNo, 
+        _currentForum.id, 
+        isLike
+      );
+
+      if (result['success'] == true) {
+        _updateForum(Forum(
+          id: _currentForum.id,
+          title: _currentForum.title,
+          content: _currentForum.content,
+          authorName: _currentForum.authorName,
+          createdAt: _currentForum.createdAt,
+          totalLikes: result['total_likes'] ?? 0,
+          totalDislikes: result['total_dislikes'] ?? 0,
+          authorStudentNo: _currentForum.authorStudentNo,
+        ));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['error'] ?? 'Failed to like/dislike forum'),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error liking/disliking forum: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -266,11 +306,11 @@ class _CommentScreenState extends State<CommentScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'By ${widget.forum.authorName}',
+                            'By ${_currentForum.authorName}',
                             style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
                           ),
                           // Delete Forum Option
-                          if (_isAuthorOfForum(widget.forum))
+                          if (_isAuthorOfForum(_currentForum))
                             PopupMenuButton<String>(
                               icon: Icon(Icons.more_horiz, size: 20), // Three dots icon
                               onSelected: (String choice) {
@@ -309,15 +349,36 @@ class _CommentScreenState extends State<CommentScreen> {
                       ),
                       SizedBox(height: 10),
                       Text(
-                        widget.forum.title,
+                        _currentForum.title,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       SizedBox(height: 15),
                       Text(
-                        widget.forum.content,
+                        _currentForum.content,
                         style: TextStyle(fontSize: 16),
                       ),
-                      
+                      // Like and Dislike Row
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Like Button
+                            IconButton(
+                              icon: const Icon(Icons.thumb_up),
+                              onPressed: () => _handleLike(true),
+                            ),
+                            Text('${_currentForum.totalLikes}'),
+
+                            // Dislike Button
+                            IconButton(
+                              icon: const Icon(Icons.thumb_down),
+                              onPressed: () => _handleLike(false),
+                            ),
+                            Text('${_currentForum.totalDislikes}'),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
