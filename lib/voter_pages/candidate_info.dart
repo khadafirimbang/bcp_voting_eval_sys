@@ -15,6 +15,7 @@ class CandidateDetailPage extends StatelessWidget {
 
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.grey[200],
         appBar: AppBar(
           title: Text('Candidate Information'),
         ),
@@ -26,6 +27,7 @@ class CandidateDetailPage extends StatelessWidget {
                 width: cardWidth,
                 child: Card(
                   elevation: 10,
+                  color: Colors.white,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 30),
                     child: Column(
@@ -61,6 +63,7 @@ class CandidateDetailPage extends StatelessWidget {
                         Text(
                           '${candidate['lastname']}, ${candidate['firstname']} ${candidate['middlename']}',
                           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
                         ),
                         Text(
                           'Section:',
@@ -69,6 +72,7 @@ class CandidateDetailPage extends StatelessWidget {
                         Text(
                           '${candidate['section']}',
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 5),
                         Text(
@@ -78,6 +82,7 @@ class CandidateDetailPage extends StatelessWidget {
                         Text(
                           '${candidate['course']}',
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 5),
                         Text(
@@ -87,6 +92,7 @@ class CandidateDetailPage extends StatelessWidget {
                         Text(
                           '${candidate['position']}',
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 5),
                         Text(
@@ -96,15 +102,17 @@ class CandidateDetailPage extends StatelessWidget {
                         Text(
                           '${candidate['partylist']}',
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 5),
                         Text(
                           'Slogan:',
-                          style: TextStyle(fontSize: 14)
+                          style: TextStyle(fontSize: 14),
                         ),
                         Text(
                           '${candidate['slogan']}',
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 10),
                         ElevatedButton(

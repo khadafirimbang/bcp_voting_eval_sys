@@ -406,9 +406,15 @@ class _CommentScreenState extends State<CommentScreen> {
                                     Card(
                                       color: Colors.grey[300],
                                       child: ListTile(
-                                        title: Text(
-                                          '${comment.authorName}',
-                                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                        title: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              '${comment.authorName}',
+                                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                            ),
+                                            _buildCommentOptions(comment),
+                                          ],
                                         ),
                                         subtitle: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,7 +429,6 @@ class _CommentScreenState extends State<CommentScreen> {
                                             )
                                           ],
                                         ),
-                                        trailing: _buildCommentOptions(comment),
                                       ),
                                     ),
                                   ],
@@ -563,7 +568,7 @@ Widget _buildCommentOptions(Comment comment) {
   if (!isCommentAuthor) return SizedBox.shrink();
 
   return PopupMenuButton<String>(
-    icon: Icon(Icons.more_vert),
+    icon: Icon(Icons.more_horiz),
     onSelected: (String choice) {
       switch (choice) {
         case 'delete':

@@ -158,7 +158,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
     }
     return SafeArea(
       child: Scaffold(
-        backgroundColor: const Color(0xFFF1F5F9),
+        backgroundColor: Colors.grey[200],
         key: _scaffoldKey,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(56), // Set height of the AppBar
