@@ -36,6 +36,8 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
   ForumSortOption _currentSortOption = ForumSortOption.newest;
   List<Forum> _originalForums = []; // To store the original list of forums
   Map<int, int> _commentCountCache = {};
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -271,6 +273,23 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
     );
   }
 
+  // New method for filtering forums
+  void _filterForums(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        // If query is empty, reset to original list
+        _forums = List.from(_originalForums);
+      } else {
+        // Filter forums by author name or forum title (case-insensitive)
+        _forums = _originalForums.where((forum) {
+          final lowercaseQuery = query.toLowerCase();
+          return forum.authorName.toLowerCase().contains(lowercaseQuery) ||
+                 forum.title.toLowerCase().contains(lowercaseQuery) ||
+                 forum.content.toLowerCase().contains(lowercaseQuery);
+        }).toList();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -314,6 +333,19 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
               ),
               Row(
                 children: [
+                  IconButton(
+                          icon: Icon(_isSearching ? Icons.close : Icons.search, color: Colors.black54),
+                          onPressed: () {
+                            setState(() {
+                              _isSearching = !_isSearching;
+                              if (!_isSearching) {
+                                // Reset search when closing
+                                _searchController.clear();
+                                _filterForums('');
+                              }
+                            });
+                          },
+                        ),
                   PopupMenuButton<ForumSortOption>(
                       icon: Icon(Icons.filter_list, color: Colors.black54),
                       onSelected: _sortForums,
@@ -410,172 +442,201 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
           ),
         ),
         drawer: const AppDrawer(),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ListView.builder(
-                        itemCount: _forums.length,
-                        itemBuilder: (context, index) {
-              final forum = _forums[index];
-              return Column(
-                children: [
-                  Card(
-                    elevation: 4,
-                    color: Colors.white,
-                    child: ListTile(
-                      title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('By ${forum.authorName}', style: TextStyle(fontWeight: FontWeight.w900)),
-                          // Delete Forum
-                          if (_isAuthorOfForum(forum))
-                            PopupMenuButton<String>(
-                              icon: Icon(Icons.more_horiz), // Three dots icon
-                              onSelected: (String choice) {
-                                switch (choice) {
-                                  case 'delete':
-                                    _deleteForum(forum);
-                                    break;
-                                  case 'edit':
-                                    _editForum(forum);
-                                    break;
-                                }
-                              },
-                              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                PopupMenuItem<String>(
-                                  value: 'edit',
-                                  child: Row(
-                                    children: [
-                                      SizedBox(width: 8),
-                                      Text('Edit', style: TextStyle(color: Colors.black)),
-                                    ],
-                                  ),
-                                ),
-                                PopupMenuItem<String>(
-                                  value: 'delete',
-                                  child: Row(
-                                    children: [
-                                      SizedBox(width: 10),
-                                      Text('Delete', style: TextStyle(color: Colors.black)),
-                                    ],
-                                  ),
-                                ),
-                                
-                              ],
-                            ),
-                        ],
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(forum.title, style: TextStyle(fontWeight: FontWeight.w800)),
-                      SizedBox(height: 15),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          // Create a TextPainter to calculate if text exceeds 10 lines
-                          final textPainter = TextPainter(
-                            text: TextSpan(
-                              text: forum.content,
-                              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
-                            ),
-                            maxLines: 10,
-                            textDirection: TextDirection.ltr,
-                          )..layout(maxWidth: constraints.maxWidth);
-                              
-                          // Check if text is truncated
-                          final bool isTextTruncated = textPainter.didExceedMaxLines;
-                              
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                forum.content, 
-                                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14), 
-                                maxLines: 10,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              if (isTextTruncated)
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => CommentScreen(
-                                          forum: forum,
-                                          studentNo: widget.studentNo,
-                                        ),
-                                      ),
-                                    ).then((result) {
-                                      // If the forum was deleted from the CommentScreen
-                                      if (result == true) {
-                                        _loadForums(); // Refresh the forums list
-                                      }
-                                    });
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
-                                    child: MouseRegion(
-                                      cursor: SystemMouseCursors.click,
-                                      child: Text(
-                                        'See more...',
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          );
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // Search field conditionally appears
+              if (_isSearching)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search by forum title or author...',
+                      prefixIcon: Icon(Icons.search),
+                      suffixIcon: IconButton(
+                        icon: Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          _filterForums('');
                         },
                       ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.thumb_up),
-                                onPressed: () => _handleLike(forum, true),
-                              ),
-                              Text('${forum.totalLikes}'),
-                              IconButton(
-                                icon: const Icon(Icons.comment),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => CommentScreen(
-                                        forum: forum,
-                                        studentNo: widget.studentNo,
-                                      ),
-                                    ),
-                                  ).then((result) {
-                                    // If the forum was deleted from the CommentScreen
-                                    if (result == true) {
-                                      _loadForums(); // Refresh the forums list
-                                    }
-                                  });
-                                },
-                              ),
-                              _buildCommentCountWidget(forum),
-                              IconButton(
-                                icon: const Icon(Icons.thumb_down),
-                                onPressed: () => _handleLike(forum, false),
-                              ),
-                              Text('${forum.totalDislikes}'),
-                            ],
-                          ),
-                        ],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
+                    onChanged: _filterForums,
                   ),
-                  
-                ],
-              );
-                        },
-                      ),
-            ),
+                ),
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                              itemCount: _forums.length,
+                              itemBuilder: (context, index) {
+                    final forum = _forums[index];
+                    return Column(
+                      children: [
+                        Card(
+                          elevation: 4,
+                          color: Colors.white,
+                          child: ListTile(
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('By ${forum.authorName}', style: TextStyle(fontWeight: FontWeight.w900)),
+                                // Delete Forum
+                                if (_isAuthorOfForum(forum))
+                                  PopupMenuButton<String>(
+                                    icon: Icon(Icons.more_horiz), // Three dots icon
+                                    onSelected: (String choice) {
+                                      switch (choice) {
+                                        case 'delete':
+                                          _deleteForum(forum);
+                                          break;
+                                        case 'edit':
+                                          _editForum(forum);
+                                          break;
+                                      }
+                                    },
+                                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                      PopupMenuItem<String>(
+                                        value: 'edit',
+                                        child: Row(
+                                          children: [
+                                            SizedBox(width: 8),
+                                            Text('Edit', style: TextStyle(color: Colors.black)),
+                                          ],
+                                        ),
+                                      ),
+                                      PopupMenuItem<String>(
+                                        value: 'delete',
+                                        child: Row(
+                                          children: [
+                                            SizedBox(width: 10),
+                                            Text('Delete', style: TextStyle(color: Colors.black)),
+                                          ],
+                                        ),
+                                      ),
+                                      
+                                    ],
+                                  ),
+                              ],
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(forum.title, style: TextStyle(fontWeight: FontWeight.w800)),
+                            SizedBox(height: 15),
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                // Create a TextPainter to calculate if text exceeds 10 lines
+                                final textPainter = TextPainter(
+                                  text: TextSpan(
+                                    text: forum.content,
+                                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                                  ),
+                                  maxLines: 10,
+                                  textDirection: TextDirection.ltr,
+                                )..layout(maxWidth: constraints.maxWidth);
+                                    
+                                // Check if text is truncated
+                                final bool isTextTruncated = textPainter.didExceedMaxLines;
+                                    
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      forum.content, 
+                                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14), 
+                                      maxLines: 10,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    if (isTextTruncated)
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => CommentScreen(
+                                                forum: forum,
+                                                studentNo: widget.studentNo,
+                                              ),
+                                            ),
+                                          ).then((result) {
+                                            // If the forum was deleted from the CommentScreen
+                                            if (result == true) {
+                                              _loadForums(); // Refresh the forums list
+                                            }
+                                          });
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(top: 8.0),
+                                          child: MouseRegion(
+                                            cursor: SystemMouseCursors.click,
+                                            child: Text(
+                                              'See more...',
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.thumb_up),
+                                      onPressed: () => _handleLike(forum, true),
+                                    ),
+                                    Text('${forum.totalLikes}'),
+                                    IconButton(
+                                      icon: const Icon(Icons.comment),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => CommentScreen(
+                                              forum: forum,
+                                              studentNo: widget.studentNo,
+                                            ),
+                                          ),
+                                        ).then((result) {
+                                          // If the forum was deleted from the CommentScreen
+                                          if (result == true) {
+                                            _loadForums(); // Refresh the forums list
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    _buildCommentCountWidget(forum),
+                                    IconButton(
+                                      icon: const Icon(Icons.thumb_down),
+                                      onPressed: () => _handleLike(forum, false),
+                                    ),
+                                    Text('${forum.totalDislikes}'),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        
+                      ],
+                    );
+                              },
+                            ),
+              ),
+            ],
+          ),
+        ),
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.black,
           onPressed: () {
@@ -597,6 +658,14 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    // Don't forget to dispose of the search controller
+    _searchController.dispose();
+    super.dispose();
+  }
+
 }
 
 Widget _buildProfileMenu(BuildContext context) {
@@ -677,3 +746,4 @@ Widget _buildProfileMenu(BuildContext context) {
       (Route<dynamic> route) => false, // Remove all previous routes
     );
   }
+  
