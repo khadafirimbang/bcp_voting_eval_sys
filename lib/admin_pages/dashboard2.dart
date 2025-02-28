@@ -517,6 +517,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
 
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.grey[200],
         key: _scaffoldKey,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(56), // Set height of the AppBar

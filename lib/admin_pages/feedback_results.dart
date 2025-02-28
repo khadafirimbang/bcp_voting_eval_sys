@@ -87,6 +87,7 @@ class _QuestionsListPageState extends State<QuestionsListPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.grey[200],
         key: _scaffoldKey,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(56), // Set height of the AppBar
@@ -289,6 +290,7 @@ class _ResponsesPageState extends State<ResponsesPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.grey[200],
         appBar: AppBar(
           title: const Text('Responses'),
         ),

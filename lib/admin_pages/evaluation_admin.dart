@@ -632,6 +632,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.grey[200],
         key: _scaffoldKey,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(56), // Set height of the AppBar

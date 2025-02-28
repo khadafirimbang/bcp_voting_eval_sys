@@ -62,7 +62,8 @@ class _CreateForumScreenState extends State<CreateForumScreen> {
             TextField(
               controller: _titleController,
               keyboardType: TextInputType.multiline,
-              maxLines: null,
+              maxLines: 3,
+              minLines: 3,
               maxLength: null,
               decoration: const InputDecoration(
                 labelText: 'Forum Title',
@@ -80,6 +81,7 @@ class _CreateForumScreenState extends State<CreateForumScreen> {
                 border: OutlineInputBorder(),
               ),
               maxLines: 6,
+              minLines: 6,
               enabled: !_isSubmittingForum,
             ),
             const SizedBox(height: 16),

@@ -52,6 +52,7 @@ dependencies:
   provider: ^6.1.2
   flutter_inappwebview: ^6.1.5
   timezone: ^0.10.0
+  flutter_native_splash: ^2.4.4
 
 dev_dependencies:
   flutter_test:

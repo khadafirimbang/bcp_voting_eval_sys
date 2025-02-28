@@ -315,6 +315,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
 
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.grey[200],
         key: _scaffoldKey,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(56), // Set height of the AppBar
