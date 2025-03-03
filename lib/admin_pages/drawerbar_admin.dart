@@ -1,3 +1,4 @@
+import 'package:SSCVote/admin_pages/accounts.dart';
 import 'package:SSCVote/voter_pages/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/admin_pages/announcement_admin.dart';
@@ -171,15 +172,15 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const CandidatesPage()));
             },
           ),        
-          // const SizedBox(height: 10,),
-          // ListTile(
-          //   leading: const Icon(Icons.chat, color: Colors.black,),
-          //   title: const Text('Chatbot Management', style: TextStyle(color: Colors.black)),
-          //   onTap: () {
-          //     Navigator.pop(context);
-          //     Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotAdminPage()));
-          //   },
-          // ),        
+          const SizedBox(height: 10,),
+          ListTile(
+            leading: const Icon(Icons.chat, color: Colors.black,),
+            title: const Text('Chatbot Management', style: TextStyle(color: Colors.black)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotAdminPage()));
+            },
+          ),        
           // const SizedBox(height: 10,),
           // ExpansionTile(
           //   collapsedIconColor: Colors.black,
@@ -275,6 +276,15 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionPredictionPage()));
             },
           ),
+          // const SizedBox(height: 10,),
+          // ListTile(
+          //   leading: const Icon(Icons.online_prediction_outlined, color: Colors.black,),
+          //   title: const Text('Election Prediction', style: TextStyle(color: Colors.black)),
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //     Navigator.push(context, MaterialPageRoute(builder: (context) => AccountsPage()));
+          //   },
+          // ),
           // const SizedBox(height: 10,),
           // ListTile(
           //   leading: const Icon(Icons.logout, color: Colors.black,),

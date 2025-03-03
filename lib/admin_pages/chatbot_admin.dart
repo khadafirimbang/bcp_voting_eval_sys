@@ -442,7 +442,7 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16.0),
+                
                 SizedBox(
                       child: TextButton(
                         style: TextButton.styleFrom(
@@ -466,7 +466,7 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
                                   ),
                                 ),
                               ),
-                    const SizedBox(width: 10.0),
+                    const SizedBox(height: 16.0),
               Expanded(
                 child: isLoading
                     ? Center(child: CircularProgressIndicator())

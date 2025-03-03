@@ -250,8 +250,9 @@ class _ChatbotQuestionTypePageState extends State<ChatbotQuestionTypePage> {
             : Column(
                 children: [
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
                     onPressed: showAddDialog,
-                    child: Text('Add New Type'),
+                    child: Text('Add New Type', style: TextStyle(color: Colors.white),),
                   ),
                   Expanded(
                     child: ListView.builder(

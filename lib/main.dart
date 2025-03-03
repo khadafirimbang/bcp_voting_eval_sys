@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:SSCVote/admin_pages/dashboard.dart';
 import 'package:SSCVote/admin_pages/dashboard2.dart';
 import 'package:SSCVote/voter_pages/announcement.dart';
 import 'package:SSCVote/signin.dart';

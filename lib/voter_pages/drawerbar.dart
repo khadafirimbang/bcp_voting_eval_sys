@@ -5,10 +5,8 @@ import 'package:SSCVote/main.dart';
 import 'package:SSCVote/results_pages/results.dart';
 import 'package:SSCVote/voter_pages/announcement.dart';
 import 'package:SSCVote/voter_pages/evaluation.dart';
-import 'package:SSCVote/voter_pages/profile.dart';
 import 'package:SSCVote/voter_pages/vote.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 
 class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});

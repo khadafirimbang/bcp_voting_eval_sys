@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
+import 'package:SSCVote/voter_pages/election_audit.dart';
 import 'package:SSCVote/voter_pages/profile.dart';
+import 'package:SSCVote/voter_pages/selected_candidates.dart';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/main.dart';
 import 'package:SSCVote/results_pages/results.dart';
@@ -33,6 +35,9 @@ class _VotePageState extends State<VotePage> {
   Timer? _scheduleCheckTimer;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final Map<String, ImageProvider> _imageCache = {};
+  List<dynamic> _selectedCandidates = [];
+  Map<String, int> positionVotesCounts = {};
+  Map<String, bool> _positionsVotedStatus = {};
 
   @override
   void initState() {
@@ -138,34 +143,177 @@ class _VotePageState extends State<VotePage> {
 
 
   Future<void> fetchCandidatesAndPositions() async {
-    try {
-      final candidatesFuture = http.get(
-        Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_candidates.php')
-      );
-      final positionsFuture = http.get(
-        Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_positions.php')
-      );
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? studentNo = prefs.getString('studentno');
 
-      final responses = await Future.wait([candidatesFuture, positionsFuture]);
+    final candidatesFuture = http.get(
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_candidates.php')
+    );
+    final positionsFuture = http.get(
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/1fetch_positions.php')
+    );
 
-      if (responses[0].statusCode == 200 && responses[1].statusCode == 200) {
-        setState(() {
-          candidates = json.decode(responses[0].body);
-          positions = json.decode(responses[1].body);
-          isLoading = false;
-        });
-      } else {
-        throw Exception('Failed to load data');
-      }
-    } catch (e) {
+    // Fetch votes count and voted positions
+    final votedPositionsFuture = http.get(
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_voted_positions.php?studentno=$studentNo')
+    );
+
+    final responses = await Future.wait([
+      candidatesFuture, 
+      positionsFuture, 
+      votedPositionsFuture
+    ]);
+
+    // Detailed logging
+    print('Candidates Response Body: ${responses[0].body}');
+    print('Positions Response Body: ${responses[1].body}');
+    print('Voted Positions Response Body: ${responses[2].body}');
+
+    if (responses[0].statusCode == 200 && 
+        responses[1].statusCode == 200 && 
+        responses[2].statusCode == 200) {
+      
+      final candidatesData = json.decode(responses[0].body);
+      final positionsData = json.decode(responses[1].body);
+      final votedPositionsData = json.decode(responses[2].body);
+
       setState(() {
+        candidates = _sanitizeList(candidatesData);
+        positions = _sanitizePositions(positionsData);
+        
+        // Robust handling of voted positions
+        _positionsVotedStatus = _sanitizeVotedPositions(votedPositionsData);
+
+        // Remove the filtering logic for positions
+        // positions = positions.where((position) {
+        //   String positionName = position['name']?.toString() ?? '';
+        //   int maxVotes = _safeParseInt(position['votes_qty']) ?? 0;
+        //   int currentVotes = _countCurrentVotes(positionName);
+          
+        //   return currentVotes < maxVotes;
+        // }).toList();
+
         isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading data: $e')),
-      );
+    } else {
+      // More detailed error logging
+      print('Failed to load data');
+      print('Candidates Status: ${responses[0].statusCode}');
+      print('Positions Status: ${responses[1].statusCode}');
+      print('Voted Positions Status: ${responses[2].statusCode}');
+      
+      throw Exception('Failed to load data');
     }
+  } catch (e, stackTrace) {
+    print('Comprehensive Error in fetchCandidatesAndPositions: $e');
+    print('Stacktrace: $stackTrace');
+    
+    setState(() {
+      isLoading = false;
+    });
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error loading data: $e'),
+        duration: Duration(seconds: 5),
+      ),
+    );
   }
+}
+
+  // Sanitize list to ensure it's a list and contains only valid items
+  List<dynamic> _sanitizeList(dynamic data) {
+    if (data is List) {
+      return data.where((item) => item is Map).toList();
+    }
+    print('Invalid data type for list: ${data.runtimeType}');
+    return [];
+  }
+
+  // Sanitize positions with robust type handling
+  List<dynamic> _sanitizePositions(dynamic data) {
+    if (data is! List) {
+      print('Invalid positions data type: ${data.runtimeType}');
+      return [];
+    }
+
+    return data.map((position) {
+      // Ensure position is a map
+      if (position is! Map) {
+        print('Invalid position item type: ${position.runtimeType}');
+        return null;
+      }
+
+      // Create a new map with sanitized values
+      return {
+        'name': position['name']?.toString() ?? '',
+        'votes_qty': _safeParseInt(position['votes_qty']) ?? 0,
+        // Add other necessary fields, sanitizing as needed
+        ...position
+      };
+    }).whereType<Map>().toList();
+  }
+
+  // Sanitize voted positions with robust handling
+  Map<String, bool> _sanitizeVotedPositions(dynamic data) {
+    Map<String, bool> votedPositions = {};
+
+    // Handle different possible data structures
+    if (data is Map) {
+      // If it's a map with 'voted_positions' key
+      if (data.containsKey('voted_positions')) {
+        data = data['voted_positions'];
+      }
+    }
+
+    // Convert to map of position names to voted status
+    if (data is Map) {
+      data.forEach((key, value) {
+        votedPositions[key.toString()] = _isTruthy(value);
+      });
+    } else if (data is List) {
+      for (var item in data) {
+        if (item is Map) {
+          votedPositions[item['position']?.toString() ?? ''] = 
+            _isTruthy(item['voted']);
+        }
+      }
+    }
+
+    return votedPositions;
+  }
+
+  // Safe integer parsing
+  int? _safeParseInt(dynamic value) {
+    if (value == null) return null;
+    
+    // If it's already an int, return it
+    if (value is int) return value;
+    
+    // Try parsing string to int
+    return int.tryParse(value.toString());
+  }
+
+  // Check if a value is considered "truthy"
+  bool _isTruthy(dynamic value) {
+    if (value == null) return false;
+    if (value is bool) return value;
+    if (value is int) return value != 0;
+    if (value is String) {
+      return ['true', '1', 'yes'].contains(value.toLowerCase());
+    }
+    return false;
+  }
+
+
+  int _countCurrentVotes(String positionName) {
+  return candidates.where((candidate) => 
+    candidate['position'] == positionName && 
+    _selectedCandidates.any((selected) => 
+      selected['studentno'].toString() == candidate['studentno'].toString())
+  ).length;
+}
 
   void startCountdown(DateTime endDate) {
     _countdownTimer?.cancel();
@@ -264,7 +412,22 @@ class _VotePageState extends State<VotePage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(result['message'])),
           );
+
+          // Update local votes count
+          setState(() {
+            positionVotesCounts[candidate['position']] = 
+              (positionVotesCounts[candidate['position']] ?? 0) + 1;
+            
+            // Remove position if max votes reached
+            positions = positions.where((position) {
+              String positionName = position['name'];
+              int maxVotes = position['votes_qty'] ?? 0;
+              int currentVotes = positionVotesCounts[positionName] ?? 0;
+              return currentVotes < maxVotes;
+            }).toList();
+          });
           fetchCandidatesAndPositions();
+          
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(result['message'])),
@@ -444,8 +607,21 @@ class _VotePageState extends State<VotePage> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 16, 0, 6),
-              child: Text(electionSchedule!['election_name'],
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 21)
+              child: Column(
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ElectionAuditPage()),
+                      );
+                    },
+                    child: const Text('Election Audit', style: TextStyle(color: Colors.black)),
+                  ),
+                  Text(electionSchedule!['election_name'],
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 21)
+                  ),
+                ],
               ),
             ),
             if (electionSchedule!['status'] == 'ongoing')
@@ -535,114 +711,213 @@ class _VotePageState extends State<VotePage> {
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ChatbotScreen()),
-            );
-          },
-          child: const Icon(Icons.chat_outlined),
+          onPressed: _selectedCandidates.isNotEmpty 
+              ? () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SelectedCandidatesPage(
+                        selectedCandidates: _selectedCandidates,
+                        onCandidatesUpdated: (updatedCandidates) {
+                          // Update the _selectedCandidates list in VotePage
+                          setState(() {
+                            _selectedCandidates = updatedCandidates;
+                          });
+                        },
+                      ),
+                    ),
+                  );
+                  
+                  if (result == true) {
+                    // Reset selected candidates after voting
+                    setState(() {
+                      _selectedCandidates.clear();
+                    });
+                  }
+                }
+              : null,
+          child: Icon(Icons.check),
         ),
       ),
     );
   }
 
-  Widget _buildCandidateGrid(dynamic position, List<dynamic> filteredCandidates,
-      int candidatesPerRow, double cardHeight) {
-    if (filteredCandidates.isEmpty) return const SizedBox.shrink();
+  Widget _buildCandidateGrid(
+  dynamic position, 
+  List<dynamic> filteredCandidates,
+  int candidatesPerRow, 
+  double cardHeight
+) {
+  // Check if position is fully voted
+  bool isPositionVoted = _positionsVotedStatus[position['name'] as String] ?? false;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            position['name'],
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: candidatesPerRow,
-            crossAxisSpacing: 8.0,
-            mainAxisSpacing: 8.0,
-            mainAxisExtent: cardHeight,
-          ),
-          itemCount: filteredCandidates.length,
-          itemBuilder: (context, index) {
-            var candidate = filteredCandidates[index];
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CandidateDetailPage(candidate: candidate),
-                  ),
-                );
-              },
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: Card(
-                  elevation: 2.0,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            CircleAvatar(
-                              radius: 80,
-                              backgroundImage: _getImageProvider(candidate),
-                              onBackgroundImageError: (exception, stackTrace) {
-                                print('Error loading image: $exception');
-                                setState(() {
-                                  // Remove failed image from cache
-                                  _imageCache.remove(candidate['studentno'].toString());
-                                });
-                              },
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                '${candidate['firstname']} ${candidate['lastname']} | ${candidate['position']}',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            Text(
-                              candidate['slogan'] ?? '',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontStyle: FontStyle.italic),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.black
-                                ),
-                                onPressed: () {
-                                  _voteForCandidate(candidate);
-                                },
-                                child: const Text('Vote', style: TextStyle(color: Colors.white),),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+  // If no candidates and position is voted, return nothing
+  if (filteredCandidates.isEmpty && isPositionVoted) {
+    return const SizedBox.shrink();
+  }
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Position Title with voting status
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Text(
+            //   position['name'],
+            //   style: TextStyle(
+            //     fontSize: 18, 
+            //     fontWeight: FontWeight.bold,
+            //     color: isPositionVoted ? Colors.grey : Colors.black,
+            //   ),
+            // ),
+            if (isPositionVoted)
+              Text(
+                'Already voted for this position',
+                style: TextStyle(
+                  color: Colors.green[700],
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            );
-          },
+          ],
         ),
-      ],
-    );
-  }
+      ),
+
+      // Candidates Grid or No Candidates Message
+      filteredCandidates.isEmpty
+        ? Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+              child: Text(
+                'No candidates available for this position',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          )
+        : GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: candidatesPerRow,
+              crossAxisSpacing: 8.0,
+              mainAxisSpacing: 8.0,
+              mainAxisExtent: cardHeight,
+            ),
+            itemCount: filteredCandidates.length,
+            itemBuilder: (context, index) {
+              var candidate = filteredCandidates[index];
+              return _buildCandidateCard(candidate, isPositionVoted);
+            },
+          ),
+    ],
+  );
+}
+
+Widget _buildCandidateCard(dynamic candidate, bool isPositionVoted) {
+  // Get the position of the candidate
+  String position = candidate['position'];
+
+  // Get the maximum number of votes allowed for this position
+  int maxVotes = positions.firstWhere((pos) => pos['name'] == position, orElse: () => {'votes_qty': 0})['votes_qty'];
+
+  // Count the number of currently selected candidates for this position
+  int currentVotes = _selectedCandidates.where((c) => c['position'] == position).length;
+
+  // Check if the maximum number of votes has been reached
+  bool isMaxVotesReached = currentVotes >= maxVotes;
+
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CandidateDetailPage(candidate: candidate),
+        ),
+      );
+    },
+    child: MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: Card(
+        elevation: 2.0,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 80,
+                    backgroundImage: _getImageProvider(candidate),
+                    onBackgroundImageError: (exception, stackTrace) {
+                      print('Error loading image: $exception');
+                      setState(() {
+                        _imageCache.remove(candidate['studentno'].toString());
+                      });
+                    },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      '${candidate['firstname'] ?? ''} ${candidate['lastname'] ?? ''} | ${candidate['position'] ?? ''}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Text(
+                    candidate['slogan'] ?? '',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: isPositionVoted
+                      ? Text(
+                          '',
+                          style: TextStyle(
+                            color: Colors.green[700],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _selectedCandidates.any((c) => c['studentno'] == candidate['studentno']) 
+                              ? Colors.green 
+                              : Colors.black
+                          ),
+                          onPressed: _selectedCandidates.any((c) => c['studentno'] == candidate['studentno']) || !isMaxVotesReached
+                            ? () {
+                                setState(() {
+                                  if (_selectedCandidates.any((c) => c['studentno'] == candidate['studentno'])) {
+                                    _selectedCandidates.removeWhere((c) => c['studentno'] == candidate['studentno']);
+                                  } else {
+                                    _selectedCandidates.add(candidate);
+                                  }
+                                });
+                              }
+                            : null, // Disable the button if max votes reached and candidate is not selected
+                          child: Text(
+                            _selectedCandidates.any((c) => c['studentno'] == candidate['studentno']) 
+                              ? 'Selected' 
+                              : 'Select', 
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 Widget _buildProfileMenu(BuildContext context) {
@@ -723,3 +998,4 @@ Widget _buildProfileMenu(BuildContext context) {
       (Route<dynamic> route) => false, // Remove all previous routes
     );
   }
+}

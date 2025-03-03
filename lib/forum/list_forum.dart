@@ -166,7 +166,11 @@ class _ForumsListScreenState extends State<ForumsListScreen> {
 
 
   bool _isAuthorOfForum(Forum forum) {
-    return forum.authorStudentNo == widget.studentNo;
+    print('Current Student No: ${widget.studentNo}');
+  print('Forum Author Student No: ${forum.authorStudentNo}');
+  bool isAuthor = forum.authorStudentNo == widget.studentNo;
+  print('Is Author: $isAuthor');
+  return isAuthor;
   }
 
 
