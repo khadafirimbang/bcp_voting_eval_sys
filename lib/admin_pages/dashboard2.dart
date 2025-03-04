@@ -180,6 +180,9 @@ class _DashboardPage2State extends State<DashboardPage2> {
       }
     ];
 
+    // Find the maximum value in the dataset
+    double maxValue = evaluationData.map((data) => data['value'].toDouble()).reduce((a, b) => a > b ? a : b);
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -214,7 +217,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
                     BarChartData(
                       backgroundColor: Colors.white,
                       alignment: BarChartAlignment.spaceAround,
-                      maxY: totalVoters.toDouble() * 1.2,
+                      maxY: maxValue * 1.2, // Add some padding above the highest bar
                       barTouchData: BarTouchData(
                         enabled: true,
                         touchTooltipData: BarTouchTooltipData(
@@ -349,13 +352,39 @@ class _DashboardPage2State extends State<DashboardPage2> {
   }
 
   Widget buildVotingStatisticsChart(VoidCallback onTap) {
+  // Ensure Not Voted is not negative
+  int notVoted = totalVoters - totalVoted;
+  notVoted = notVoted < 0 ? 0 : notVoted; // Clamp to 0 if negative
+
+  // Create a list of voting data
+  List<Map<String, dynamic>> votingData = [
+    {
+      'name': 'Total Voters',
+      'value': totalVoters.toDouble(),
+    },
+    {
+      'name': 'Total Voted',
+      'value': totalVoted.toDouble(),
+    },
+    {
+      'name': 'Total Not Voted',
+      'value': notVoted.toDouble(), // Use the clamped value
+    }
+  ];
+
+  // Find the maximum value in the dataset
+  double maxValue = votingData.map((data) => data['value']).reduce((a, b) => a > b ? a : b);
+
+  // Ensure maxY is at least 1 to avoid division by zero
+  maxValue = maxValue < 1 ? 1 : maxValue;
+
   return MouseRegion(
     cursor: SystemMouseCursors.click,
     child: GestureDetector(
       onTap: onTap,
       child: Card(
         elevation: 2,
-        color: Colors.white, // Set Card color to white
+        color: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -366,7 +395,8 @@ class _DashboardPage2State extends State<DashboardPage2> {
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black),
+                  color: Colors.black,
+                ),
               ),
               const SizedBox(height: 4),
               const Text(
@@ -383,7 +413,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
                   BarChartData(
                     backgroundColor: Colors.white,
                     alignment: BarChartAlignment.spaceAround,
-                    maxY: totalVoters.toDouble() * 1.2,
+                    maxY: maxValue * 1.2, // Add some padding above the highest bar
                     barTouchData: BarTouchData(
                       enabled: true,
                       touchTooltipData: BarTouchTooltipData(
@@ -428,11 +458,11 @@ class _DashboardPage2State extends State<DashboardPage2> {
                             return Padding(
                               padding: const EdgeInsets.only(top: 8.0),
                               child: Text(
-                                value == 0 
-                                  ? 'Voters' 
-                                  : value == 1 
-                                    ? 'Voted' 
-                                    : 'Not Voted',
+                                value == 0
+                                    ? 'Voters'
+                                    : value == 1
+                                        ? 'Voted'
+                                        : 'Not Voted',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
@@ -443,10 +473,19 @@ class _DashboardPage2State extends State<DashboardPage2> {
                           reservedSize: 42,
                         ),
                       ),
-                      leftTitles: const AxisTitles(
+                      leftTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
                           reservedSize: 40,
+                          getTitlesWidget: (double value, TitleMeta meta) {
+                            return Text(
+                              value.toInt().toString(),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.black,
+                              ),
+                            );
+                          },
                         ),
                       ),
                       topTitles: const AxisTitles(
@@ -457,41 +496,21 @@ class _DashboardPage2State extends State<DashboardPage2> {
                       ),
                     ),
                     borderData: FlBorderData(show: false),
-                    barGroups: [
-                      BarChartGroupData(
-                        x: 0,
+                    barGroups: votingData.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      Map<String, dynamic> data = entry.value;
+                      return BarChartGroupData(
+                        x: index,
                         barRods: [
                           BarChartRodData(
-                            toY: totalVoters.toDouble(),
+                            toY: data['value'],
                             color: Colors.black,
                             width: 20,
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ],
-                      ),
-                      BarChartGroupData(
-                        x: 1,
-                        barRods: [
-                          BarChartRodData(
-                            toY: totalVoted.toDouble(),
-                            color: Colors.black,
-                            width: 20,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ],
-                      ),
-                      BarChartGroupData(
-                        x: 2,
-                        barRods: [
-                          BarChartRodData(
-                            toY: totalNotVoted.toDouble(),
-                            color: Colors.black,
-                            width: 20,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ],
-                      ),
-                    ],
+                      );
+                    }).toList(),
                   ),
                 ),
               ),
