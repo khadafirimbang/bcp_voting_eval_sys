@@ -1,4 +1,5 @@
 import 'package:SSCVote/admin_pages/accounts.dart';
+import 'package:SSCVote/sentiment_analysis/sentiment_analysis_result.dart';
 import 'package:SSCVote/voter_pages/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/admin_pages/announcement_admin.dart';
@@ -190,32 +191,6 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotAdminPage()));
             },
           ),        
-          // const SizedBox(height: 10,),
-          // ExpansionTile(
-          //   collapsedIconColor: Colors.black,
-          //   leading: const Icon(Icons.contact_emergency_sharp, color: Colors.black,),
-          //   title: const Text('Voters', style: TextStyle(color: Colors.black)),
-          //   childrenPadding: const EdgeInsets.only(left: 37),
-          //   children: [
-          //     ListTile(
-          //     leading: const Icon(Icons.people, color: Colors.black,),
-          //     title: const Text('Verified Voters', style: TextStyle(color: Colors.black)),
-          //     onTap: () {
-          //       Navigator.pop(context);
-          //       Navigator.push(context, MaterialPageRoute(builder: (context) => const VotersPage()));
-          //     },
-          //   ),
-          //   ListTile(
-          //     leading: const Icon(Icons.people_outline, color: Colors.black,),
-          //     title: const Text('Unverified Voters', style: TextStyle(color: Colors.black)),
-          //     onTap: () {
-          //       Navigator.pop(context);
-          //       Navigator.push(context, MaterialPageRoute(builder: (context) => const PendingVotersPage()));
-          //     },
-          //   ),
-          //   ],
-          // ),
-          
           const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.date_range, color: Colors.black,),
@@ -272,6 +247,14 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (context) => QuestionsListPage()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.question_answer, color: Colors.black,),
+              title: const Text('Feedback Sentiment Analysis', style: TextStyle(color: Colors.black)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => SentimentAnalysisResultsPage()));
               },
             ),
             ],

@@ -1,4 +1,5 @@
 import 'package:SSCVote/forum/list_forum.dart';
+import 'package:SSCVote/sentiment_analysis/sentiment_analysis_result.dart';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/election_survey_pages/election_survey_candidates.dart';
 import 'package:SSCVote/main.dart';

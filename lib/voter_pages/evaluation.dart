@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:SSCVote/sentiment_analysis/sentiment_analysis.dart';
 import 'package:SSCVote/voter_pages/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/main.dart';
@@ -25,7 +26,7 @@ class _EvaluationPageState extends State<EvaluationPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isLoading = true; // Add loading state
   bool _isSubmittingEvaluation = false;
-
+  
   @override
   void initState() {
     super.initState();
@@ -464,106 +465,116 @@ class _EvaluationPageState extends State<EvaluationPage> {
 
   // Function to handle form submission
   Future<void> _submitEvaluation() async {
-    // Prevent multiple submissions
-    if (_isSubmittingEvaluation) return;
+  // Prevent multiple submissions
+  if (_isSubmittingEvaluation) return;
 
-    if (studentno == null) {
-      print('Student number not found.');
-      return;
+  if (studentno == null) {
+    print('Student number not found.');
+    return;
+  }
+
+  // Validate Survey Responses
+  bool isSurveyComplete = surveyQuestions.every((question) {
+    return surveyResponses.containsKey(question['id']) && 
+          surveyResponses[question['id']] != null && 
+          surveyResponses[question['id']]!.isNotEmpty;
+  });
+
+  // Validate Feedback Responses
+  bool isFeedbackComplete = feedbackQuestions.every((question) {
+    return feedbackResponses.containsKey(question['id']) && 
+          feedbackResponses[question['id']] != null && 
+          feedbackResponses[question['id']]!.trim().isNotEmpty;
+  });
+
+  // Check if all questions are answered
+  if (!isSurveyComplete || !isFeedbackComplete) {
+    // Show an error dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Incomplete Evaluation'),
+        content: Text('Please answer all survey and feedback questions before submitting.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+    return;
+  }
+
+  // Set submission state
+  setState(() {
+    _isSubmittingEvaluation = true;
+  });
+
+  try {
+    // Convert responses to JSON
+    String feedbackResponsesJson = json.encode(feedbackResponses.map((key, value) => MapEntry(key.toString(), value)));
+    String surveyResponsesJson = json.encode(surveyResponses.map((key, value) => MapEntry(key.toString(), value)));
+
+    // Perform sentiment analysis on feedback responses
+    Map<String, dynamic> sentimentAnalysisResults = {};
+    for (var questionId in feedbackResponses.keys) {
+      final feedback = feedbackResponses[questionId]!;
+      final sentimentAnalysisResponse = await SentimentAnalysis.analyzeFeedback(feedback);
+      final sentimentAnalysisData = jsonDecode(sentimentAnalysisResponse) as List<dynamic>;
+      sentimentAnalysisResults[questionId.toString()] = sentimentAnalysisData;
     }
 
-    // Validate Survey Responses
-    bool isSurveyComplete = surveyQuestions.every((question) {
-      return surveyResponses.containsKey(question['id']) && 
-            surveyResponses[question['id']] != null && 
-            surveyResponses[question['id']]!.isNotEmpty;
-    });
+    // Send data to the backend
+    var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/submit_evaluation.php');
+    var response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'studentno': studentno,
+        'feedback_responses': feedbackResponsesJson,
+        'survey_responses': surveyResponsesJson,
+        'sentiment_analysis': json.encode(sentimentAnalysisResults),
+      }),
+    );
 
-    // Validate Feedback Responses
-    bool isFeedbackComplete = feedbackQuestions.every((question) {
-      return feedbackResponses.containsKey(question['id']) && 
-            feedbackResponses[question['id']] != null && 
-            feedbackResponses[question['id']]!.trim().isNotEmpty;
-    });
+    if (response.statusCode == 200) {
+      // Set the submission status to true
+      setState(() {
+        _isSubmitted = true;
+      });
 
-    // Check if all questions are answered
-    if (!isSurveyComplete || !isFeedbackComplete) {
-      // Show an error dialog
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Incomplete Evaluation'),
-          content: Text('Please answer all survey and feedback questions before submitting.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('OK'),
-            ),
-          ],
+      // Show success Snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Successfully submitted!'),
+          backgroundColor: Colors.green,
         ),
       );
-      return;
-    }
-
-    // Set submission state
-    setState(() {
-      _isSubmittingEvaluation = true;
-    });
-
-    try {
-      // Convert responses to JSON
-      String feedbackResponsesJson = json.encode(feedbackResponses.map((key, value) => MapEntry(key.toString(), value)));
-      String surveyResponsesJson = json.encode(surveyResponses.map((key, value) => MapEntry(key.toString(), value)));
-
-      // Send data to the backend
-      var url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/submit_evaluation.php');
-      var response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'studentno': studentno,
-          'feedback_responses': feedbackResponsesJson,
-          'survey_responses': surveyResponsesJson,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        // Set the submission status to true
-        setState(() {
-          _isSubmitted = true;
-        });
-
-        // Show success Snackbar
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Successfully submitted!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        // Show failure Snackbar
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to submit!'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      // Handle any network or unexpected errors
+    } else {
+      // Show failure Snackbar
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
+        const SnackBar(
+          content: Text('Failed to submit!'),
           backgroundColor: Colors.red,
         ),
       );
-    } finally {
-      // Always reset submission state
-      setState(() {
-        _isSubmittingEvaluation = false;
-      });
     }
+  } catch (e) {
+    // Handle any network or unexpected errors
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error: ${e.toString()}'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } finally {
+    // Always reset submission state
+    setState(() {
+      _isSubmittingEvaluation = false;
+    });
   }
+}
 }
 
 Widget _buildProfileMenu(BuildContext context) {
