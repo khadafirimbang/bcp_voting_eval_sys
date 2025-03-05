@@ -38,6 +38,9 @@ class _VotePageState extends State<VotePage> {
   List<dynamic> _selectedCandidates = [];
   Map<String, int> positionVotesCounts = {};
   Map<String, bool> _positionsVotedStatus = {};
+  String selectedPartylist = 'All';
+  List<String> partylists = ['All', 'No Partylist'];
+
 
   @override
   void initState() {
@@ -102,7 +105,7 @@ class _VotePageState extends State<VotePage> {
             final endDate = DateTime.parse(schedule['end_date']).toUtc();
             
             // Log the end date for debugging
-            print('End Date: $endDate');
+            // print('End Date: $endDate');
             
             if (schedule['status'] == 'ongoing') {
               // Check if the election has ended
@@ -136,7 +139,7 @@ class _VotePageState extends State<VotePage> {
   final now = DateTime.now().toUtc();
   
   // Log current time for debugging
-  print('Current Time: $now');
+  // print('Current Time: $now');
   
   return now.isAfter(endDate);
 }
@@ -166,9 +169,9 @@ class _VotePageState extends State<VotePage> {
     ]);
 
     // Detailed logging
-    print('Candidates Response Body: ${responses[0].body}');
-    print('Positions Response Body: ${responses[1].body}');
-    print('Voted Positions Response Body: ${responses[2].body}');
+    // print('Candidates Response Body: ${responses[0].body}');
+    // print('Positions Response Body: ${responses[1].body}');
+    // print('Voted Positions Response Body: ${responses[2].body}');
 
     if (responses[0].statusCode == 200 && 
         responses[1].statusCode == 200 && 
@@ -184,15 +187,13 @@ class _VotePageState extends State<VotePage> {
         
         // Robust handling of voted positions
         _positionsVotedStatus = _sanitizeVotedPositions(votedPositionsData);
-
-        // Remove the filtering logic for positions
-        // positions = positions.where((position) {
-        //   String positionName = position['name']?.toString() ?? '';
-        //   int maxVotes = _safeParseInt(position['votes_qty']) ?? 0;
-        //   int currentVotes = _countCurrentVotes(positionName);
-          
-        //   return currentVotes < maxVotes;
-        // }).toList();
+        
+        // Extract unique partylists from candidates and ensure it's a List<String>
+        partylists = ['All', 'No Partylist'] + candidates
+            .map((candidate) => candidate['partylist']?.toString() ?? 'No Partylist')
+            .toSet()
+            .toList() // Convert to List<dynamic>
+            .cast<String>(); // Cast to List<String>
 
         isLoading = false;
       });
@@ -442,19 +443,27 @@ class _VotePageState extends State<VotePage> {
   }
 
   List<dynamic> _filterCandidates(String positionName) {
-    return candidates
-        .where((candidate) =>
-            candidate['position'] == positionName &&
-            (
-              (candidate['firstname']?.toLowerCase() ?? '').contains(searchQuery) ||
-              (candidate['lastname']?.toLowerCase() ?? '').contains(searchQuery) ||
-              (candidate['studentno']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
-              (candidate['section']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
-              (candidate['course']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
-              (candidate['partylist']?.toString().toLowerCase() ?? '').contains(searchQuery)
-            ))
-        .toList();
+  List<dynamic> filteredCandidates = []; // Initialize an empty list
+
+  // Iterate through candidates and apply filters
+  for (var candidate in candidates) {
+    if (candidate['position'] == positionName &&
+        ((selectedPartylist == 'All' || 
+          (selectedPartylist == 'No Partylist' && 
+           (candidate['partylist'] == null || candidate['partylist'] == ''))) ||
+         candidate['partylist'] == selectedPartylist) &&
+        ((candidate['firstname']?.toLowerCase() ?? '').contains(searchQuery) ||
+         (candidate['lastname']?.toLowerCase() ?? '').contains(searchQuery) ||
+         (candidate['studentno']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
+         (candidate['section']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
+         (candidate['course']?.toString().toLowerCase() ?? '').contains(searchQuery) ||
+         (candidate['partylist']?.toString().toLowerCase() ?? '').contains(searchQuery))) {
+      filteredCandidates.add(candidate); // Add to the list if it matches
+    }
   }
+
+  return filteredCandidates; // Return the list
+}
 
   @override
   Widget build(BuildContext context) {
@@ -645,19 +654,40 @@ class _VotePageState extends State<VotePage> {
                   child: Column(
                     children: [
                       if (showSearchField)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10.0),
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Search...',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                                child: TextField(
+                                  decoration: InputDecoration(
+                                    hintText: 'Search...',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                                  ),
+                                  onChanged: debounceSearch,
+                                ),
                               ),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                             ),
-                            onChanged: debounceSearch,
-                          ),
+                            SizedBox(width: 10),
+                            DropdownButton<String>(
+                              value: selectedPartylist,
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedPartylist = value!;
+                                });
+                              },
+                              items: partylists.map<DropdownMenuItem<String>>((partylist) {
+                                return DropdownMenuItem<String>(
+                                  value: partylist,
+                                  child: Text(partylist),
+                                );
+                              }).toList(),
+                            ),
+                          ],
                         ),
                       selectedPosition == 'All'
                           ? Column(
