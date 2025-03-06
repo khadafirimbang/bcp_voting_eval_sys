@@ -198,6 +198,18 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
             TextButton(
               onPressed: () {
                 if (nameController.text.isNotEmpty && startDate != null && endDate != null) {
+                  // Validate dates
+                  final now = DateTime.now();
+                  if (startDate!.isBefore(now)) {
+                    _showSnackbar('Start date cannot be in the past.');
+                    return;
+                  }
+
+                  if (endDate!.isBefore(startDate!)) {
+                    _showSnackbar('End date cannot be before the start date.');
+                    return;
+                  }
+
                   final updatedSchedule = ElectionSchedule(
                     id: schedule?.id ?? 0,
                     electionName: nameController.text,

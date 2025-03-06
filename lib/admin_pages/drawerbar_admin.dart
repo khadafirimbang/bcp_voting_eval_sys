@@ -194,7 +194,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
           const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.date_range, color: Colors.black,),
-            title: const Text('Election Schedules', style: TextStyle(color: Colors.black)),
+            title: const Text('Election Schedule', style: TextStyle(color: Colors.black)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => const ElectionScheduler()));

@@ -41,6 +41,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
   List<String> selectedCandidates = [];
   bool selectAll = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -160,6 +161,10 @@ class _CandidatesPageState extends State<CandidatesPage> {
   }
 
   Future<void> _fetchCandidates() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_all_candidates.php');
     final response = await http.get(url);
 
@@ -167,6 +172,7 @@ class _CandidatesPageState extends State<CandidatesPage> {
       setState(() {
         candidates = json.decode(response.body);
         filteredCandidates = candidates;
+        _isLoading = false;
       });
     } else {
       print('Failed to fetch candidates');
@@ -534,7 +540,21 @@ class _CandidatesPageState extends State<CandidatesPage> {
       ),
               const SizedBox(height: 16.0),
               Expanded(
-        child: ListView.builder(
+        child: _isLoading 
+        ? const Center(
+          child: Column(
+            children: [
+              CircularProgressIndicator(color: Colors.black,),
+              Text(
+                'Loading candidates...',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),)
+        : ListView.builder(
       itemCount: currentPageUsers.length,
       itemBuilder: (context, index) {
         final candidate = currentPageUsers[index];

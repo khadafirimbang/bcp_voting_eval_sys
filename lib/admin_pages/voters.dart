@@ -22,6 +22,7 @@ class _VotersPageState extends State<VotersPage> {
   int currentPage = 0; // Current page index
   final int rowsPerPage = 10; // Changed to 10 rows per page
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -30,6 +31,10 @@ class _VotersPageState extends State<VotersPage> {
   }
 
   Future<void> fetchUsers() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_voters.php');
     final response = await http.get(url);
 
@@ -47,8 +52,12 @@ class _VotersPageState extends State<VotersPage> {
           };
         }).toList();
         filteredUsers = users; // Initialize filteredUsers
+        _isLoading = false;
       });
     } else {
+      setState(() {
+        _isLoading = false;
+      });
       throw Exception('Failed to load users');
     }
   }
@@ -326,7 +335,21 @@ class _VotersPageState extends State<VotersPage> {
               ],
               const SizedBox(height: 16.0),
               Expanded(
-                child: filteredUsers.isEmpty
+                child: _isLoading
+                    ? const Center(child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(color: Colors.black,),
+                        const SizedBox(height: 8),
+                        Text('Loading Voters...',
+                        style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                        ),
+                      ],
+                    ))
+                    : filteredUsers.isEmpty
                     ? const Center(child: Text('No Voters yet.'))
                     : ListView.builder(
                         itemCount: currentPageUsers.length,
