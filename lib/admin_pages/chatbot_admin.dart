@@ -369,7 +369,7 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
                   icon: const Icon(Icons.menu, color: Colors.black45),
                 ),
                 const Text(
-                  'Chatbot Mngmnt',
+                  "FAQ's Mngmnt",
                   style: TextStyle(fontSize: 18, color: Colors.black54),
                 ),
                   ],

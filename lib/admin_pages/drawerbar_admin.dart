@@ -185,7 +185,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
           const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.chat, color: Colors.black,),
-            title: const Text('Chatbot Management', style: TextStyle(color: Colors.black)),
+            title: const Text("FAQ's Management", style: TextStyle(color: Colors.black)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotAdminPage()));
@@ -249,14 +249,14 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => QuestionsListPage()));
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.question_answer, color: Colors.black,),
-              title: const Text('Feedback Sentiment Analysis', style: TextStyle(color: Colors.black)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) => SentimentAnalysisResultsPage()));
-              },
-            ),
+            // ListTile(
+            //   leading: const Icon(Icons.question_answer, color: Colors.black,),
+            //   title: const Text('Feedback Sentiment Analysis', style: TextStyle(color: Colors.black)),
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //     Navigator.push(context, MaterialPageRoute(builder: (context) => SentimentAnalysisResultsPage()));
+            //   },
+            // ),
             ],
           ),
           const SizedBox(height: 10,),

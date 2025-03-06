@@ -340,14 +340,54 @@ class _ResponsesPageState extends State<ResponsesPage> {
                               itemCount: responses.length,
                               itemBuilder: (context, index) {
                                 final response = responses[index];
+                                final sentimentAnalysis =
+                                    jsonDecode(response['sentiment_analysis']) as List<dynamic>;
+
+                                // Extract positive and negative scores
+                                double positiveScore = 0.0;
+                                double negativeScore = 0.0;
+
+                                for (var sentiment in sentimentAnalysis[0]) {
+                                  if (sentiment['label'] == 'POSITIVE') {
+                                    positiveScore = sentiment['score'] as double;
+                                  } else if (sentiment['label'] == 'NEGATIVE') {
+                                    negativeScore = sentiment['score'] as double;
+                                  }
+                                }
+
                                 return Card(
                                   margin: const EdgeInsets.symmetric(
                                     horizontal: 8,
                                     vertical: 4,
                                   ),
-                                  child: ListTile(
-                                    title: Text(response['response']),
-                                    subtitle: Text('Student No: ${response['studentno']}'),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          response['response'],
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Student No: ${response['studentno']}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.black87,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        _buildSentimentBarChart(
+                                          positivePercentage: positiveScore * 100,
+                                          negativePercentage: negativeScore * 100,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
                               },
@@ -356,6 +396,84 @@ class _ResponsesPageState extends State<ResponsesPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSentimentBarChart({
+    required double positivePercentage,
+    required double negativePercentage,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Sentiment Analysis',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.blueGrey[900],
+          ),
+        ),
+        SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _buildBar(
+                label: 'Positive',
+                percentage: positivePercentage,
+                color: Colors.green,
+              ),
+            ),
+            SizedBox(width: 8),
+            Expanded(
+              child: _buildBar(
+                label: 'Negative',
+                percentage: negativePercentage,
+                color: Colors.red,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBar({
+    required String label,
+    required double percentage,
+    required Color color,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$label (${percentage.toStringAsFixed(1)}%)',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        SizedBox(height: 4),
+        Container(
+          height: 8,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: percentage / 100,
+            child: Container(
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
