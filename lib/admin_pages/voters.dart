@@ -42,13 +42,13 @@ class _VotersPageState extends State<VotersPage> {
       setState(() {
         users = (json.decode(response.body) as List).map((user) {
           return {
-            'studentno': user['studentno'].toString(),
-            'lastname': user['lastname'].toString(),
-            'firstname': user['firstname'].toString(),
-            'middlename': user['middlename'].toString(),
-            'course': user['course'].toString(),
-            'section': user['section'].toString(),
-            'account_status': user['account_status'].toString(),
+            'studentno': user['studentno']?.toString() ?? '', // Handle null studentno
+            'lastname': user['lastname']?.toString() ?? '', // Handle null lastname
+            'firstname': user['firstname']?.toString() ?? '', // Handle null firstname
+            'middlename': user['middlename']?.toString() ?? '', // Handle null middlename
+            'course': user['course']?.toString() ?? '', // Handle null course
+            'section': user['section']?.toString() ?? '', // Handle null section
+            'account_status': user['account_status']?.toString() ?? '',
           };
         }).toList();
         filteredUsers = users; // Initialize filteredUsers
@@ -355,13 +355,17 @@ class _VotersPageState extends State<VotersPage> {
                         itemCount: currentPageUsers.length,
                         itemBuilder: (context, index) {
                           final user = currentPageUsers[index];
+                          final fullName = '${user['lastname']}, ${user['firstname']}' +
+        (user['middlename'] != null && user['middlename'].isNotEmpty
+            ? ' ${user['middlename']}'
+            : '');
                           return Column(
                             children: [
                               Card(
                                 color: Colors.white,
                                 elevation: 2,
                                 child: ListTile(
-                                  title: Text('${user['lastname']}, ${user['firstname']} ${user['middlename']}'),
+                                  title: Text(fullName),
                                   subtitle: Text('Student No: ${user['studentno']} - Course: ${user['course']} - Section: ${user['section']}'),
                                   // trailing: Row(
                                   //   mainAxisSize: MainAxisSize.min,

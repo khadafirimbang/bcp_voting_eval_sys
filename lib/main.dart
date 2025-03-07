@@ -138,6 +138,7 @@ class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
       print('Failed to fetch data');
     }
   }
+  
   @override
   Widget build(BuildContext context) {
     return SafeArea(

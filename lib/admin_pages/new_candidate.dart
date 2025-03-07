@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/admin_pages/candidates.dart';
@@ -29,12 +30,41 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
 
   final List<String> _positions = [];
   final List<String> _partylist = [];
+  Timer? _debounceTimer;
+  List<Map<String, dynamic>> _filteredStudents = [];
 
   @override
   void initState() {
     super.initState();
     _loadPositions();
     _loadPartylist();
+    fetchAndSaveData();
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchEligibleStudents({String searchTerm = ''}) async {
+    final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/get_eligible_students.php?search=$searchTerm');
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          return List<Map<String, dynamic>>.from(data['students']);
+        } else {
+          throw Exception(data['message']);
+        }
+      } else {
+        throw Exception('Failed to load eligible students');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error fetching eligible students: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return [];
+    }
   }
 
   Future<void> _loadPartylist() async {
@@ -146,13 +176,13 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
       body: {
         'studentno': _studentNoController.text,
         'firstname': _firstNameController.text,
-        'middlename': _middleNameController.text,
+        'middlename': _middleNameController.text.isEmpty ? '' : _middleNameController.text,
         'lastname': _lastNameController.text,
         'section': _sectionController.text,
         'course': _courseController.text,
         'slogan': _sloganController.text,
         'position': _selectedPosition,
-        'partylist': _selectedPartylist,
+        'partylist': _selectedPartylist ?? '',
         'img': img,
       },
     );
@@ -239,6 +269,46 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
     setState(() {});
   }
 
+  void _onSearchChanged(String value) {
+    if (_debounceTimer?.isActive ?? false) _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 700), () async {
+      if (value.isNotEmpty) {
+        final students = await _fetchEligibleStudents(searchTerm: value);
+        setState(() {
+          _filteredStudents = students;
+        });
+      } else {
+        setState(() {
+          _filteredStudents = [];
+        });
+      }
+    });
+  }
+
+  Future<void> fetchAndSaveData() async {
+    final response = await http.get(Uri.parse('https://registrar.bcp-sms1.com/bcp_registrar-master/api/students.php'));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      final saveResponse = await http.post(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/registrar_students_info.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data),
+      );
+      // print('Data sent: ${jsonEncode(data)}');
+
+      if (saveResponse.statusCode == 200) {
+        print('Data saved successfully');
+        // print('Save response: ${saveResponse.body}');
+      } else {
+        print('Failed to save data');
+      }
+    } else {
+      print('Failed to fetch data');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -267,33 +337,33 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
                 child: Form(
                   key: _formKey,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      _buildTextField(_studentNoController, 'Student No', 8),
-                      _buildTextField(_firstNameController, 'First Name'),
-                      _buildTextField(_middleNameController, 'Middle Name'),
-                      _buildTextField(_lastNameController, 'Last Name'),
-                      _buildTextField(_sectionController, 'Section'),
-                      _buildTextField(_courseController, 'Course'),
-                      _buildTextField(_sloganController, 'Slogan'),
-                      _buildDropdownFieldPosition(),
-                      _buildDropdownFieldPartylist(),
-                      const SizedBox(height: 10),
-                      _buildImageUploadSection(),
-                      const SizedBox(height: 20),
-                      _buildSubmitButton(),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const CandidatesPage()),
-                          );
-                        },
-                        child: const Text('Cancel',),
-                      ),
-                    ],
-                  ),
+  crossAxisAlignment: CrossAxisAlignment.center,
+  children: [
+    _buildStudentNoField(), // Use the new method here
+    _buildTextField(_firstNameController, 'First Name'),
+    _buildTextField(_middleNameController, 'Middle Name', null, false),
+    _buildTextField(_lastNameController, 'Last Name'),
+    _buildTextField(_sectionController, 'Section'),
+    _buildTextField(_courseController, 'Course'),
+    _buildTextField(_sloganController, 'Slogan'),
+    _buildDropdownFieldPosition(),
+    _buildDropdownFieldPartylist(),
+    const SizedBox(height: 10),
+    _buildImageUploadSection(),
+    const SizedBox(height: 20),
+    _buildSubmitButton(),
+    const SizedBox(height: 10),
+    ElevatedButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const CandidatesPage()),
+        );
+      },
+      child: const Text('Cancel'),
+    ),
+  ],
+),
                 ),
               ),
             ),
@@ -303,7 +373,88 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, [int? maxLength]) {
+  Widget _buildStudentNoField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextFormField(
+          controller: _studentNoController,
+          maxLength: 8,
+          decoration: InputDecoration(
+            labelText: 'Student No',
+            counterText: '',
+          ),
+          onChanged: _onSearchChanged, // Use the debounced method
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter Student No';
+            }
+            return null;
+          },
+        ),
+        if (_filteredStudents.isNotEmpty)
+          Container(
+            margin: EdgeInsets.only(top: 10),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(5),
+            ),
+            height: 250, // Adjust height as needed
+            child: ListView.builder(
+              itemCount: _filteredStudents.length,
+              itemBuilder: (context, index) {
+                final student = _filteredStudents[index];
+                return ListTile(
+                  title: Text('${student['firstname'] ?? ''} ${student['lastname'] ?? ''}'),
+                  subtitle: Text('Student No: ${student['studentno'] ?? ''}'),
+                  onTap: () {
+                    _studentNoController.text = student['studentno']?.toString() ?? '';
+                    _firstNameController.text = student['firstname'] ?? '';
+                    _lastNameController.text = student['lastname'] ?? '';
+                    _sectionController.text = student['section'] ?? '';
+                    _courseController.text = student['course'] ?? '';
+                    setState(() {
+                      _filteredStudents = []; // Clear the list after selection
+                    });
+                  },
+                );
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _showStudentSelectionDialog(List<Map<String, dynamic>> students) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Select Student'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: students.map((student) {
+                return ListTile(
+                  title: Text('${student['firstname'] ?? ''} ${student['lastname'] ?? ''}'),
+                  subtitle: Text('Student No: ${student['studentno'] ?? ''}'),
+                  onTap: () {
+                    _studentNoController.text = student['studentno']?.toString() ?? '';
+                    _firstNameController.text = student['firstname'] ?? '';
+                    _lastNameController.text = student['lastname'] ?? '';
+                    _sectionController.text = student['section'] ?? '';
+                    _courseController.text = student['course'] ?? '';
+                    Navigator.pop(context);
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, [int? maxLength, bool isRequired = false]) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: TextFormField(
@@ -313,12 +464,14 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
           labelText: label,
           counterText: maxLength != null ? '' : null,
         ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter $label';
-          }
-          return null;
-        },
+        validator: isRequired
+            ? (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter $label';
+                }
+                return null;
+              }
+            : null, // No validation for optional fields
       ),
     );
   }
@@ -367,12 +520,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
             _selectedPartylist = newValue;
           });
         },
-        validator: (value) {
-          if (value == null) {
-            return 'Please select a partylist';
-          }
-          return null;
-        },
+        validator: null, // No validation for optional fields
       ),
     );
   }
