@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/admin_pages/dashboard2.dart';
 import 'package:SSCVote/voter_pages/announcement.dart';
 import 'package:SSCVote/signin.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:http/http.dart' as http;
 
 void main() => runApp(const LoadingScreen());
 
@@ -45,6 +47,7 @@ class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
     });
 
     _checkInternetConnectionAndNavigate();
+    fetchAndSaveData();
   }
 
   @override
@@ -112,6 +115,29 @@ class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
     }
   }
 
+  Future<void> fetchAndSaveData() async {
+    final response = await http.get(Uri.parse('https://registrar.bcp-sms1.com/bcp_registrar-master/api/students.php'));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      final saveResponse = await http.post(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/registrar_students_info.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data),
+      );
+      // print('Data sent: ${jsonEncode(data)}');
+
+      if (saveResponse.statusCode == 200) {
+        print('Data saved successfully');
+        // print('Save response: ${saveResponse.body}');
+      } else {
+        print('Failed to save data');
+      }
+    } else {
+      print('Failed to fetch data');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return SafeArea(

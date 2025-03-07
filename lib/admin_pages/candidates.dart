@@ -543,8 +543,10 @@ class _CandidatesPageState extends State<CandidatesPage> {
         child: _isLoading 
         ? const Center(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(color: Colors.black,),
+              SizedBox(height: 8),
               Text(
                 'Loading candidates...',
                 style: TextStyle(
