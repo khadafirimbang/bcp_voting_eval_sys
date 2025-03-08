@@ -83,70 +83,70 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
   }
 
   Future<void> _login() async {
-  if (_formKey.currentState!.validate()) {
-    setState(() {
-      _isLoading = true; // Start loading
-    });
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true; // Start loading
+      });
 
-    String input = _studentNoController.text; // This can be either studentno or email
-    String password = _passwordController.text;
+      String input = _studentNoController.text; // This can be either studentno or email
+      String password = _passwordController.text;
 
-    // Debug: Log the input and password
-    // print("Input: $input");
-    // print("Password: $password");
+      // Debug: Log the input and password
+      // print("Input: $input");
+      // print("Password: $password");
 
-    // Validate if the input is an email or a student number
-    // bool isEmail = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(input);
-    // if (isEmail) {
-    //   // print("Input is an email");
-    // } else {
-    //   print("Input is a student number");
-    // }
+      // Validate if the input is an email or a student number
+      // bool isEmail = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(input);
+      // if (isEmail) {
+      //   // print("Input is an email");
+      // } else {
+      //   print("Input is a student number");
+      // }
 
-    final response = await http.post(
-      Uri.parse('https://studentcouncil.bcp-sms1.com/php/signin.php'),
-      body: {
-        'input': input, // Send the input (studentno or email)
-        'password': password,
-      },
-    );
+      final response = await http.post(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/signin.php'),
+        body: {
+          'input': input, // Send the input (studentno or email)
+          'password': password,
+        },
+      );
 
-    final data = jsonDecode(response.body);
+      final data = jsonDecode(response.body);
 
-    // Debug: Log the response
-    print("Response: $data");
+      // Debug: Log the response
+      print("Response: $data");
 
-    setState(() {
-      _isLoading = false; // Stop loading
-    });
+      setState(() {
+        _isLoading = false; // Stop loading
+      });
 
-    if (data['status'] == 'success') {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('studentno', input); // Store the input (studentno or email)
-      await prefs.setString('role', data['role']);
+      if (data['status'] == 'success') {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('studentno', input); // Store the input (studentno or email)
+        await prefs.setString('role', data['role']);
 
-      if (data['role'] == 'Voter') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const AnnouncementPage()),
-        );
-      } else if (data['role'] == 'Admin') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => DashboardPage2()),
+        if (data['role'] == 'Voter') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const AnnouncementPage()),
+          );
+        } else if (data['role'] == 'Admin&69*-+') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => DashboardPage2()),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message']),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
         );
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(data['message']),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 2),
-        ),
-      );
     }
   }
-}
 
   // String _sanitizeInput(String input) {
   //   return input.trim().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
