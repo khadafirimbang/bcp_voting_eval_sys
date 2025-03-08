@@ -176,9 +176,9 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
                         children: [
                           TextFormField(
                             controller: _studentNoController,
-                            keyboardType: TextInputType.number,
+                            keyboardType: TextInputType.text,
                             decoration: InputDecoration(
-                              labelText: 'Student Number',
+                              labelText: 'Student No. or Email',
                               prefixIcon: const Icon(Icons.person),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8.0),
@@ -186,11 +186,11 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter your student number';
+                                return 'Please enter your student number or email';
                               }
-                              if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
-                                return 'Student number must be numeric';
-                              }
+                              // if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                              //   return 'Student number must be numeric';
+                              // }
                               return null;
                             },
                           ),

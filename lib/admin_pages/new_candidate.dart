@@ -271,7 +271,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
 
   void _onSearchChanged(String value) {
     if (_debounceTimer?.isActive ?? false) _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 700), () async {
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
       if (value.isNotEmpty) {
         final students = await _fetchEligibleStudents(searchTerm: value);
         setState(() {
@@ -337,33 +337,33 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
                 child: Form(
                   key: _formKey,
                   child: Column(
-  crossAxisAlignment: CrossAxisAlignment.center,
-  children: [
-    _buildStudentNoField(), // Use the new method here
-    _buildTextField(_firstNameController, 'First Name'),
-    _buildTextField(_middleNameController, 'Middle Name', null, false),
-    _buildTextField(_lastNameController, 'Last Name'),
-    _buildTextField(_sectionController, 'Section'),
-    _buildTextField(_courseController, 'Course'),
-    _buildTextField(_sloganController, 'Slogan'),
-    _buildDropdownFieldPosition(),
-    _buildDropdownFieldPartylist(),
-    const SizedBox(height: 10),
-    _buildImageUploadSection(),
-    const SizedBox(height: 20),
-    _buildSubmitButton(),
-    const SizedBox(height: 10),
-    ElevatedButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const CandidatesPage()),
-        );
-      },
-      child: const Text('Cancel'),
-    ),
-  ],
-),
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _buildStudentNoField(), // Use the new method here
+                      _buildTextField(_firstNameController, 'First Name'),
+                      _buildTextField(_middleNameController, 'Middle Name', null, false),
+                      _buildTextField(_lastNameController, 'Last Name'),
+                      _buildTextField(_sectionController, 'Section'),
+                      _buildTextField(_courseController, 'Course'),
+                      _buildTextField(_sloganController, 'Slogan'),
+                      _buildDropdownFieldPosition(),
+                      _buildDropdownFieldPartylist(),
+                      const SizedBox(height: 10),
+                      _buildImageUploadSection(),
+                      const SizedBox(height: 20),
+                      _buildSubmitButton(),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const CandidatesPage()),
+                          );
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -383,6 +383,16 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
           decoration: InputDecoration(
             labelText: 'Student No',
             counterText: '',
+            suffixIcon: IconButton(
+              icon: Icon(Icons.search), // Add search icon
+              onPressed: () async {
+                // Fetch all eligible students when the search icon is clicked
+                final students = await _fetchEligibleStudents();
+                setState(() {
+                  _filteredStudents = students;
+                });
+              },
+            ),
           ),
           onChanged: _onSearchChanged, // Use the debounced method
           validator: (value) {
@@ -423,7 +433,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
           ),
       ],
     );
-  }
+}
 
   void _showStudentSelectionDialog(List<Map<String, dynamic>> students) {
     showDialog(
