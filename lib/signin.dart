@@ -83,59 +83,74 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
   }
 
   Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true; // Start loading
-      });
+  if (_formKey.currentState!.validate()) {
+    setState(() {
+      _isLoading = true; // Start loading
+    });
 
-      String studentNo = _sanitizeInput(_studentNoController.text);
-      String password = _sanitizeInput(_passwordController.text);
+    String input = _studentNoController.text; // This can be either studentno or email
+    String password = _passwordController.text;
 
-      final response = await http.post(
-        Uri.parse('https://studentcouncil.bcp-sms1.com/php/signin.php'),
-        body: {
-          'studentno': studentNo,
-          'password': password,
-        },
-      );
+    // Debug: Log the input and password
+    // print("Input: $input");
+    // print("Password: $password");
 
-      final data = jsonDecode(response.body);
+    // Validate if the input is an email or a student number
+    // bool isEmail = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(input);
+    // if (isEmail) {
+    //   // print("Input is an email");
+    // } else {
+    //   print("Input is a student number");
+    // }
 
-      setState(() {
-        _isLoading = false; // Stop loading
-      });
+    final response = await http.post(
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/signin.php'),
+      body: {
+        'input': input, // Send the input (studentno or email)
+        'password': password,
+      },
+    );
 
-      if (data['status'] == 'success') {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('studentno', studentNo);
-        await prefs.setString('role', data['role']);
+    final data = jsonDecode(response.body);
 
-        if (data['role'] == 'Voter') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const AnnouncementPage()),
-          );
-        } else if (data['role'] == 'Admin') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => DashboardPage2()),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(data['message']),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
+    // Debug: Log the response
+    print("Response: $data");
+
+    setState(() {
+      _isLoading = false; // Stop loading
+    });
+
+    if (data['status'] == 'success') {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('studentno', input); // Store the input (studentno or email)
+      await prefs.setString('role', data['role']);
+
+      if (data['role'] == 'Voter') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const AnnouncementPage()),
+        );
+      } else if (data['role'] == 'Admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardPage2()),
         );
       }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(data['message']),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
+}
 
-  String _sanitizeInput(String input) {
-    return input.trim().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
-  }
+  // String _sanitizeInput(String input) {
+  //   return input.trim().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +193,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
                             controller: _studentNoController,
                             keyboardType: TextInputType.text,
                             decoration: InputDecoration(
-                              labelText: 'Student No. or Email',
+                              labelText: 'Student No. or Email', // Updated label
                               prefixIcon: const Icon(Icons.person),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8.0),
@@ -188,9 +203,12 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your student number or email';
                               }
-                              // if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
-                              //   return 'Student number must be numeric';
-                              // }
+                              // Check if the input is a valid email or student number
+                              bool isEmail = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value);
+                              bool isStudentNo = RegExp(r'^\d+$').hasMatch(value); // Assuming student numbers are numeric
+                              if (!isEmail && !isStudentNo) {
+                                return 'Please enter a valid email or student number';
+                              }
                               return null;
                             },
                           ),
