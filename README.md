@@ -1,6 +1,6 @@
-# for_testing
+# SSCVote
 
-A new Flutter project.
+Online Voting and Student Evaluation System
 
 ## Getting Started
 
