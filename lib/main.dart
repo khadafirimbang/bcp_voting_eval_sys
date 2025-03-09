@@ -116,7 +116,7 @@ class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
   }
 
   Future<void> fetchAndSaveData() async {
-    final response = await http.get(Uri.parse('https://registrar.bcp-sms1.com/bcp_registrar-master/api/students.php'));
+    final response = await http.get(Uri.parse('https://registrar.bcp-sms1.com/api/students.php'));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);

@@ -1,3 +1,4 @@
+import 'package:SSCVote/voter_pages/vote.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -79,7 +80,8 @@ class _SelectedCandidatesPageState extends State<SelectedCandidatesPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('All selected candidates voted successfully!')),
       );
-      Navigator.pop(context, true); // Return to previous page
+      // Navigator.pop(context, true); // Return to previous page
+      Navigator.push(context, MaterialPageRoute(builder: (context) => VotePage()), );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

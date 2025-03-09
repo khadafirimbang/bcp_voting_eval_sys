@@ -114,7 +114,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
       final data = jsonDecode(response.body);
 
       // Debug: Log the response
-      print("Response: $data");
+      // print("Response: $data");
 
       setState(() {
         _isLoading = false; // Stop loading
@@ -193,7 +193,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
                             controller: _studentNoController,
                             keyboardType: TextInputType.text,
                             decoration: InputDecoration(
-                              labelText: 'Student No. or Email', // Updated label
+                              labelText: 'Student Number', // Updated label
                               prefixIcon: const Icon(Icons.person),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8.0),
