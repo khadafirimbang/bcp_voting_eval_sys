@@ -1,7 +1,7 @@
+import 'package:SSCVote/admin_pages/profile_admin.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:SSCVote/admin_pages/change_pass.dart';
-import 'package:SSCVote/voter_pages/profile.dart';
 import 'package:SSCVote/main.dart'; // Import your main.dart or loading screen
 
 class ProfileMenu extends StatefulWidget {
@@ -39,7 +39,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
         switch (item) {
           case 0:
             // Navigate to Profile page
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileInfoPage()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileInfoAdminPage()));
             break;
           case 1:
             // Handle change pass

@@ -232,6 +232,7 @@ class _UpdateCandidatePageState extends State<UpdateCandidatePage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6.0),
                     child: TextFormField(
+                      readOnly: true,
                       controller: lastnameController,
                       decoration: const InputDecoration(labelText: 'Last Name'),
                       validator: (value) => value == null || value.isEmpty
@@ -242,6 +243,7 @@ class _UpdateCandidatePageState extends State<UpdateCandidatePage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6.0),
                     child: TextFormField(
+                      readOnly: true,
                       controller: firstnameController,
                       decoration: const InputDecoration(labelText: 'First Name'),
                       validator: (value) => value == null || value.isEmpty
@@ -252,6 +254,7 @@ class _UpdateCandidatePageState extends State<UpdateCandidatePage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6.0),
                     child: TextFormField(
+                      readOnly: true,
                       controller: middlenameController,
                       decoration: const InputDecoration(labelText: 'Middle Name'),
                       // Middle name is optional, so no validator

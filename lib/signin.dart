@@ -122,7 +122,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
 
       if (data['status'] == 'success') {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('studentno', input); // Store the input (studentno or email)
+       await prefs.setString('studentno', data['studentno'].toString()); // Store the input (studentno or email)
         await prefs.setString('role', data['role']);
 
         if (data['role'] == 'Voter') {
