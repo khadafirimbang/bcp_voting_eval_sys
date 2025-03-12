@@ -286,7 +286,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
   }
 
   Future<void> fetchAndSaveData() async {
-    final response = await http.get(Uri.parse('https://registrar.bcp-sms1.com/bcp_registrar-master/api/students.php'));
+    final response = await http.get(Uri.parse('https://registrar.bcp-sms1.com/api/students.php'));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -340,12 +340,12 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       _buildStudentNoField(), // Use the new method here
-                      _buildTextField(_firstNameController, 'First Name'),
-                      _buildTextField(_middleNameController, 'Middle Name', null, false),
-                      _buildTextField(_lastNameController, 'Last Name'),
-                      _buildTextField(_sectionController, 'Section'),
-                      _buildTextField(_courseController, 'Course'),
-                      _buildTextField(_sloganController, 'Slogan'),
+                      _buildTextField(_firstNameController, 'First Name', 255, true, true),
+                      _buildTextField(_middleNameController, 'Middle Name', 255, false, true),
+                      _buildTextField(_lastNameController, 'Last Name', 255, true, true),
+                      _buildTextField(_sectionController, 'Section', 255, true, true),
+                      _buildTextField(_courseController, 'Course', 255, true, true),
+                      _buildTextField(_sloganController, 'Slogan', 255, true, false),
                       _buildDropdownFieldPosition(),
                       _buildDropdownFieldPartylist(),
                       const SizedBox(height: 10),
@@ -464,12 +464,13 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, [int? maxLength, bool isRequired = false]) {
+  Widget _buildTextField(TextEditingController controller, String label, [int? maxLength, bool isRequired = false, bool readOnly = false]) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: TextFormField(
         controller: controller,
         maxLength: maxLength,
+        readOnly: readOnly,
         decoration: InputDecoration(
           labelText: label,
           counterText: maxLength != null ? '' : null,

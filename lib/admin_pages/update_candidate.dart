@@ -263,6 +263,7 @@ class _UpdateCandidatePageState extends State<UpdateCandidatePage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6.0),
                     child: TextFormField(
+                      readOnly: true,
                       controller: courseController,
                       decoration: const InputDecoration(labelText: 'Course'),
                       validator: (value) => value == null || value.isEmpty
@@ -273,6 +274,7 @@ class _UpdateCandidatePageState extends State<UpdateCandidatePage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6.0),
                     child: TextFormField(
+                      readOnly: true,
                       controller: sectionController,
                       decoration: const InputDecoration(labelText: 'Section'),
                       validator: (value) => value == null || value.isEmpty

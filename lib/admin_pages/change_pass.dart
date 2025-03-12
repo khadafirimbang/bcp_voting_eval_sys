@@ -56,12 +56,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           final data = jsonDecode(response.body);
           if (data['status'] == 'success') {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Password changed successfully!')),
+              const SnackBar(content: Text('Password changed successfully!'), backgroundColor: Colors.green,),
             );
             Navigator.pop(context); // Go back to the previous screen
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(data['message'])),
+              SnackBar(content: Text(data['message']), backgroundColor: Colors.red,),
             );
           }
         } else {
