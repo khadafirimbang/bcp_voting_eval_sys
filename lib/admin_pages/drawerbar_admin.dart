@@ -9,7 +9,6 @@ import 'package:SSCVote/admin_pages/dashboard2.dart';
 import 'package:SSCVote/admin_pages/election_sched.dart';
 import 'package:SSCVote/admin_pages/evaluation_admin.dart';
 import 'package:SSCVote/admin_pages/feedback_results.dart';
-import 'package:SSCVote/admin_pages/pending_voters.dart';
 import 'package:SSCVote/admin_pages/prediction.dart';
 import 'package:SSCVote/admin_pages/survey_results.dart';
 import 'package:SSCVote/admin_pages/resultAdmin.dart';
@@ -25,11 +24,13 @@ class AppDrawerAdmin extends StatefulWidget {
 
 class _AppDrawerState extends State<AppDrawerAdmin> {
   String? studentNo = "Unknown"; // Default value
+  String? userRole;
 
   @override
   void initState() {
     super.initState();
     _loadStudentNo(); // Load the user's name when the drawer is initialized
+    _loadUserRole();
   }
 
 
@@ -37,6 +38,13 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       studentNo = prefs.getString('studentno') ?? 'Student No'; // Fetch student no
+    });
+  }
+
+  Future<void> _loadUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userRole = prefs.getString('role'); // Assuming 'role' is the key used
     });
   }
 
@@ -185,7 +193,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
           const SizedBox(height: 10,),
           ListTile(
             leading: const Icon(Icons.chat, color: Colors.black,),
-            title: const Text("FAQ's Management", style: TextStyle(color: Colors.black)),
+            title: const Text("FAQs Management", style: TextStyle(color: Colors.black)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => ChatbotAdminPage()));
@@ -268,23 +276,18 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ElectionPredictionPage()));
             },
           ),
-          // const SizedBox(height: 10,),
-          // ListTile(
-          //   leading: const Icon(Icons.online_prediction_outlined, color: Colors.black,),
-          //   title: const Text('Election Prediction', style: TextStyle(color: Colors.black)),
-          //   onTap: () {
-          //     Navigator.pop(context);
-          //     Navigator.push(context, MaterialPageRoute(builder: (context) => AccountsPage()));
-          //   },
-          // ),
-          // const SizedBox(height: 10,),
-          // ListTile(
-          //   leading: const Icon(Icons.logout, color: Colors.black,),
-          //   title: const Text('Logout', style: TextStyle(color: Colors.black)),
-          //   onTap: () {
-          //     _logout(context);
-          //   },
-          // ),
+          // Conditionally display AccountsPage based on user role
+          if (userRole == 'Super&69*Admin-+') ...[
+            const SizedBox(height: 10,),
+            ListTile(
+              leading: const Icon(Icons.account_circle, color: Colors.black,),
+              title: const Text('Admins', style: TextStyle(color: Colors.black)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => AccountsPage()));
+              },
+            ),
+          ],
         ],
       ),
     );

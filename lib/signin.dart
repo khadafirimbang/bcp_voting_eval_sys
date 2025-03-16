@@ -130,7 +130,7 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
             context,
             MaterialPageRoute(builder: (context) => const AnnouncementPage()),
           );
-        } else if (data['role'] == 'Admin&69*-+') {
+        } else if (data['role'] == 'Admin&69*-+' || data['role'] == 'Super&69*Admin-+') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => DashboardPage2()),

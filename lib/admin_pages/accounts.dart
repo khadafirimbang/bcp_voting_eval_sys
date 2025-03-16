@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:SSCVote/admin_pages/profile_menu_admin.dart';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/admin_pages/add_account.dart';
 import 'package:SSCVote/admin_pages/drawerbar_admin.dart';
@@ -14,10 +15,11 @@ class _AccountsPageState extends State<AccountsPage> {
   List<Map<String, dynamic>> currentAccounts = [];
   int currentPage = 1;
   int accountsPerPage = 10;
-  String selectedRole = 'All';
   String searchQuery = '';
   bool isSearchVisible = false; // State variable for search field visibility
   final TextEditingController searchController = TextEditingController(); // Controller for the search input
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -26,6 +28,10 @@ class _AccountsPageState extends State<AccountsPage> {
   }
 
   Future<void> fetchAccounts() async {
+    setState(() {
+      isLoading = true; // Start loading
+    });
+
     try {
       final response = await http.get(
         Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_accounts.php'),
@@ -41,6 +47,10 @@ class _AccountsPageState extends State<AccountsPage> {
       }
     } catch (e) {
       print('Error fetching accounts: $e');
+    } finally {
+      setState(() {
+        isLoading = false; // Stop loading
+      });
     }
   }
 
@@ -48,8 +58,7 @@ class _AccountsPageState extends State<AccountsPage> {
     final filteredAccounts = accounts.where((account) {
       final fullName = '${account['lastname']}, ${account['firstname']} ${account['middlename']}';
       final studnetNo = '${account['studentno']}';
-      final isRoleMatched = selectedRole == 'All' || account['role'] == selectedRole;
-      return (fullName.toLowerCase().contains(searchQuery.toLowerCase()) && isRoleMatched) || (studnetNo.contains(searchQuery) && isRoleMatched);
+      return (fullName.toLowerCase().contains(searchQuery.toLowerCase())) || (studnetNo.contains(searchQuery));
     }).toList();
 
     int startIndex = (currentPage - 1) * accountsPerPage;
@@ -142,7 +151,6 @@ class _AccountsPageState extends State<AccountsPage> {
     TextEditingController lastnameController = TextEditingController(
       text: account != null ? account['lastname'] : '',
     );
-    String role = account != null ? account['role'] : 'Voter';
 
     showDialog(
       context: context,
@@ -157,7 +165,7 @@ class _AccountsPageState extends State<AccountsPage> {
                 TextFormField(
                   controller: studentnoController,
                   decoration: const InputDecoration(labelText: 'Student Number'),
-                  enabled: false,
+                  validator: (value) => value!.isEmpty ? 'Enter first name' : null,
                 ),
                 TextFormField(
                   controller: firstnameController,
@@ -173,21 +181,6 @@ class _AccountsPageState extends State<AccountsPage> {
                   decoration: const InputDecoration(labelText: 'Last Name'),
                   validator: (value) => value!.isEmpty ? 'Enter last name' : null,
                 ),
-                DropdownButtonFormField<String>(
-                  value: role,
-                  items: ['Voter', 'Admin'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (newValue) {
-                    setState(() {
-                      role = newValue!;
-                    });
-                  },
-                  decoration: const InputDecoration(labelText: 'Role'),
-                ),
               ],
             ),
           ),
@@ -197,11 +190,11 @@ class _AccountsPageState extends State<AccountsPage> {
             onPressed: () {
               if (_formKey.currentState!.validate()) {
                 Map<String, String> accountData = {
-                  'studentno': studentnoController.text,
+                  'studentno': account!['studentno'].toString(), // Old student number
+                  'new_studentno': studentnoController.text, // New student number
                   'firstname': firstnameController.text,
                   'middlename': middlenameController.text,
                   'lastname': lastnameController.text,
-                  'role': role,
                 };
                 editAccount(accountData);
                 Navigator.of(context).pop();
@@ -223,60 +216,67 @@ class _AccountsPageState extends State<AccountsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
-        title: const Text('Accounts', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-        leading: Builder(
-          builder: (BuildContext context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
+      key: _scaffoldKey,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+          child: Container(
+            height: 56,
+            alignment: Alignment.center, // Align the AppBar in the center
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3), // Shadow color
+                  blurRadius: 8, // Blur intensity
+                  spreadRadius: 1, // Spread radius
+                  offset: const Offset(0, 4), // Vertical shadow position
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu, color: Colors.black45),
+                ),
+                const Text(
+                  'Admins',
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
+                ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.search),
+                      onPressed: () {
+                        setState(() {
+                          isSearchVisible = !isSearchVisible; // Toggle search field visibility
+                          searchController.clear(); // Clear the search field when opening
+                          searchQuery = ''; // Clear the search query
+                          _updateCurrentAccounts(); // Update accounts based on new search query
+                        });
+                      },
+                    ),
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    fetchAccounts();
+                  },
+                ),
+              ProfileMenu()
+                  ],
+                )
+              ],
+            )
+          ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              setState(() {
-                isSearchVisible = !isSearchVisible; // Toggle search field visibility
-                searchController.clear(); // Clear the search field when opening
-                searchQuery = ''; // Clear the search query
-                _updateCurrentAccounts(); // Update accounts based on new search query
-              });
-            },
-          ),
-          const SizedBox(width: 10),
-          DropdownButton<String>(
-            icon: const Icon(Icons.filter_list, color: Colors.white),
-            hint: const Text('All', style: TextStyle(color: Colors.white)),
-            value: selectedRole,
-            items: ['All', 'Voter', 'Admin'].map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            onChanged: (newValue) {
-              setState(() {
-                selectedRole = newValue!;
-                _updateCurrentAccounts(); // Update accounts based on filter
-              });
-            },
-            dropdownColor: const Color(0xFF1E3A8A),
-            style: const TextStyle(color: Colors.white),
-          ),
-          IconButton(onPressed: (){
-            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => AccountsPage()),
-                            );
-          }, icon: const Icon(Icons.refresh))
-        ],
-      ),
       drawer: const AppDrawerAdmin(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -309,7 +309,24 @@ class _AccountsPageState extends State<AccountsPage> {
               ),
             const SizedBox(height: 16.0),
             Expanded(
-              child: ListView.builder(
+              child: isLoading
+              ? const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(color: Colors.black,),
+                    SizedBox(height: 8),
+                    Text(
+                      'Loading...',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+              : ListView.builder(
                 itemCount: currentAccounts.length,
                 itemBuilder: (context, index) {
                   final account = currentAccounts[index];
@@ -318,7 +335,7 @@ class _AccountsPageState extends State<AccountsPage> {
                     elevation: 2,
                     child: ListTile(
                       title: Text('${account['lastname']}, ${account['firstname']} ${account['middlename']}'),
-                      subtitle: Text('Student No: ${account['studentno']} - Role: ${account['role']}'),
+                      subtitle: Text('Employee No: ${account['studentno']} - Email: ${account['email']}'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -366,7 +383,7 @@ class _AccountsPageState extends State<AccountsPage> {
             MaterialPageRoute(builder: (context) =>  AddAccountPage()),
           ).then((_) => fetchAccounts()); // Refresh accounts when returning
         },
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: Colors.black,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

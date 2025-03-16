@@ -144,7 +144,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text("FAQ's"),
+          title: Text("FAQs"),
           centerTitle: true,
         ),
         body: _isLoading

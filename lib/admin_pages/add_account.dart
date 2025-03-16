@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/admin_pages/accounts.dart';
-import 'package:SSCVote/admin_pages/drawerbar_admin.dart';
 import 'package:http/http.dart' as http;
 
 class AddAccountPage extends StatefulWidget {
@@ -17,7 +16,8 @@ class _AddAccountPageState extends State<AddAccountPage> {
   late TextEditingController lastnameController;
   late TextEditingController passwordController;
   late TextEditingController confirmPasswordController;
-  String role = 'Voter';
+  late TextEditingController emailController;
+  String role = 'Admin&69*-+';
   String? studentNoError; // Variable to hold error message for student number
 
   @override
@@ -29,6 +29,7 @@ class _AddAccountPageState extends State<AddAccountPage> {
     lastnameController = TextEditingController();
     passwordController = TextEditingController();
     confirmPasswordController = TextEditingController();
+    emailController = TextEditingController();
   }
 
   @override
@@ -39,6 +40,7 @@ class _AddAccountPageState extends State<AddAccountPage> {
     lastnameController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
+     emailController.dispose();
     super.dispose();
   }
 
@@ -51,61 +53,67 @@ class _AddAccountPageState extends State<AddAccountPage> {
 
     if (response.statusCode == 200) {
       var jsonResponse = json.decode(response.body);
-      return jsonResponse['exists']; // Returns true if student number exists
+      // Ensure 'exists' is a boolean or default to false if null
+      return jsonResponse['exists'] == true; // Explicitly check for true
     } else {
       // Handle server error
-      return false;
+      throw Exception('Failed to check student number');
     }
   }
 
   Future<void> saveAccount() async {
     if (_formKey.currentState!.validate()) {
-      // Check if student number already exists
-      bool exists = await checkStudentNo();
-      if (exists) {
-        setState(() {
-          studentNoError = 'Student number already exists.';
-        });
-        return; // Stop further execution
-      } else {
-        setState(() {
-          studentNoError = null; // Clear error if student number is valid
-        });
-      }
-
-      final response = await http.post(
-        Uri.parse('https://studentcouncil.bcp-sms1.com/php/add_account.php'),
-        body: {
-          'studentno': studentnoController.text,
-          'firstname': firstnameController.text,
-          'middlename': middlenameController.text,
-          'lastname': lastnameController.text,
-          'role': role,
-          'password': passwordController.text, // Include password in request
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        if (responseData['success']) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AccountsPage()),
-          ); // Navigate back to AccountsPage
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            backgroundColor: Colors.green,
-            content: Text('Account added successfully!'),
-          ));
+      try {
+        // Check if student number already exists
+        bool exists = await checkStudentNo();
+        if (exists) {
+          setState(() {
+            studentNoError = 'Student number already exists.';
+          });
+          return; // Stop further execution
         } else {
-          // Handle error (show a dialog or a SnackBar)
+          setState(() {
+            studentNoError = null; // Clear error if student number is valid
+          });
+        }
+
+        final response = await http.post(
+          Uri.parse('https://studentcouncil.bcp-sms1.com/php/add_account.php'),
+          body: {
+            'studentno': studentnoController.text,
+            'firstname': firstnameController.text,
+            'middlename': middlenameController.text,
+            'lastname': lastnameController.text,
+            'password': passwordController.text,
+            'email': emailController.text,
+            'role': role,
+          },
+        );
+
+        if (response.statusCode == 200) {
+          final responseData = json.decode(response.body);
+          if (responseData['success'] == true) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AccountsPage()),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              backgroundColor: Colors.green,
+              content: Text('Account added successfully!'),
+            ));
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(responseData['error'] ?? 'Failed to add account.')),
+            );
+          }
+        } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(responseData['message'])),
+            const SnackBar(content: Text('Failed to save account. Please try again.')),
           );
         }
-      } else {
-        // Handle server error
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to save account. Please try again.')),
+          SnackBar(content: Text('Error: $e')),
         );
       }
     }
@@ -116,21 +124,8 @@ class _AddAccountPageState extends State<AddAccountPage> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color(0xFF1E3A8A),
-          title: const Text('Add Account', style: TextStyle(color: Colors.white)),
-          iconTheme: const IconThemeData(color: Colors.white),
-          leading: Builder(
-            builder: (BuildContext context) {
-              return IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-              );
-            },
-          ),
+          title: const Text('Add Admin Account'),
         ),
-        drawer: const AppDrawerAdmin(),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Container(
@@ -177,10 +172,7 @@ class _AddAccountPageState extends State<AddAccountPage> {
                       TextFormField(
                         controller: middlenameController,
                         decoration: const InputDecoration(labelText: 'Middle Name'),
-                        validator: (value) {
-                          if (value!.isEmpty) return 'Enter middle name';
-                          return null;
-                        },
+                        
                       ),
                       TextFormField(
                         controller: lastnameController,
@@ -190,20 +182,16 @@ class _AddAccountPageState extends State<AddAccountPage> {
                           return null;
                         },
                       ),
-                      DropdownButtonFormField<String>(
-                        value: role,
-                        items: ['Voter', 'Admin'].map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (newValue) {
-                          setState(() {
-                            role = newValue!;
-                          });
+                      TextFormField(
+                        controller: emailController, // New email field
+                        decoration: const InputDecoration(labelText: 'Email'),
+                        validator: (value) {
+                          if (value!.isEmpty) return 'Enter email';
+                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                            return 'Enter a valid email';
+                          }
+                          return null;
                         },
-                        decoration: const InputDecoration(labelText: 'Role'),
                       ),
                       TextFormField(
                         controller: passwordController,
@@ -231,7 +219,7 @@ class _AddAccountPageState extends State<AddAccountPage> {
                             width: 100,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF1E3A8A),
+                                backgroundColor: Colors.black,
                                 padding: const EdgeInsets.symmetric(vertical: 15),
                               ),
                               onPressed: saveAccount,

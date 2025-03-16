@@ -1,12 +1,8 @@
 import 'dart:convert';
-import 'package:SSCVote/admin_pages/dashboard2.dart';
 import 'package:SSCVote/admin_pages/profile_menu_admin.dart';
-import 'package:SSCVote/main.dart';
-import 'package:SSCVote/voter_pages/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/admin_pages/drawerbar_admin.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class VotersPage extends StatefulWidget {
   const VotersPage({super.key});
@@ -287,35 +283,6 @@ class _VotersPageState extends State<VotersPage> {
             )
           ),
         ),
-        // appBar: AppBar(
-        //   backgroundColor: const Color(0xFF1E3A8A),
-        //   title: const Text('Voters', style: TextStyle(color: Colors.white)),
-        //   iconTheme: const IconThemeData(color: Colors.white),
-        //   leading: Builder(
-        //     builder: (BuildContext context) {
-        //       return IconButton(
-        //       icon: const Icon(Icons.menu),
-        //       onPressed: () {
-        //         Scaffold.of(context).openDrawer(); // Use this context
-        //       },
-        //             );
-        //     }
-        //   ),
-        //   actions: [
-        //     IconButton(
-        //       icon: Icon(_isSearchVisible ? Icons.close : Icons.search),
-        //       onPressed: () {
-        //         setState(() {
-        //           _isSearchVisible = !_isSearchVisible;
-        //           if (!_isSearchVisible) {
-        //             _searchController.clear();
-        //             _filterUsers();
-        //           }
-        //         });
-        //       },
-        //     ),
-        //   ],
-        // ),
         drawer: const AppDrawerAdmin(),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
