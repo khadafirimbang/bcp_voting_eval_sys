@@ -296,12 +296,12 @@ void clearFormFields() {
                           if (value!.isEmpty) return 'Enter first name';
                           return null;
                         },
-                        readOnly: !isEditable, // Make field read-only if not editable
+                        readOnly: true, // Make field read-only if not editable
                       ),
                       TextFormField(
                         controller: middlenameController,
                         decoration: const InputDecoration(labelText: 'Middle Name'),
-                        readOnly: !isEditable, // Make field read-only if not editable
+                        readOnly: true, // Make field read-only if not editable
                       ),
                       TextFormField(
                         controller: lastnameController,
@@ -310,7 +310,7 @@ void clearFormFields() {
                           if (value!.isEmpty) return 'Enter last name';
                           return null;
                         },
-                        readOnly: !isEditable, // Make field read-only if not editable
+                        readOnly: true, // Make field read-only if not editable
                       ),
                       TextFormField(
                         controller: emailController,
@@ -322,29 +322,29 @@ void clearFormFields() {
                           }
                           return null;
                         },
-                        readOnly: !isEditable, // Make field read-only if not editable
+                        readOnly: true, // Make field read-only if not editable
                       ),
-                      if (!isStudentSelected)
-                        TextFormField(
-                          controller: passwordController,
-                          obscureText: true,
-                          decoration: const InputDecoration(labelText: 'Password'),
-                          validator: (value) {
-                            if (value!.isEmpty) return 'Enter password';
-                            return null;
-                          },
-                        ),
-                      if (!isStudentSelected)
-                        TextFormField(
-                          controller: confirmPasswordController,
-                          obscureText: true,
-                          decoration: const InputDecoration(labelText: 'Confirm Password'),
-                          validator: (value) {
-                            if (value!.isEmpty) return 'Confirm your password';
-                            if (value != passwordController.text) return 'Passwords do not match';
-                            return null;
-                          },
-                        ),
+                      // if (!isStudentSelected)
+                      //   TextFormField(
+                      //     controller: passwordController,
+                      //     obscureText: true,
+                      //     decoration: const InputDecoration(labelText: 'Password'),
+                      //     validator: (value) {
+                      //       if (value!.isEmpty) return 'Enter password';
+                      //       return null;
+                      //     },
+                      //   ),
+                      // if (!isStudentSelected)
+                      //   TextFormField(
+                      //     controller: confirmPasswordController,
+                      //     obscureText: true,
+                      //     decoration: const InputDecoration(labelText: 'Confirm Password'),
+                      //     validator: (value) {
+                      //       if (value!.isEmpty) return 'Confirm your password';
+                      //       if (value != passwordController.text) return 'Passwords do not match';
+                      //       return null;
+                      //     },
+                      //   ),
                       const SizedBox(height: 20),
                       Column(
                         children: [

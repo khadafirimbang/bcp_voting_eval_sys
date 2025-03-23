@@ -95,20 +95,51 @@ class _AccountsPageState extends State<AccountsPage> {
   }
 
   Future<void> deleteAccount(int studentno) async {
-    final response = await http.post(
-      Uri.parse('https://studentcouncil.bcp-sms1.com/php/delete_account.php'),
-      body: {'studentno': studentno.toString()}, // Convert to String
-    );
-    if (response.statusCode == 200) {
-      fetchAccounts();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        backgroundColor: Colors.green,
-        content: Text('Deleted successfully!'),
-      ));
+  // First, check the course status of the user
+  final checkResponse = await http.post(
+    Uri.parse('https://studentcouncil.bcp-sms1.com/php/check_course.php'),
+    body: {'studentno': studentno.toString()},
+  );
+
+  if (checkResponse.statusCode == 200) {
+    final Map<String, dynamic> result = json.decode(checkResponse.body);
+    
+    if (result['course'] == null || result['course'].isEmpty) {
+      // Course is empty or null, proceed to delete
+      final deleteResponse = await http.post(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/delete_account.php'),
+        body: {'studentno': studentno.toString()},
+      );
+      if (deleteResponse.statusCode == 200) {
+        fetchAccounts();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.green,
+          content: Text('Deleted successfully!'),
+        ));
+      } else {
+        throw Exception('Failed to delete account');
+      }
     } else {
-      throw Exception('Failed to delete account');
+      // Course is not empty, update role to 'Voter'
+      final updateResponse = await http.post(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/update_role.php'),
+        body: {'studentno': studentno.toString(), 'role': 'Voter'},
+      );
+      if (updateResponse.statusCode == 200) {
+        fetchAccounts();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.green,
+          content: Text('Role updated to Voter!'),
+        ));
+      } else {
+        throw Exception('Failed to update role');
+      }
     }
+  } else {
+    throw Exception('Failed to check course');
   }
+}
+
 
   void confirmDeleteAccount(int studentno) {
     showDialog(
@@ -339,10 +370,10 @@ class _AccountsPageState extends State<AccountsPage> {
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => showAccountForm(account: account),
-                          ),
+                          // IconButton(
+                          //   icon: const Icon(Icons.edit),
+                          //   onPressed: () => showAccountForm(account: account),
+                          // ),
                           IconButton(
                             icon: const Icon(Icons.delete),
                             onPressed: () => confirmDeleteAccount(account['studentno']),
