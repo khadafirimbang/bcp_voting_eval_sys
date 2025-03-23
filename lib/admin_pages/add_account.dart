@@ -18,7 +18,10 @@ class _AddAccountPageState extends State<AddAccountPage> {
   late TextEditingController confirmPasswordController;
   late TextEditingController emailController;
   String role = 'Admin&69*-+';
-  String? studentNoError; // Variable to hold error message for student number
+  List<Map<String, dynamic>> suggestedStudents = []; // List for suggested students
+  bool isLoading = false; // Loading state
+  bool isEditable = true; // Field editability state
+  bool isStudentSelected = false; // Flag to track if a student is selected
 
   @override
   void initState() {
@@ -40,12 +43,67 @@ class _AddAccountPageState extends State<AddAccountPage> {
     lastnameController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
-     emailController.dispose();
+    emailController.dispose();
     super.dispose();
   }
 
-  // Function to check if student number already exists
-  Future<bool> checkStudentNo() async {
+  Future<void> fetchSuggestedStudents(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        suggestedStudents = [];
+        isStudentSelected = false; // Reset the isStudentSelected flag
+        isEditable = true;
+        passwordController.text = '';
+        confirmPasswordController.text = '';
+      });
+      return;
+    }
+
+    setState(() {
+      isLoading = true; // Start loading
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/fetch_suggested_students.php'),
+        body: {'studentno': query},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          suggestedStudents = List<Map<String, dynamic>>.from(data).take(10).toList(); // Limit to 10 suggestions
+        });
+      }
+    } catch (e) {
+      print('Error fetching suggested students: $e');
+    } finally {
+      setState(() {
+        isLoading = false; // Stop loading
+      });
+    }
+  }
+
+  void _selectStudent(Map<String, dynamic> student) {
+    setState(() {
+      studentnoController.text = student['studentno'].toString();
+      firstnameController.text = student['firstname'];
+      middlenameController.text = student['middlename'] ?? '';
+      lastnameController.text = student['lastname'];
+      emailController.text = student['email'];
+      passwordController.text = student['original_password'] ?? ''; // Use original password
+      confirmPasswordController.text = student['original_password'] ?? ''; // Use original password
+
+      // Clear suggested students after selection
+      suggestedStudents = [];
+      // Make fields uneditable
+      isEditable = false;
+      // Set the flag to indicate a student is selected
+      isStudentSelected = true;
+    });
+  }
+
+  Future<bool> checkStudentExists() async {
     final response = await http.post(
       Uri.parse('https://studentcouncil.bcp-sms1.com/php/check_accounts.php'),
       body: {'studentno': studentnoController.text},
@@ -53,30 +111,49 @@ class _AddAccountPageState extends State<AddAccountPage> {
 
     if (response.statusCode == 200) {
       var jsonResponse = json.decode(response.body);
-      // Ensure 'exists' is a boolean or default to false if null
-      return jsonResponse['exists'] == true; // Explicitly check for true
+      return jsonResponse['exists'] == true; // Check if student number exists
     } else {
-      // Handle server error
       throw Exception('Failed to check student number');
     }
   }
 
-  Future<void> saveAccount() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        // Check if student number already exists
-        bool exists = await checkStudentNo();
-        if (exists) {
-          setState(() {
-            studentNoError = 'Student number already exists.';
-          });
-          return; // Stop further execution
-        } else {
-          setState(() {
-            studentNoError = null; // Clear error if student number is valid
-          });
-        }
+  Future<void> updateRoleToAdmin() async {
+    final response = await http.post(
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/update_role.php'),
+      body: {
+        'studentno': studentnoController.text,
+        'role': 'Admin&69*-+',
+      },
+    );
 
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      if (responseData['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.green,
+          content: Text('Role updated to Admin successfully!'),
+        ));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['error'] ?? 'Failed to update role.')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to update role. Please try again.')),
+      );
+    }
+  }
+
+  Future<void> saveAccount() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      // Check if student number already exists
+      bool exists = await checkStudentExists();
+      if (exists) {
+        await updateRoleToAdmin(); // Update role if exists
+      } else {
+        // Proceed to add the account if it does not exist
         final response = await http.post(
           Uri.parse('https://studentcouncil.bcp-sms1.com/php/add_account.php'),
           body: {
@@ -84,15 +161,25 @@ class _AddAccountPageState extends State<AddAccountPage> {
             'firstname': firstnameController.text,
             'middlename': middlenameController.text,
             'lastname': lastnameController.text,
-            'password': passwordController.text,
             'email': emailController.text,
             'role': role,
+            'password': passwordController.text,
           },
         );
 
         if (response.statusCode == 200) {
           final responseData = json.decode(response.body);
           if (responseData['success'] == true) {
+            // Clear all the fields
+            clearFormFields();
+
+            // Reset the states
+            setState(() {
+              suggestedStudents = [];
+              isStudentSelected = false;
+              isEditable = true;
+            });
+
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => AccountsPage()),
@@ -111,13 +198,28 @@ class _AddAccountPageState extends State<AddAccountPage> {
             const SnackBar(content: Text('Failed to save account. Please try again.')),
           );
         }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      // Clear all the fields regardless of the outcome
+      clearFormFields();
     }
   }
+}
+
+void clearFormFields() {
+  studentnoController.clear();
+  firstnameController.clear();
+  middlenameController.clear();
+  lastnameController.clear();
+  emailController.clear();
+  passwordController.clear();
+  confirmPasswordController.clear();
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -130,19 +232,19 @@ class _AddAccountPageState extends State<AddAccountPage> {
           padding: const EdgeInsets.all(16.0),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white, // Background color of the container
-              borderRadius: BorderRadius.circular(10.0), // Rounded corners
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10.0),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2), // Shadow color
-                  spreadRadius: 3, // Spread radius of shadow
-                  blurRadius: 5, // Blur radius of shadow
-                  offset: const Offset(0, 3), // Offset for shadow
+                  color: Colors.black.withOpacity(0.2),
+                  spreadRadius: 3,
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.all(30.0), // Inner padding for the container
+              padding: const EdgeInsets.all(30.0),
               child: Form(
                 key: _formKey,
                 child: SingleChildScrollView(
@@ -155,11 +257,37 @@ class _AddAccountPageState extends State<AddAccountPage> {
                           if (value!.isEmpty) return 'Enter student number';
                           return null;
                         },
+                        onChanged: (value) {
+                          if (value.isEmpty) {
+                            setState(() {
+                              suggestedStudents = [];
+                              isStudentSelected = false;
+                              isEditable = true;
+                              passwordController.text = '';
+                              confirmPasswordController.text = '';
+                            });
+                          } else {
+                            fetchSuggestedStudents(value); // Fetch suggestions
+                          }
+                        },
                       ),
-                      if (studentNoError != null) // Display error message if exists
-                        Text(
-                          studentNoError!,
-                          style: const TextStyle(color: Colors.red),
+                      const SizedBox(height: 8.0),
+                      if (isLoading)
+                        const CircularProgressIndicator()
+                      else if (suggestedStudents.isNotEmpty)
+                        Container(
+                          height: 150, // Set a fixed height for suggestions
+                          child: ListView.builder(
+                            itemCount: suggestedStudents.length,
+                            itemBuilder: (context, index) {
+                              final student = suggestedStudents[index];
+                              return ListTile(
+                                title: Text('${student['lastname']}, ${student['firstname']}'),
+                                subtitle: Text('Student No: ${student['studentno']}'),
+                                onTap: () => _selectStudent(student), // Select student
+                              );
+                            },
+                          ),
                         ),
                       TextFormField(
                         controller: firstnameController,
@@ -168,11 +296,12 @@ class _AddAccountPageState extends State<AddAccountPage> {
                           if (value!.isEmpty) return 'Enter first name';
                           return null;
                         },
+                        readOnly: !isEditable, // Make field read-only if not editable
                       ),
                       TextFormField(
                         controller: middlenameController,
                         decoration: const InputDecoration(labelText: 'Middle Name'),
-                        
+                        readOnly: !isEditable, // Make field read-only if not editable
                       ),
                       TextFormField(
                         controller: lastnameController,
@@ -181,9 +310,10 @@ class _AddAccountPageState extends State<AddAccountPage> {
                           if (value!.isEmpty) return 'Enter last name';
                           return null;
                         },
+                        readOnly: !isEditable, // Make field read-only if not editable
                       ),
                       TextFormField(
-                        controller: emailController, // New email field
+                        controller: emailController,
                         decoration: const InputDecoration(labelText: 'Email'),
                         validator: (value) {
                           if (value!.isEmpty) return 'Enter email';
@@ -192,26 +322,29 @@ class _AddAccountPageState extends State<AddAccountPage> {
                           }
                           return null;
                         },
+                        readOnly: !isEditable, // Make field read-only if not editable
                       ),
-                      TextFormField(
-                        controller: passwordController,
-                        obscureText: true,
-                        decoration: const InputDecoration(labelText: 'Password'),
-                        validator: (value) {
-                          if (value!.isEmpty) return 'Enter password';
-                          return null;
-                        },
-                      ),
-                      TextFormField(
-                        controller: confirmPasswordController,
-                        obscureText: true,
-                        decoration: const InputDecoration(labelText: 'Confirm Password'),
-                        validator: (value) {
-                          if (value!.isEmpty) return 'Confirm your password';
-                          if (value != passwordController.text) return 'Passwords do not match';
-                          return null;
-                        },
-                      ),
+                      if (!isStudentSelected)
+                        TextFormField(
+                          controller: passwordController,
+                          obscureText: true,
+                          decoration: const InputDecoration(labelText: 'Password'),
+                          validator: (value) {
+                            if (value!.isEmpty) return 'Enter password';
+                            return null;
+                          },
+                        ),
+                      if (!isStudentSelected)
+                        TextFormField(
+                          controller: confirmPasswordController,
+                          obscureText: true,
+                          decoration: const InputDecoration(labelText: 'Confirm Password'),
+                          validator: (value) {
+                            if (value!.isEmpty) return 'Confirm your password';
+                            if (value != passwordController.text) return 'Passwords do not match';
+                            return null;
+                          },
+                        ),
                       const SizedBox(height: 20),
                       Column(
                         children: [
