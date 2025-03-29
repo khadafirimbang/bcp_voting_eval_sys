@@ -351,16 +351,25 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
                       const SizedBox(height: 10),
                       _buildImageUploadSection(),
                       const SizedBox(height: 20),
-                      _buildSubmitButton(),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const CandidatesPage()),
-                          );
-                        },
-                        child: const Text('Cancel'),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const CandidatesPage()),
+                              );
+                            },
+                            child: const Text('Cancel', style: TextStyle(color: Colors.white),
+                          ),
+                          ),
+                          const SizedBox(width: 10),
+                          _buildSubmitButton(),
+                        ],
                       ),
                     ],
                   ),
@@ -561,18 +570,18 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
 
   Widget _buildSubmitButton() {
     return SizedBox(
-      width: 150,
+      // width: 150,
       child: ElevatedButton(
         onPressed: _isSaving || _isUploadingImage ? null : _submitForm,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
-          padding: const EdgeInsets.symmetric(vertical: 15),
+          // padding: const EdgeInsets.symmetric(vertical: 15),
         ),
         child: _isSaving
             ? const CircularProgressIndicator(
                 color: Colors.white,
               )
-            : const Text('Save Candidate', style: TextStyle(color: Colors.white)),
+            : const Text('Save', style: TextStyle(color: Colors.white)),
       ),
     );
   }
