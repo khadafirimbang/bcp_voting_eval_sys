@@ -20,11 +20,28 @@ class _VotersPageState extends State<VotersPage> {
   final int rowsPerPage = 10; // Changed to 10 rows per page
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isLoading = false;
+  int totalVoters = 0; // Variable to store total voters
+  List<String> courses = []; // List to hold unique courses
+  String? selectedCourse; // Selected course for filtering
 
   @override
   void initState() {
     super.initState();
     fetchUsers();
+    fetchTotalVoters();
+  }
+
+  Future<void> fetchTotalVoters() async {
+    final response = await http.get(Uri.parse('https://studentcouncil.bcp-sms1.com/php/results.php'));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        totalVoters = data['total_voters'];
+      });
+    } else {
+      throw Exception('Failed to load results');
+    }
   }
 
   Future<void> fetchUsers() async {
@@ -48,6 +65,10 @@ class _VotersPageState extends State<VotersPage> {
             'account_status': user['account_status']?.toString() ?? '',
           };
         }).toList();
+
+        // Extract unique courses and add 'All' option
+        courses = users.map((user) => user['course'] as String).toSet().toList().cast<String>();
+        courses.insert(0, 'All'); // Add 'All' at the beginning
         filteredUsers = users; // Initialize filteredUsers
         _isLoading = false;
       });
@@ -63,41 +84,18 @@ class _VotersPageState extends State<VotersPage> {
     String searchTerm = _searchController.text.toLowerCase();
     setState(() {
       filteredUsers = users.where((user) {
-        return user['studentno'].toLowerCase().contains(searchTerm) ||
-               user['course'].toLowerCase().contains(searchTerm) ||
-               user['section'].toLowerCase().contains(searchTerm) ||
-               '${user['lastname']}, ${user['firstname']} ${user['middlename']}'.toLowerCase().contains(searchTerm);
+        bool matchesSearch = user['studentno'].toLowerCase().contains(searchTerm) ||
+                             user['course'].toLowerCase().contains(searchTerm) ||
+                             user['section'].toLowerCase().contains(searchTerm) ||
+                             '${user['lastname']}, ${user['firstname']} ${user['middlename']}'.toLowerCase().contains(searchTerm);
+        
+        bool matchesCourse = selectedCourse == null || selectedCourse == 'All' || user['course'] == selectedCourse;
+
+        return matchesSearch && matchesCourse;
       }).toList();
       currentPage = 0; // Reset to the first page after filtering
     });
   }
-
-  // void _showDeleteConfirmation(String studentNo) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) {
-  //       return AlertDialog(
-  //         title: const Text('Delete Confirmation'),
-  //         content: Text('Are you sure you want to delete user with Student No: $studentNo?'),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop(); // Close the dialog
-  //             },
-  //             child: const Text('Cancel'),
-  //           ),
-  //           TextButton(
-  //             onPressed: () async {
-  //               await _deleteUser(studentNo);
-  //               Navigator.of(context).pop(); // Close the dialog
-  //             },
-  //             child: const Text('Delete'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 
   Future<void> _deleteUser(String studentNo) async {
     final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/delete_user.php'); // Update with your delete API endpoint
@@ -115,94 +113,6 @@ class _VotersPageState extends State<VotersPage> {
       );
     }
   }
-
-  Future<void> _updateUser(String studentNo, String firstname, String lastname, String middlename, String course, String section) async {
-  final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/update_user.php'); // Update with your update API endpoint
-  final response = await http.post(url, body: {
-    'studentno': studentNo,
-    'firstname': firstname,
-    'lastname': lastname,
-    'middlename': middlename,
-    'course': course,
-    'section': section,
-  });
-
-  if (response.statusCode == 200) {
-    // Refresh the user list after updating
-    fetchUsers();
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Voter updated successfully'), backgroundColor: Colors.green),
-      );
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update the voter'), backgroundColor: Colors.red),
-      );
-  }
-}
-
-
-//   void _showUpdateUserForm(Map user) {
-//   // Create TextEditingControllers for each field
-//   TextEditingController firstnameController = TextEditingController(text: user['firstname']);
-//   TextEditingController lastnameController = TextEditingController(text: user['lastname']);
-//   TextEditingController middlenameController = TextEditingController(text: user['middlename']);
-//   TextEditingController courseController = TextEditingController(text: user['course']);
-//   TextEditingController sectionController = TextEditingController(text: user['section']);
-
-//   showDialog(
-//     context: context,
-//     builder: (context) {
-//       return AlertDialog(
-//         title: Text('Update User: ${user['studentno']}'),
-//         content: SingleChildScrollView(
-//           child: Column(
-//             mainAxisSize: MainAxisSize.min,
-//             children: [
-//               TextField(
-//                 controller: firstnameController,
-//                 decoration: const InputDecoration(labelText: 'First Name'),
-//               ),
-//               TextField(
-//                 controller: lastnameController,
-//                 decoration: const InputDecoration(labelText: 'Last Name'),
-//               ),
-//               TextField(
-//                 controller: middlenameController,
-//                 decoration: const InputDecoration(labelText: 'Middle Name'),
-//               ),
-//               TextField(
-//                 controller: courseController,
-//                 decoration: const InputDecoration(labelText: 'Course'),
-//               ),
-//               TextField(
-//                 controller: sectionController,
-//                 decoration: const InputDecoration(labelText: 'Section'),
-//               ),
-//             ],
-//           ),
-//         ),
-//         actions: [
-//           TextButton(
-//             onPressed: () async {
-//               // Call the update function here with the new values
-//               await _updateUser(user['studentno'], firstnameController.text, lastnameController.text,
-//                   middlenameController.text, courseController.text, sectionController.text);
-//               Navigator.of(context).pop(); // Close the dialog
-//             },
-//             child: const Text('Update'),
-//           ),
-//           TextButton(
-//             onPressed: () {
-//               Navigator.of(context).pop(); // Close the dialog
-//             },
-//             child: const Text('Cancel'),
-//           ),
-//         ],
-//       );
-//     },
-//   );
-// }
-
 
   @override
   Widget build(BuildContext context) {
@@ -244,39 +154,38 @@ class _VotersPageState extends State<VotersPage> {
                 Row(
                   children: [
                     IconButton(
-                  onPressed: () {
-                    _scaffoldKey.currentState?.openDrawer();
-                  },
-                  icon: const Icon(Icons.menu, color: Colors.black45),
-                ),
-                const Text(
-                  'Voters',
-                  style: TextStyle(fontSize: 18, color: Colors.black54),
-                ),
+                      onPressed: () {
+                        _scaffoldKey.currentState?.openDrawer();
+                      },
+                      icon: const Icon(Icons.menu, color: Colors.black45),
+                    ),
+                    const Text(
+                      'Voters',
+                      style: TextStyle(fontSize: 18, color: Colors.black54),
+                    ),
                   ],
                 ),
                 Row(
                   children: [
                     IconButton(
-                  icon: Icon(_isSearchVisible ? Icons.close : Icons.search),
-                  onPressed: () {
-                    setState(() {
-                      _isSearchVisible = !_isSearchVisible;
-                      if (!_isSearchVisible) {
-                        _searchController.clear();
-                        _filterUsers();
-                      }
-                    });
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: () {
-                    fetchUsers();
-                  },
-                ),
-              // SizedBox(width: 16), // Spacing _loadPositions
-              ProfileMenu()
+                      icon: Icon(_isSearchVisible ? Icons.close : Icons.search),
+                      onPressed: () {
+                        setState(() {
+                          _isSearchVisible = !_isSearchVisible;
+                          if (!_isSearchVisible) {
+                            _searchController.clear();
+                            _filterUsers();
+                          }
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: () {
+                        fetchUsers();
+                      },
+                    ),
+                    ProfileMenu()
                   ],
                 )
               ],
@@ -304,90 +213,91 @@ class _VotersPageState extends State<VotersPage> {
               const SizedBox(height: 16.0),
               Expanded(
                 child: _isLoading
-                    ? const Center(child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(color: Colors.black,),
-                        const SizedBox(height: 8),
-                        Text('Loading Voters...',
-                        style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                        ),
-                      ],
-                    ))
+                    ? const Center(child: CircularProgressIndicator(color: Colors.black,))
                     : filteredUsers.isEmpty
                     ? const Center(child: Text('No Voters yet.'))
-                    : ListView.builder(
-                        itemCount: currentPageUsers.length,
-                        itemBuilder: (context, index) {
-                          final user = currentPageUsers[index];
-                          final fullName = '${user['lastname']}, ${user['firstname']}' +
-        (user['middlename'] != null && user['middlename'].isNotEmpty
-            ? ' ${user['middlename']}'
-            : '');
-                          return Column(
-                            children: [
-                              Card(
-                                color: Colors.white,
-                                elevation: 2,
-                                child: ListTile(
-                                  title: Text(fullName),
-                                  subtitle: Text('Student No: ${user['studentno']} - Course: ${user['course']} - Section: ${user['section']}'),
-                                  // trailing: Row(
-                                  //   mainAxisSize: MainAxisSize.min,
-                                  //   children: [
-                                  //     IconButton(
-                                  //       icon: const Icon(Icons.edit),
-                                  //       onPressed: () {
-                                  //         _showUpdateUserForm(user); // Show the update form
-                                  //       },
-                                  //     ),
-                                  //     const SizedBox(width: 8),
-                                  //     IconButton(
-                                  //       icon: const Icon(Icons.delete),
-                                  //       onPressed: () {
-                                  //         _showDeleteConfirmation(user['studentno']); // Show delete confirmation
-                                  //       },
-                                  //     ),
-                                  //   ],
-                                  // ),
+                    : Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Total Voters: $totalVoters',
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                 ),
-                              ),
-                            ],
-                          );
-                        },
+                                // Dropdown for course selection
+                                Container(
+                                  width: 150,
+                                  child: DropdownButton<String>(
+                                    isExpanded: true,
+                                    hint: const Text('Select Program'),
+                                    value: selectedCourse,
+                                    onChanged: (String? newValue) {
+                                      setState(() {
+                                        selectedCourse = newValue;
+                                        _filterUsers(); // Re-filter when course is selected
+                                      });
+                                    },
+                                    items: courses.map<DropdownMenuItem<String>>((String course) {
+                                      return DropdownMenuItem<String>(
+                                        value: course,
+                                        child: Text(course),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: currentPageUsers.length,
+                              itemBuilder: (context, index) {
+                                final user = currentPageUsers[index];
+                                final fullName = '${user['lastname']}, ${user['firstname']}' +
+                                    (user['middlename'] != null && user['middlename'].isNotEmpty
+                                        ? ' ${user['middlename']}'
+                                        : '');
+                                return Card(
+                                  color: Colors.white,
+                                  elevation: 2,
+                                  child: ListTile(
+                                    title: Text(fullName),
+                                    subtitle: Text('Student No: ${user['studentno']} - Course: ${user['course']} - Section: ${user['section']}'),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
               ),
               // Pagination Controls
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.black),
-                        onPressed: currentPage > 0
-                            ? () {
-                                setState(() {
-                                  currentPage--;
-                                });
-                              }
-                            : null,
-                      ),
-                      Text('Page ${currentPage + 1} of $totalPages', style: const TextStyle(fontWeight: FontWeight.bold)),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_forward, color: Colors.black),
-                        onPressed: currentPage < totalPages - 1
-                            ? () {
-                                setState(() {
-                                  currentPage++;
-                                });
-                              }
-                            : null,
-                      ),
-                    ],
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
+                    onPressed: currentPage > 0
+                        ? () {
+                            setState(() {
+                              currentPage--;
+                            });
+                          }
+                        : null,
+                  ),
+                  Text('Page ${currentPage + 1} of $totalPages', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward, color: Colors.black),
+                    onPressed: currentPage < totalPages - 1
+                        ? () {
+                            setState(() {
+                              currentPage++;
+                            });
+                          }
+                        : null,
                   ),
                 ],
               ),
@@ -398,4 +308,3 @@ class _VotersPageState extends State<VotersPage> {
     );
   }
 }
-
