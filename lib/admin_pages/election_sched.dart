@@ -1,17 +1,14 @@
 import 'dart:convert';
-import 'package:SSCVote/admin_pages/profile_menu_admin.dart';
-import 'package:SSCVote/voter_pages/profile.dart';
-import 'package:flutter/material.dart';
-import 'package:SSCVote/admin_pages/dashboard2.dart';
 import 'package:SSCVote/admin_pages/drawerbar_admin.dart';
-import 'package:SSCVote/main.dart';
+import 'package:SSCVote/admin_pages/profile_menu_admin.dart';
 import 'package:SSCVote/voter_pages/election_history.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -20,7 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: ElectionScheduler(),
+      home: const ElectionScheduler(),
     );
   }
 }
@@ -35,7 +32,9 @@ class ElectionScheduler extends StatefulWidget {
 class _ElectionSchedulerState extends State<ElectionScheduler> {
   final ApiService _apiService = ApiService('https://studentcouncil.bcp-sms1.com/php');
   List<ElectionSchedule> _schedules = [];
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();            
+  DateTime _selectedDay = DateTime.now();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -44,12 +43,19 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
   }
 
   Future<void> _fetchSchedules() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       final schedules = await _apiService.getSchedules();
       setState(() {
         _schedules = schedules;
+        _isLoading = false;
       });
     } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
       print('Failed to fetch schedules: $e');
     }
   }
@@ -201,10 +207,10 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
                 if (nameController.text.isNotEmpty && startDate != null && endDate != null) {
                   // Validate dates
                   final now = DateTime.now();
-                  if (startDate!.isBefore(now)) {
-                    _showSnackbar('Start date cannot be in the past.');
-                    return;
-                  }
+                  // if (startDate!.isBefore(now)) {
+                  //   _showSnackbar('Start date cannot be in the past.');
+                  //   return;
+                  // }
 
                   if (endDate!.isBefore(startDate!)) {
                     _showSnackbar('End date cannot be before the start date.');
@@ -317,46 +323,101 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
                   ),
                 ),
               ),
-              Expanded(
-                child: _schedules.isEmpty
-                  ? const Center(child: Text("No schedules available."))
-                  : ListView.builder(
-                  itemCount: _schedules.length,
-                  itemBuilder: (context, index) {
-                    final schedule = _schedules[index];
-                    final formatter = DateFormat('MMM dd, yyyy h:mm a');
-                    final startDateFormatted = formatter.format(schedule.startDate);
-                    final endDateFormatted = formatter.format(schedule.endDate);
-                
-                    return Column(
-                      children: [
-                        const SizedBox(height: 16.0),
-                        Card(
-                          color: Colors.white,
-                          elevation: 2,
-                          child: ListTile(
-                            title: Text(schedule.electionName),
-                            subtitle: Text('From $startDateFormatted to $endDateFormatted'),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () => _editSchedule(schedule),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () => _deleteSchedule(schedule.id),
-                                ),
-                              ],
+              if (_isLoading)
+                const Expanded(
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else if (_schedules.isEmpty)
+                const Expanded(
+                  child: Center(
+                    child: Text("No schedules available."),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _schedules.length,
+                    itemBuilder: (context, index) {
+                      final schedule = _schedules[index];
+                      final formatter = DateFormat('MMM dd, yyyy h:mm a');
+                      final startDateFormatted = formatter.format(schedule.startDate);
+                      final endDateFormatted = formatter.format(schedule.endDate);
+                      final daysRemaining = schedule.endDate.difference(DateTime.now()).inDays;
+
+                      return Column(
+                        children: [
+                          const SizedBox(height: 16.0),
+                          Card(
+                            color: Colors.white,
+                            elevation: 2,
+                            child: ListTile(
+                              title: Text(schedule.electionName),
+                              subtitle: Text('From $startDateFormatted to $endDateFormatted\nDays Remaining: $daysRemaining'),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: () => _editSchedule(schedule),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () => _deleteSchedule(schedule.id),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(height: 10.0),
+              TableCalendar<ElectionSchedule>(
+                firstDay: DateTime(2000),
+                lastDay: DateTime(2100),
+                focusedDay: _selectedDay,
+                selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                onDaySelected: (selectedDay, focusedDay) {
+                  setState(() {
+                    _selectedDay = selectedDay;
+                  });
+                },
+                eventLoader: (day) {
+                  return _schedules.where((schedule) =>
+                      schedule.startDate.isBefore(day.add(const Duration(days: 1))) &&
+                      schedule.endDate.isAfter(day)).toList();
+                },
+                calendarBuilders: CalendarBuilders(
+                  defaultBuilder: (context, day, focusedDay) {
+                    bool isStartDate = _schedules.any((schedule) => 
+                      isSameDay(schedule.startDate, day));
+                    bool isEndDate = _schedules.any((schedule) => 
+                      isSameDay(schedule.endDate, day));
+
+                    if (isStartDate || isEndDate) {
+                      return Container(
+                        margin: const EdgeInsets.all(4.0),
+                        decoration: BoxDecoration(
+                          color: isStartDate ? Colors.green[300] : Colors.red[300],
+                          shape: BoxShape.circle,
                         ),
-                      ],
-                    );
+                        child: Center(
+                          child: Text(
+                            '${day.day}',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      );
+                    }
+                    return null; // Use default builder
                   },
                 ),
               ),
+              SizedBox(height: 10.0),
             ],
           ),
         ),
