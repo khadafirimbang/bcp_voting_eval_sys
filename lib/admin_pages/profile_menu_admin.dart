@@ -11,17 +11,26 @@ class ProfileMenu extends StatefulWidget {
 
 class _ProfileMenuState extends State<ProfileMenu> {
   String? studentNo = "Unknown"; // Default value
+  String? userRole = "Unknown"; // Default value
 
   @override
   void initState() {
     super.initState();
     _loadStudentNo();
+    _loadUserRole();
   }
 
   Future<void> _loadStudentNo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       studentNo = prefs.getString('studentno') ?? 'Unknown'; // Fetch student no
+    });
+  }
+
+  Future<void> _loadUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userRole = prefs.getString('role'); // Assuming 'role' is the key used
     });
   }
 
@@ -43,8 +52,17 @@ class _ProfileMenuState extends State<ProfileMenu> {
             break;
           case 1:
             // Handle change pass
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ChangePasswordPage()));
-            break;
+            if (userRole == 'Super&69*Admin-+') {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ChangePasswordPage()));
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('You do not have permission to change the password.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+            break; // Add break here to avoid fall-through
           case 2:
             // Handle sign out
             _logout(context); // Example action for Sign Out
@@ -52,50 +70,63 @@ class _ProfileMenuState extends State<ProfileMenu> {
         }
       },
       offset: Offset(0, 50), // Adjust dropdown position
-      itemBuilder: (context) => [
-        PopupMenuItem<int>(
-          padding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-          value: 0,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Signed in as', style: TextStyle(color: Colors.black54)),
-              Text(studentNo ?? 'Unknown'),
-            ],
+      itemBuilder: (context) {
+        List<PopupMenuEntry<int>> menuItems = [
+          PopupMenuItem<int>(
+            padding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+            value: 0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Signed in as', style: TextStyle(color: Colors.black54)),
+                Text(studentNo ?? 'Unknown'),
+              ],
+            ),
           ),
-        ),
-        PopupMenuDivider(),
-        PopupMenuItem<int>(
-          value: 0,
-          child: Row(
-            children: [
-              Icon(Icons.person, color: Colors.black54),
-              SizedBox(width: 10),
-              Text('Profile'),
-            ],
+          PopupMenuDivider(),
+          PopupMenuItem<int>(
+            value: 0,
+            child: Row(
+              children: [
+                Icon(Icons.person, color: Colors.black54),
+                SizedBox(width: 10),
+                Text('Profile'),
+              ],
+            ),
           ),
-        ),
-        PopupMenuItem<int>(
-          value: 1,
-          child: Row(
-            children: [
-              Icon(Icons.lock, color: Colors.black54),
-              SizedBox(width: 10),
-              Text('Change password'),
-            ],
+        ];
+
+        // Conditionally add the Change Password option
+        if (userRole == 'Super&69*Admin-+') {
+          menuItems.add(
+            PopupMenuItem<int>(
+              value: 1,
+              child: Row(
+                children: [
+                  Icon(Icons.lock, color: Colors.black54),
+                  SizedBox(width: 10),
+                  Text('Change password'),
+                ],
+              ),
+            ),
+          );
+        }
+
+        menuItems.add(
+          PopupMenuItem<int>(
+            value: 2,
+            child: Row(
+              children: [
+                Icon(Icons.logout, color: Colors.black54),
+                SizedBox(width: 10),
+                Text('Sign out'),
+              ],
+            ),
           ),
-        ),
-        PopupMenuItem<int>(
-          value: 2,
-          child: Row(
-            children: [
-              Icon(Icons.logout, color: Colors.black54),
-              SizedBox(width: 10),
-              Text('Sign out'),
-            ],
-          ),
-        ),
-      ],
+        );
+
+        return menuItems;
+      },
       child: Stack(
         clipBehavior: Clip.none,
         children: [

@@ -375,7 +375,6 @@ class _ElectionSchedulerState extends State<ElectionScheduler> {
                     },
                   ),
                 ),
-                SizedBox(height: 10.0),
               TableCalendar<ElectionSchedule>(
                 firstDay: DateTime(2000),
                 lastDay: DateTime(2100),
