@@ -21,11 +21,21 @@ class _ProfileInfoAdminPageState extends State<ProfileInfoAdminPage> {
 
   // State to manage edit mode
   bool _isEditing = false;
+  String? userRole; // Variable to hold user role
 
   @override
   void initState() {
     super.initState();
     _fetchUserData();
+    _loadUserRole(); // Load user role on initialization
+  }
+
+  // Load user role from shared preferences
+  Future<void> _loadUserRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userRole = prefs.getString('role'); // Assuming 'role' is the key used
+    });
   }
 
   // Fetch user data when the screen initializes
@@ -170,10 +180,12 @@ class _ProfileInfoAdminPageState extends State<ProfileInfoAdminPage> {
         appBar: AppBar(
           title: const Text('Profile'),
           actions: [
-            IconButton(
-              icon: Icon(_isEditing ? Icons.cancel : Icons.edit),
-              onPressed: _toggleEditMode,
-            ),
+            // Conditionally show the edit button based on userRole
+            if (userRole == 'Super&69*Admin-+')
+              IconButton(
+                icon: Icon(_isEditing ? Icons.cancel : Icons.edit),
+                onPressed: _toggleEditMode,
+              ),
           ],
         ),
         body: LayoutBuilder(
