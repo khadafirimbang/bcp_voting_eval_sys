@@ -277,7 +277,7 @@ class _AppDrawerState extends State<AppDrawerAdmin> {
             },
           ),
           // Conditionally display AccountsPage based on user role
-          if (userRole == 'Super&69*Admin-+') ...[
+          if (userRole == 'SuperAdmin') ...[
             const SizedBox(height: 10,),
             ListTile(
               leading: const Icon(Icons.account_circle, color: Colors.black,),

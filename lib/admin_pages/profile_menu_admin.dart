@@ -52,7 +52,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
             break;
           case 1:
             // Handle change pass
-            if (userRole == 'Super&69*Admin-+') {
+            if (userRole == 'SuperAdmin') {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ChangePasswordPage()));
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -97,7 +97,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
         ];
 
         // Conditionally add the Change Password option
-        if (userRole == 'Super&69*Admin-+') {
+        if (userRole == 'SuperAdmin') {
           menuItems.add(
             PopupMenuItem<int>(
               value: 1,

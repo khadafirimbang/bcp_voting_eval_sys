@@ -83,70 +83,81 @@ class _LoginWidgetWidgetState extends State<LoginWidgetWidget> {
   }
 
   Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true; // Start loading
-      });
+  if (_formKey.currentState!.validate()) {
+    setState(() {
+      _isLoading = true; // Start loading
+    });
 
-      String input = _studentNoController.text; // This can be either studentno or email
-      String password = _passwordController.text;
+    String input = _studentNoController.text; // This can be either studentno or email
+    String password = _passwordController.text;
 
-      // Debug: Log the input and password
-      // print("Input: $input");
-      // print("Password: $password");
+    final response = await http.post(
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/signin.php'),
+      body: {
+        'input': input, // Send the input (studentno or email)
+        'password': password,
+      },
+    );
 
-      // Validate if the input is an email or a student number
-      // bool isEmail = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(input);
-      // if (isEmail) {
-      //   // print("Input is an email");
-      // } else {
-      //   print("Input is a student number");
-      // }
+    final data = jsonDecode(response.body);
 
-      final response = await http.post(
-        Uri.parse('https://studentcouncil.bcp-sms1.com/php/signin.php'),
-        body: {
-          'input': input, // Send the input (studentno or email)
-          'password': password,
-        },
-      );
+    setState(() {
+      _isLoading = false; // Stop loading
+    });
 
-      final data = jsonDecode(response.body);
+    if (data['status'] == 'success') {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      
+      // Convert studentno to string if it's an integer
+      String studentNo = data['studentno'].toString(); 
+      await prefs.setString('studentno', studentNo); // Store the student number
 
-      // Debug: Log the response
-      // print("Response: $data");
+      // Fetch the user role
+      String? role = await _fetchUserRole(studentNo);
+      await prefs.setString('role', role ?? ''); // Store the role
 
-      setState(() {
-        _isLoading = false; // Stop loading
-      });
-
-      if (data['status'] == 'success') {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-       await prefs.setString('studentno', data['studentno'].toString()); // Store the input (studentno or email)
-        await prefs.setString('role', data['role']);
-
-        if (data['role'] == 'Voter') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const AnnouncementPage()),
-          );
-        } else if (data['role'] == 'Admin&69*-+' || data['role'] == 'Super&69*Admin-+') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => DashboardPage2()),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(data['message']),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
+      // Navigate based on the role
+      if (role == 'Voter') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const AnnouncementPage()),
+        );
+      } else if (role == 'Admin' || role == 'SuperAdmin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardPage2()),
         );
       }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(data['message']),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
+}
+
+Future<String?> _fetchUserRole(String studentNo) async {
+  try {
+    final response = await http.get(
+      Uri.parse('https://studentcouncil.bcp-sms1.com/php/get_user_role.php?studentNo=$studentNo'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['role']; // Adjust based on your API response structure
+    } else {
+      print('Failed to fetch role: ${response.statusCode}');
+      return null; // Handle errors appropriately
+    }
+  } catch (e) {
+    print('Error fetching role: $e');
+    return null; // Handle exceptions
+  }
+}
 
   // String _sanitizeInput(String input) {
   //   return input.trim().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');

@@ -75,10 +75,29 @@ class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
   void _checkSession() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? studentNo = prefs.getString('studentno');
-    String? role = prefs.getString('role');
 
     if (studentNo != null && mounted) {
+      String? role = await _fetchUserRole(studentNo);
       _navigateToRoleBasedPage(role);
+    }
+  }
+
+  Future<String?> _fetchUserRole(String studentNo) async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://studentcouncil.bcp-sms1.com/php/get_user_role.php?studentNo=$studentNo'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['role']; // Adjust based on your API response structure
+      } else {
+        print('Failed to fetch role: ${response.statusCode}');
+        return null; // Handle errors appropriately
+      }
+    } catch (e) {
+      print('Error fetching role: $e');
+      return null; // Handle exceptions
     }
   }
 

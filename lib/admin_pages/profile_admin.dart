@@ -181,7 +181,7 @@ class _ProfileInfoAdminPageState extends State<ProfileInfoAdminPage> {
           title: const Text('Profile'),
           actions: [
             // Conditionally show the edit button based on userRole
-            if (userRole == 'Super&69*Admin-+')
+            if (userRole == 'SuperAdmin')
               IconButton(
                 icon: Icon(_isEditing ? Icons.cancel : Icons.edit),
                 onPressed: _toggleEditMode,
