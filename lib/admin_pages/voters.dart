@@ -23,6 +23,7 @@ class _VotersPageState extends State<VotersPage> {
   int totalVoters = 0; // Variable to store total voters
   List<String> courses = []; // List to hold unique courses
   String? selectedCourse; // Selected course for filtering
+  String? selectedStatus; // Selected status for filtering
 
   @override
   void initState() {
@@ -62,7 +63,7 @@ class _VotersPageState extends State<VotersPage> {
             'middlename': user['middlename']?.toString() ?? '', // Handle null middlename
             'course': user['course']?.toString() ?? '', // Handle null course
             'section': user['section']?.toString() ?? '', // Handle null section
-            'account_status': user['account_status']?.toString() ?? '',
+            'status': user['status']?.toString() ?? 'Not Voted',
           };
         }).toList();
 
@@ -90,28 +91,14 @@ class _VotersPageState extends State<VotersPage> {
                              '${user['lastname']}, ${user['firstname']} ${user['middlename']}'.toLowerCase().contains(searchTerm);
         
         bool matchesCourse = selectedCourse == null || selectedCourse == 'All' || user['course'] == selectedCourse;
+        bool matchesStatus = selectedStatus == null || selectedStatus == 'All' || 
+                             (selectedStatus == 'Voted' && user['status'] == 'Voted') ||
+                             (selectedStatus == 'Not Voted' && user['status'] == 'Not Voted');
 
-        return matchesSearch && matchesCourse;
+        return matchesSearch && matchesCourse && matchesStatus;
       }).toList();
       currentPage = 0; // Reset to the first page after filtering
     });
-  }
-
-  Future<void> _deleteUser(String studentNo) async {
-    final url = Uri.parse('https://studentcouncil.bcp-sms1.com/php/delete_user.php'); // Update with your delete API endpoint
-    final response = await http.post(url, body: {'studentno': studentNo});
-
-    if (response.statusCode == 200) {
-      // Refresh the user list after deletion
-      fetchUsers();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Voter deleted successfully'), backgroundColor: Colors.green),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to delete the voter'), backgroundColor: Colors.red),
-      );
-    }
   }
 
   @override
@@ -135,16 +122,16 @@ class _VotersPageState extends State<VotersPage> {
           preferredSize: const Size.fromHeight(56), // Set height of the AppBar
           child: Container(
             height: 56,
-            alignment: Alignment.center, // Align the AppBar in the center
-            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+            alignment: Alignment.center,
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
             decoration: BoxDecoration(
               color: Colors.white, 
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3), // Shadow color
-                  blurRadius: 8, // Blur intensity
-                  spreadRadius: 1, // Spread radius
-                  offset: const Offset(0, 4), // Vertical shadow position
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -213,44 +200,142 @@ class _VotersPageState extends State<VotersPage> {
               const SizedBox(height: 16.0),
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator(color: Colors.black,))
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(color: Colors.black,),
+                            SizedBox(height: 10),
+                            Text('Loading Voters...'),
+                          ],
+                        )
+                      )
                     : filteredUsers.isEmpty
                     ? const Center(child: Text('No Voters yet.'))
                     : Column(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Total Voters: $totalVoters',
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                ),
-                                // Dropdown for course selection
-                                Container(
-                                  width: 150,
-                                  child: DropdownButton<String>(
-                                    isExpanded: true,
-                                    hint: const Text('Select Program'),
-                                    value: selectedCourse,
-                                    onChanged: (String? newValue) {
-                                      setState(() {
-                                        selectedCourse = newValue;
-                                        _filterUsers(); // Re-filter when course is selected
-                                      });
-                                    },
-                                    items: courses.map<DropdownMenuItem<String>>((String course) {
-                                      return DropdownMenuItem<String>(
-                                        value: course,
-                                        child: Text(course),
-                                      );
-                                    }).toList(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
+  child: LayoutBuilder(
+    builder: (context, constraints) {
+      // Check if the available width is less than a certain threshold (e.g., 600 pixels)
+      bool isMobile = constraints.maxWidth < 600;
+
+      return isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Text(
+                    'Total Voters: $totalVoters',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                // Dropdown for course selection
+                Container(
+                  width: double.infinity, // Make it full width
+                  child: DropdownButton<String>(
+                    isExpanded: true,
+                    hint: const Text('Select Program'),
+                    value: selectedCourse,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedCourse = newValue;
+                        _filterUsers(); // Re-filter when course is selected
+                      });
+                    },
+                    items: courses.map<DropdownMenuItem<String>>((String course) {
+                      return DropdownMenuItem<String>(
+                        value: course,
+                        child: Text(course),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 8), // Add spacing between dropdowns
+                // Dropdown for status selection
+                Container(
+                  width: double.infinity, // Make it full width
+                  child: DropdownButton<String>(
+                    isExpanded: true,
+                    hint: const Text('Select Status'),
+                    value: selectedStatus,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedStatus = newValue;
+                        _filterUsers(); // Re-filter when status is selected
+                      });
+                    },
+                    items: ['All', 'Voted', 'Not Voted'].map<DropdownMenuItem<String>>((String status) {
+                      return DropdownMenuItem<String>(
+                        value: status,
+                        child: Text(status),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Total Voters: $totalVoters',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                // Dropdown for course selection
+                Row(
+                  children: [
+                    Container(
+                      width: 150,
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        hint: const Text('Select Program'),
+                        value: selectedCourse,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedCourse = newValue;
+                            _filterUsers(); // Re-filter when course is selected
+                          });
+                        },
+                        items: courses.map<DropdownMenuItem<String>>((String course) {
+                          return DropdownMenuItem<String>(
+                            value: course,
+                            child: Text(course),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(width: 10), // Add spacing between dropdowns
+                    // Dropdown for status selection
+                    Container(
+                      width: 150,
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        hint: const Text('Select Status'),
+                        value: selectedStatus,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedStatus = newValue;
+                            _filterUsers(); // Re-filter when status is selected
+                          });
+                        },
+                        items: ['All', 'Voted', 'Not Voted'].map<DropdownMenuItem<String>>((String status) {
+                          return DropdownMenuItem<String>(
+                            value: status,
+                            child: Text(status),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+    },
+  ),
+),
+
                           Expanded(
                             child: ListView.builder(
                               itemCount: currentPageUsers.length,
@@ -260,12 +345,29 @@ class _VotersPageState extends State<VotersPage> {
                                     (user['middlename'] != null && user['middlename'].isNotEmpty
                                         ? ' ${user['middlename']}'
                                         : '');
+
+                                // Determine the status color
+                                Color statusColor = user['status'] == 'Voted' ? Colors.green : Colors.red;
+
                                 return Card(
                                   color: Colors.white,
                                   elevation: 2,
                                   child: ListTile(
-                                    title: Text(fullName),
-                                    subtitle: Text('Student No: ${user['studentno']} - Course: ${user['course']} - Section: ${user['section']}'),
+                                    title: Text(fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    subtitle: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Student No: ${user['studentno']}'),
+                                        Text('Course: ${user['course']}'),
+                                        Text('Section: ${user['section']}'),
+                                        Row(
+                                          children: [
+                                            Text('Status: '),
+                                            Text(user['status'], style: TextStyle(color: statusColor)), // Set text color based on status
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
                               },
