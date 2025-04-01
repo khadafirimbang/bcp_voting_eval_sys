@@ -246,176 +246,178 @@ class _AccountsPageState extends State<AccountsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(56), // Set height of the AppBar
-          child: Container(
-            height: 56,
-            alignment: Alignment.center, // Align the AppBar in the center
-            margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
-            decoration: BoxDecoration(
-              color: Colors.white, 
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3), // Shadow color
-                  blurRadius: 8, // Blur intensity
-                  spreadRadius: 1, // Spread radius
-                  offset: const Offset(0, 4), // Vertical shadow position
-                ),
-              ],
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(56), // Set height of the AppBar
+            child: Container(
+              height: 56,
+              alignment: Alignment.center, // Align the AppBar in the center
+              margin: const EdgeInsets.fromLTRB(16, 10, 16, 0), // Add margin to control width
+              decoration: BoxDecoration(
+                color: Colors.white, 
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3), // Shadow color
+                    blurRadius: 8, // Blur intensity
+                    spreadRadius: 1, // Spread radius
+                    offset: const Offset(0, 4), // Vertical shadow position
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                    onPressed: () {
+                      _scaffoldKey.currentState?.openDrawer();
+                    },
+                    icon: const Icon(Icons.menu, color: Colors.black45),
+                  ),
+                  const Text(
+                    'Admins',
+                    style: TextStyle(fontSize: 18, color: Colors.black54),
+                  ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.search),
+                        onPressed: () {
+                          setState(() {
+                            isSearchVisible = !isSearchVisible; // Toggle search field visibility
+                            searchController.clear(); // Clear the search field when opening
+                            searchQuery = ''; // Clear the search query
+                            _updateCurrentAccounts(); // Update accounts based on new search query
+                          });
+                        },
+                      ),
+                  IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      fetchAccounts();
+                    },
+                  ),
+                ProfileMenu()
+                    ],
+                  )
+                ],
+              )
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                  onPressed: () {
-                    _scaffoldKey.currentState?.openDrawer();
-                  },
-                  icon: const Icon(Icons.menu, color: Colors.black45),
-                ),
-                const Text(
-                  'Admins',
-                  style: TextStyle(fontSize: 18, color: Colors.black54),
-                ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.search),
+          ),
+        drawer: const AppDrawerAdmin(),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              if (isSearchVisible) // Show search field if visible
+                TextField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search accounts...',
+                    border: OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.clear),
                       onPressed: () {
+                        searchController.clear();
                         setState(() {
-                          isSearchVisible = !isSearchVisible; // Toggle search field visibility
-                          searchController.clear(); // Clear the search field when opening
-                          searchQuery = ''; // Clear the search query
-                          _updateCurrentAccounts(); // Update accounts based on new search query
+                          searchQuery = '';
+                          isSearchVisible = false; // Hide search field
+                          _updateCurrentAccounts(); // Update accounts without search
                         });
                       },
                     ),
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: () {
-                    fetchAccounts();
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      searchQuery = value; // Update search query
+                      _updateCurrentAccounts(); // Update accounts based on search input
+                    });
                   },
                 ),
-              ProfileMenu()
-                  ],
+              const SizedBox(height: 16.0),
+              Expanded(
+                child: isLoading
+                ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: Colors.black,),
+                      SizedBox(height: 8),
+                      Text(
+                        'Loading...',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
                 )
-              ],
-            )
+                : ListView.builder(
+                  itemCount: currentAccounts.length,
+                  itemBuilder: (context, index) {
+                    final account = currentAccounts[index];
+                    return Card(
+                      color: Colors.white,
+                      elevation: 2,
+                      child: ListTile(
+                        title: Text('${account['lastname']}, ${account['firstname']} ${account['middlename']}'),
+                        subtitle: Text('Employee No: ${account['studentno']} - Email: ${account['email']}'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // IconButton(
+                            //   icon: const Icon(Icons.edit),
+                            //   onPressed: () => showAccountForm(account: account),
+                            // ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () => confirmDeleteAccount(account['studentno']),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              // Pagination controls (previous/next buttons)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: currentPage > 1
+                        ? () => changePage(currentPage - 1)
+                        : null,
+                  ),
+                  Text('Page $currentPage'),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward),
+                    onPressed: currentPage < (accounts.length / accountsPerPage).ceil()
+                        ? () => changePage(currentPage + 1)
+                        : null,
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-      drawer: const AppDrawerAdmin(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            if (isSearchVisible) // Show search field if visible
-              TextField(
-                controller: searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search accounts...',
-                  border: OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      searchController.clear();
-                      setState(() {
-                        searchQuery = '';
-                        isSearchVisible = false; // Hide search field
-                        _updateCurrentAccounts(); // Update accounts without search
-                      });
-                    },
-                  ),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    searchQuery = value; // Update search query
-                    _updateCurrentAccounts(); // Update accounts based on search input
-                  });
-                },
-              ),
-            const SizedBox(height: 16.0),
-            Expanded(
-              child: isLoading
-              ? const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(color: Colors.black,),
-                    SizedBox(height: 8),
-                    Text(
-                      'Loading...',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-              : ListView.builder(
-                itemCount: currentAccounts.length,
-                itemBuilder: (context, index) {
-                  final account = currentAccounts[index];
-                  return Card(
-                    color: Colors.white,
-                    elevation: 2,
-                    child: ListTile(
-                      title: Text('${account['lastname']}, ${account['firstname']} ${account['middlename']}'),
-                      subtitle: Text('Employee No: ${account['studentno']} - Email: ${account['email']}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // IconButton(
-                          //   icon: const Icon(Icons.edit),
-                          //   onPressed: () => showAccountForm(account: account),
-                          // ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => confirmDeleteAccount(account['studentno']),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            // Pagination controls (previous/next buttons)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: currentPage > 1
-                      ? () => changePage(currentPage - 1)
-                      : null,
-                ),
-                Text('Page $currentPage'),
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  onPressed: currentPage < (accounts.length / accountsPerPage).ceil()
-                      ? () => changePage(currentPage + 1)
-                      : null,
-                ),
-              ],
-            ),
-          ],
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) =>  AddAccountPage()),
+            ).then((_) => fetchAccounts()); // Refresh accounts when returning
+          },
+          backgroundColor: Colors.black,
+          child: const Icon(Icons.add, color: Colors.white),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) =>  AddAccountPage()),
-          ).then((_) => fetchAccounts()); // Refresh accounts when returning
-        },
-        backgroundColor: Colors.black,
-        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
