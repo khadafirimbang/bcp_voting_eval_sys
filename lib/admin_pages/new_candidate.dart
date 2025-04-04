@@ -429,6 +429,7 @@ class _NewCandidatePageState extends State<NewCandidatePage> {
                   onTap: () {
                     _studentNoController.text = student['studentno']?.toString() ?? '';
                     _firstNameController.text = student['firstname'] ?? '';
+                    _middleNameController.text = student['middlename'] ?? ''; // Add this line
                     _lastNameController.text = student['lastname'] ?? '';
                     _sectionController.text = student['section'] ?? '';
                     _courseController.text = student['course'] ?? '';

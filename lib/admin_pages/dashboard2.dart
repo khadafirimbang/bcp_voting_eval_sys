@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:SSCVote/admin_pages/change_pass.dart';
 import 'package:SSCVote/admin_pages/profile_menu_admin.dart';
 import 'package:SSCVote/voter_pages/profile.dart';
@@ -36,11 +38,18 @@ class _DashboardPage2State extends State<DashboardPage2> {
   int totalEval = 0;
   int totalEvalAns = 0;
   int totalEvalNotAns = 0;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
     super.initState();
     _fetchAllData();
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel(); // Cancel any timers here
+    super.dispose();
   }
 
   Future<void> fetchTotalEvalAns() async {
@@ -49,6 +58,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        if (!mounted) return; // Check if mounted
         setState(() {
           totalEvalAns = data['total_eval_answered'];
           // Calculate totalEvalNotAns
@@ -69,6 +79,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        if (!mounted) return; // Check if mounted
         setState(() {
           totalEval = data['total_eval'];
         });
@@ -106,10 +117,12 @@ class _DashboardPage2State extends State<DashboardPage2> {
 
     } catch (e) {
       print('Error fetching data: $e');
+      if (!mounted) return; // Check if mounted
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load dashboard data')),
       );
     } finally {
+      if (!mounted) return; // Check if mounted
       setState(() {
         _isLoading = false;
       });
@@ -128,6 +141,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
 
   if (response.statusCode == 200) {
     final data = json.decode(response.body);
+    if (!mounted) return; // Check if mounted
     setState(() {
       totalVoters = data['total_voters'];
       totalVoted = data['total_voted'];
@@ -143,6 +157,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
         Uri.parse('https://studentcouncil.bcp-sms1.com/php/dashboard.php'));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
+      if (!mounted) return; // Check if mounted
       setState(() {
         totalCandidates = data['totalCandidates'];
         totalEvaluations = data['totalEvaluations'];
@@ -158,6 +173,7 @@ class _DashboardPage2State extends State<DashboardPage2> {
         Uri.parse('https://studentcouncil.bcp-sms1.com/php/top_candidates.php'));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
+      if (!mounted) return; // Check if mounted
       setState(() {
         presidentData = List<Map<String, dynamic>>.from(data['president']);
         vicePresidentData = List<Map<String, dynamic>>.from(data['vice_president']);

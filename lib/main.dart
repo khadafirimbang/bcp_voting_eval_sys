@@ -138,23 +138,30 @@ class _LoadingScreenWidgetState extends State<LoadingScreenWidget> {
     final response = await http.get(Uri.parse('https://registrar.bcp-sms1.com/api/students.php'));
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+        final data = jsonDecode(response.body);
+        
+        // Ensure the data structure is correct
+        final saveData = {
+            'status': data['status'],
+            'users': data['users']
+        };
 
-      final saveResponse = await http.post(
-        Uri.parse('https://studentcouncil.bcp-sms1.com/php/registrar_students_info.php'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(data),
-      );
-      // print('Data sent: ${jsonEncode(data)}');
+        // Log the data being sent
+        // print('Data to be sent: ${jsonEncode(saveData)}');
 
-      if (saveResponse.statusCode == 200) {
-        print('Data saved successfully');
-        // print('Save response: ${saveResponse.body}');
-      } else {
-        print('Failed to save data');
-      }
+        final saveResponse = await http.post(
+            Uri.parse('https://studentcouncil.bcp-sms1.com/php/registrar_students_info.php'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(saveData),
+        );
+
+        if (saveResponse.statusCode == 200) {
+            print('Data saved successfully: ${saveResponse.body}');
+        } else {
+            print('Failed to save data: ${saveResponse.statusCode} - ${saveResponse.body}');
+        }
     } else {
-      print('Failed to fetch data');
+        print('Failed to fetch data: ${response.statusCode} - ${response.body}');
     }
   }
   
