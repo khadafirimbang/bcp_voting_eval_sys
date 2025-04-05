@@ -370,7 +370,7 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
                   icon: const Icon(Icons.menu, color: Colors.black45),
                 ),
                 const Text(
-                  "FAQs Mngmnt",
+                  "FAQs",
                   style: TextStyle(fontSize: 18, color: Colors.black54),
                 ),
                   ],
@@ -503,6 +503,8 @@ class _ChatbotAdminPageState extends State<ChatbotAdminPage> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
           onPressed: showAddQuestionDialog,
           child: Icon(Icons.add),
         ),

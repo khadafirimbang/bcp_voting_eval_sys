@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:SSCVote/admin_pages/profile_menu_admin.dart';
+import 'package:SSCVote/admin_pages/student_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:SSCVote/admin_pages/drawerbar_admin.dart';
 import 'package:http/http.dart' as http;
@@ -368,6 +369,14 @@ class _VotersPageState extends State<VotersPage> {
                                         ),
                                       ],
                                     ),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => StudentProfilePage(studentData: user),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 );
                               },
